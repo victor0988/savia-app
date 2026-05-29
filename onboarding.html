@@ -1277,7 +1277,53 @@
     <div class="field-error" id="login-password-error"></div>
 
     <button class="btn-primary" id="login-btn" disabled onclick="doLogin()" style="margin-top: 14px;">Iniciar sesión</button>
-    <button class="btn-link" onclick="goStep('signup')" style="margin-top: 8px;">¿Sin cuenta? Crear cuenta</button>
+    <button class="btn-link" onclick="goStep('forgot')" style="margin-top: 4px;">¿Olvidaste tu contraseña?</button>
+    <button class="btn-link" onclick="goStep('signup')" style="margin-top: 0;">¿Sin cuenta? Crear cuenta</button>
+  </div>
+
+  <!-- ============== FORGOT PASSWORD ============== -->
+  <div class="screen form-screen" data-step="forgot">
+    <button class="back-btn" onclick="goStep('login')">‹</button>
+    <div class="form-header">
+      <div class="q-eyebrow">Recuperar contraseña</div>
+      <div class="q-title">¿Olvidaste tu clave?</div>
+      <div class="q-hint">Te enviamos un link a tu email para crear una nueva. Toma 30 segundos.</div>
+    </div>
+
+    <div class="inline-message info" id="forgot-success">
+      <strong>Email enviado.</strong> Revisa tu bandeja de entrada (y spam, por si acaso). El link expira en 1 hora.
+    </div>
+
+    <label class="field-label">Email de tu cuenta</label>
+    <input type="email" id="forgot-email" class="field-input" placeholder="tu@email.com" oninput="validateForgot()" autocomplete="email"/>
+    <div class="field-error" id="forgot-email-error"></div>
+
+    <button class="btn-primary" id="forgot-btn" disabled onclick="doForgotPassword()" style="margin-top: 14px;">Enviar link de recuperación</button>
+    <button class="btn-link" onclick="goStep('login')" style="margin-top: 8px;">Volver al login</button>
+  </div>
+
+  <!-- ============== CHANGE PASSWORD (post-reset) ============== -->
+  <div class="screen form-screen" data-step="change-password">
+    <button class="back-btn" onclick="goStep('login')">‹</button>
+    <div class="form-header">
+      <div class="q-eyebrow">Nueva contraseña</div>
+      <div class="q-title">Crea una nueva clave.</div>
+      <div class="q-hint">Usaremos esta para tus próximos logins. Te confirmamos por email.</div>
+    </div>
+
+    <div class="inline-message info" id="change-success">
+      <strong>Contraseña actualizada.</strong> Te enviamos un email de confirmación. Inicia sesión con tu nueva clave.
+    </div>
+
+    <label class="field-label">Nueva contraseña</label>
+    <input type="password" id="new-password" class="field-input" placeholder="Mínimo 8 caracteres" oninput="validateChangePassword()" autocomplete="new-password"/>
+    <div class="field-hint">Mínimo 8 caracteres.</div>
+
+    <label class="field-label">Confirma nueva contraseña</label>
+    <input type="password" id="confirm-password" class="field-input" placeholder="Repite tu contraseña" oninput="validateChangePassword()" autocomplete="new-password"/>
+    <div class="field-error" id="confirm-password-error"></div>
+
+    <button class="btn-primary" id="change-btn" disabled onclick="doChangePassword()" style="margin-top: 14px;">Actualizar contraseña</button>
   </div>
 
   <!-- ============== SIGNUP CREDENTIALS ============== -->
@@ -2027,6 +2073,82 @@ function doLogin() {
   state.photo = acc.photo || null;
   state.wearables = acc.wearables || [];
   enterAppSimulation('login');
+}
+
+// =============================================
+//  Forgot Password (UI flow)
+//  NOTE: Hasta que conectes Supabase, esto solo simula el envío.
+//  Cuando integremos backend, esta función llamará a:
+//    supabase.auth.resetPasswordForEmail(email, { redirectTo: ... })
+// =============================================
+function validateForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const errorEl = document.getElementById('forgot-email-error');
+  const btn = document.getElementById('forgot-btn');
+  errorEl.textContent = '';
+  document.getElementById('forgot-email').classList.remove('error');
+
+  if (email.length > 0 && !isValidEmail(email)) {
+    errorEl.textContent = 'Email inválido. Formato: tu@email.com';
+    document.getElementById('forgot-email').classList.add('error');
+    btn.disabled = true;
+    return;
+  }
+  btn.disabled = !isValidEmail(email);
+}
+
+function doForgotPassword() {
+  const email = document.getElementById('forgot-email').value.trim();
+  // Mensaje genérico — no revelar si el email existe (security best practice)
+  // En producción con Supabase: await supabase.auth.resetPasswordForEmail(email, {...})
+  const successEl = document.getElementById('forgot-success');
+  successEl.textContent = ''; // limpia children
+  successEl.innerHTML = '<strong>Si esta cuenta existe, recibirás un email en 1-2 minutos.</strong> Revisa también tu spam. El link expira en 1 hora.';
+  successEl.classList.add('show');
+
+  // Oculta el form y deja solo el mensaje
+  document.getElementById('forgot-email').disabled = true;
+  document.getElementById('forgot-btn').disabled = true;
+  document.getElementById('forgot-btn').textContent = '✓ Email enviado';
+
+  // (Solo demo) — Simula que el usuario hizo click en el link del email
+  // y entró a la pantalla de cambiar contraseña
+  setTimeout(() => {
+    document.getElementById('forgot-email').disabled = false;
+    document.getElementById('forgot-btn').disabled = false;
+    document.getElementById('forgot-btn').textContent = 'Enviar link de recuperación';
+    successEl.classList.remove('show');
+  }, 6000);
+}
+
+function validateChangePassword() {
+  const pwd = document.getElementById('new-password').value;
+  const confirm = document.getElementById('confirm-password').value;
+  const errEl = document.getElementById('confirm-password-error');
+  const btn = document.getElementById('change-btn');
+
+  errEl.textContent = '';
+  document.getElementById('confirm-password').classList.remove('error');
+
+  if (confirm.length > 0 && pwd !== confirm) {
+    errEl.textContent = 'Las contraseñas no coinciden.';
+    document.getElementById('confirm-password').classList.add('error');
+    btn.disabled = true;
+    return;
+  }
+  btn.disabled = !(pwd.length >= 8 && pwd === confirm);
+}
+
+function doChangePassword() {
+  // En producción con Supabase: await supabase.auth.updateUser({ password: newPwd })
+  // Y Supabase envía email de confirmación automáticamente
+  const successEl = document.getElementById('change-success');
+  successEl.classList.add('show');
+  document.getElementById('new-password').disabled = true;
+  document.getElementById('confirm-password').disabled = true;
+  document.getElementById('change-btn').disabled = true;
+  document.getElementById('change-btn').textContent = '✓ Contraseña actualizada';
+  setTimeout(() => goStep('login'), 2500);
 }
 
 // =============================================
