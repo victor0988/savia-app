@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#050810">
+<title>SAVIA — Onboarding</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(ellipse at 50% -20%, #0F2A1E 0%, #050810 70%);
+    color: #F8FAFC;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .app-frame {
+    width: 420px;
+    height: 900px;
+    max-height: 96vh;
+    background: #050810;
+    border-radius: 40px;
+    border: 1px solid #1E293B;
+    box-shadow:
+      0 0 0 8px #020306,
+      0 0 80px rgba(16, 185, 129, 0.10),
+      0 30px 100px rgba(0,0,0,0.6);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 500px) {
+    .app-frame {
+      width: 100vw; height: 100vh; max-height: 100vh;
+      border-radius: 0; border: none; box-shadow: none;
+    }
+  }
+
+  .status-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 14px 24px 8px; font-size: 13px; font-weight: 600;
+    color: #F1F5F9; flex-shrink: 0;
+  }
+  .battery { display: flex; align-items: center; gap: 4px; }
+
+  .icon {
+    width: 24px; height: 24px;
+    stroke: currentColor; fill: none;
+    stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+  .icon-sm { width: 18px; height: 18px; }
+  .icon-xl { width: 38px; height: 38px; stroke-width: 1.4; }
+
+  .screen {
+    display: none; flex: 1; flex-direction: column;
+    padding: 16px 28px 28px;
+    overflow-y: auto; overflow-x: hidden;
+  }
+  .screen.active {
+    display: flex;
+    animation: fadeSlide 0.55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .screen::-webkit-scrollbar { display: none; }
+  .screen { scrollbar-width: none; }
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .progress-row {
+    display: flex; gap: 5px;
+    padding-top: 4px; margin-bottom: 40px;
+  }
+  .progress-seg {
+    height: 3px; flex: 1;
+    background: rgba(255,255,255,0.06);
+    border-radius: 2px;
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .progress-seg.active { background: #10B981; }
+  .progress-seg.done { background: rgba(16,185,129,0.35); }
+
+  .q-eyebrow {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1.4px; text-transform: uppercase;
+    color: #34D399; margin-bottom: 12px;
+  }
+  .q-title {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -0.7px; line-height: 1.18;
+    margin-bottom: 12px; color: #F8FAFC;
+  }
+  .q-hint {
+    font-size: 14px; color: #64748B;
+    line-height: 1.5; margin-bottom: 28px;
+  }
+
+  /* Section labels in goals */
+  .section-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: #475569; margin-top: 18px; margin-bottom: 10px;
+    padding-left: 4px;
+  }
+  .section-label:first-of-type { margin-top: 0; }
+
+  /* Feel chips */
+  .feel-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .feel-chip {
+    background: #0D1623;
+    border: 1.5px solid #1E293B;
+    border-radius: 16px;
+    padding: 14px 14px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    min-height: 84px;
+    color: #94A3B8;
+  }
+  .feel-chip:hover {
+    border-color: rgba(16,185,129,0.4);
+    transform: translateY(-1px);
+    color: #CBD5E1;
+  }
+  .feel-chip:active { transform: scale(0.97); }
+  .feel-chip.selected {
+    border-color: #10B981;
+    background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(16,185,129,0.02));
+    box-shadow: 0 0 18px rgba(16,185,129,0.10);
+    color: #34D399;
+  }
+  .feel-chip .label {
+    font-size: 13px; font-weight: 600;
+    color: #F1F5F9; margin-top: auto;
+    line-height: 1.25;
+  }
+
+  /* List cards */
+  .list-card {
+    background: #0D1623;
+    border: 1.5px solid #1E293B;
+    border-radius: 16px;
+    padding: 18px 18px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .list-card:hover { border-color: rgba(16,185,129,0.35); transform: translateY(-1px); }
+  .list-card:active { transform: scale(0.98); }
+  .list-card.selected {
+    border-color: #10B981;
+    background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(16,185,129,0.02));
+  }
+  .list-card .lc-icon {
+    width: 44px; height: 44px; border-radius: 12px;
+    background: rgba(255,255,255,0.04);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; color: #94A3B8;
+    transition: all 0.25s;
+  }
+  .list-card.selected .lc-icon {
+    background: rgba(16,185,129,0.12);
+    color: #34D399;
+  }
+  .list-card .lc-text { flex: 1; min-width: 0; }
+  .list-card .lc-title { font-size: 15px; font-weight: 700; color: #F1F5F9; }
+  .list-card .lc-sub { font-size: 12px; color: #64748B; margin-top: 3px; line-height: 1.4; }
+  .list-card .lc-check {
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 1.5px solid #334155;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .list-card.selected .lc-check {
+    background: #10B981;
+    border-color: #10B981;
+  }
+  .list-card.selected .lc-check::after {
+    content: '';
+    width: 6px; height: 10px;
+    border: solid #050810;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+
+  /* Conflict resolution cards (larger) */
+  .resolve-card {
+    background: #0D1623;
+    border: 1.5px solid #1E293B;
+    border-radius: 18px;
+    padding: 18px 18px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .resolve-card:hover { border-color: rgba(16,185,129,0.35); }
+  .resolve-card:active { transform: scale(0.98); }
+  .resolve-card.selected {
+    border-color: #10B981;
+    background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(16,185,129,0.02));
+  }
+  .resolve-card.recommended {
+    background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(16,185,129,0.01));
+    border-color: rgba(16,185,129,0.25);
+  }
+  .resolve-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 6px;
+  }
+  .resolve-letter {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: rgba(255,255,255,0.06);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 13px;
+    color: #94A3B8;
+    transition: all 0.25s;
+  }
+  .resolve-card.selected .resolve-letter,
+  .resolve-card.recommended .resolve-letter {
+    background: rgba(16,185,129,0.15);
+    color: #34D399;
+  }
+  .resolve-title {
+    font-size: 15px; font-weight: 700;
+    color: #F1F5F9;
+    flex: 1;
+  }
+  .resolve-pill-recommended {
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #34D399;
+    padding: 3px 8px;
+    background: rgba(16,185,129,0.10);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 6px;
+  }
+  .resolve-timeline {
+    font-size: 12px; font-weight: 600;
+    color: #94A3B8;
+    margin-bottom: 8px;
+  }
+  .resolve-body {
+    font-size: 12.5px; color: #64748B;
+    line-height: 1.5;
+  }
+  .resolve-body strong { color: #94A3B8; font-weight: 600; }
+
+  /* Conflict insight banner */
+  .conflict-banner {
+    background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,191,36,0.02));
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 14px;
+    padding: 16px 16px;
+    margin-bottom: 28px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .conflict-banner .cb-icon {
+    color: #FBBF24;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .conflict-banner .cb-text {
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #CBD5E1;
+  }
+  .conflict-banner .cb-text strong {
+    color: #FBBF24;
+    font-weight: 700;
+  }
+
+  /* Continue button */
+  .continue-btn {
+    position: sticky; bottom: 0;
+    background: #10B981; color: #050810;
+    border: none; padding: 17px;
+    border-radius: 16px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer; width: 100%; margin-top: 24px;
+    box-shadow: 0 0 32px rgba(16,185,129,0.35);
+    opacity: 0; pointer-events: none;
+    transform: translateY(8px);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    font-family: inherit;
+    letter-spacing: -0.3px;
+  }
+  .continue-btn.show {
+    opacity: 1; pointer-events: auto; transform: translateY(0);
+  }
+  .continue-btn:active { transform: scale(0.98); }
+
+  /* Splash */
+  .splash { align-items: center; justify-content: space-between; padding-top: 60px; padding-bottom: 40px; }
+  .splash-content {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; width: 100%;
+  }
+  .savia-mark {
+    width: 88px; height: 88px;
+    border-radius: 26px;
+    background: linear-gradient(135deg, #10B981 0%, #064E3B 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 900; font-size: 42px;
+    box-shadow: 0 0 48px rgba(16, 185, 129, 0.35);
+    margin-bottom: 36px;
+    animation: float 4s ease-in-out infinite;
+    letter-spacing: -2px;
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  .splash-title {
+    font-size: 44px; font-weight: 900;
+    letter-spacing: -1.5px; margin-bottom: 14px;
+    background: linear-gradient(180deg, #F8FAFC, #94A3B8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .splash-tag {
+    font-size: 18px;
+    color: #94A3B8;
+    line-height: 1.5;
+    max-width: 300px;
+    margin-bottom: 60px;
+    font-weight: 500;
+    letter-spacing: -0.3px;
+  }
+  .splash-buttons {
+    width: 100%; display: flex;
+    flex-direction: column; gap: 10px;
+  }
+  .btn-primary {
+    background: #10B981; color: #050810;
+    border: none; padding: 17px;
+    border-radius: 16px;
+    font-size: 15px; font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 0 32px rgba(16,185,129,0.35);
+    font-family: inherit;
+    letter-spacing: -0.3px;
+    transition: transform 0.2s;
+    width: 100%;
+  }
+  .btn-primary:active { transform: scale(0.98); }
+  .btn-secondary {
+    background: #0D1623;
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    padding: 17px; border-radius: 16px;
+    font-size: 14.5px; font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: -0.2px;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .btn-secondary:active { transform: scale(0.98); }
+  .btn-secondary:hover { background: #15233B; }
+  .btn-ghost {
+    background: transparent;
+    color: #94A3B8;
+    border: none; padding: 14px;
+    font-size: 13.5px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+  }
+  .btn-ghost:hover { color: #F1F5F9; }
+
+  /* Photo */
+  .photo-circle {
+    width: 130px; height: 130px;
+    border-radius: 50%;
+    background: #0D1623;
+    border: 2px dashed #334155;
+    margin: 0 auto 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative; overflow: hidden;
+    transition: all 0.25s;
+    background-size: cover; background-position: center;
+    color: #475569;
+  }
+  .photo-circle:hover {
+    border-color: #34D399;
+    background-color: rgba(16,185,129,0.05);
+    color: #34D399;
+  }
+  .photo-circle.has-photo {
+    border-style: solid; border-color: #10B981;
+    box-shadow: 0 0 32px rgba(16,185,129,0.2);
+  }
+  .photo-circle.has-photo > svg { display: none; }
+  .photo-input { display: none; }
+  .photo-helper {
+    text-align: center; font-size: 12px;
+    color: #64748B; margin-bottom: 32px;
+  }
+  .field-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 10px; display: block;
+  }
+  .field-input {
+    width: 100%; background: #0D1623;
+    border: 1.5px solid #1E293B;
+    border-radius: 14px;
+    padding: 16px 18px;
+    font-size: 16px; color: #F1F5F9;
+    outline: none; font-family: inherit;
+    transition: all 0.2s;
+    margin-bottom: 18px;
+  }
+  .field-input:focus { border-color: #34D399; background: #15233B; }
+  .field-input::placeholder { color: #475569; }
+
+  /* Calculating */
+  .calc-screen {
+    align-items: center; justify-content: center;
+    padding: 40px 28px; text-align: center;
+  }
+  .calc-pulse {
+    width: 168px; height: 168px;
+    border-radius: 50%;
+    margin-bottom: 36px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .calc-pulse::before,
+  .calc-pulse::after {
+    content: '';
+    position: absolute; inset: 0;
+    border-radius: 50%;
+    border: 2px solid #10B981;
+    animation: ripple 2.4s ease-out infinite;
+  }
+  .calc-pulse::after { animation-delay: 1.2s; }
+  @keyframes ripple {
+    0% { transform: scale(0.6); opacity: 1; }
+    100% { transform: scale(1.4); opacity: 0; }
+  }
+  .calc-pulse-core {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #34D399, #064E3B);
+    box-shadow: 0 0 80px rgba(16,185,129,0.5);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 900;
+    font-size: 38px; z-index: 2;
+    letter-spacing: -2px;
+  }
+  .calc-status {
+    font-size: 14px; color: #CBD5E1;
+    margin-bottom: 8px; min-height: 22px;
+    letter-spacing: 0.6px;
+    font-weight: 500;
+    transition: opacity 0.4s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+  }
+  .calc-dots {
+    display: inline-flex;
+    gap: 2px;
+    margin-left: 4px;
+  }
+  .calc-dots span {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #34D399;
+    opacity: 0.3;
+    animation: pulse-dot 1.4s infinite;
+  }
+  .calc-dots span:nth-child(2) { animation-delay: 0.2s; }
+  .calc-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes pulse-dot {
+    0%, 70%, 100% { opacity: 0.3; transform: scale(1); }
+    35% { opacity: 1; transform: scale(1.2); }
+  }
+
+  /* Calibrating */
+  .calibrating-section {
+    margin-top: 36px;
+    opacity: 0; transform: translateY(8px);
+    transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    width: 100%; max-width: 320px;
+  }
+  .calibrating-section.show { opacity: 1; transform: translateY(0); }
+  .calibrating-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1.6px; text-transform: uppercase;
+    color: #34D399; margin-bottom: 14px;
+    text-align: center;
+  }
+  .calibrating-title {
+    font-size: 22px; font-weight: 800;
+    color: #F8FAFC; margin-bottom: 8px;
+    letter-spacing: -0.5px; text-align: center;
+  }
+  .calibrating-explain {
+    font-size: 13px; color: #64748B;
+    line-height: 1.55; text-align: center;
+    margin-bottom: 24px;
+  }
+  .calibrating-progress {
+    background: #0D1623;
+    border: 1px solid #1E293B;
+    border-radius: 14px;
+    padding: 14px 16px;
+    text-align: left;
+  }
+  .calib-row {
+    display: flex; align-items: center;
+    gap: 12px; padding: 8px 0;
+    color: #94A3B8;
+  }
+  .calib-row + .calib-row { border-top: 1px solid rgba(255,255,255,0.04); }
+  .calib-row .calib-check {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: 1.5px solid #334155;
+    flex-shrink: 0;
+  }
+  .calib-row .calib-text {
+    flex: 1; font-size: 12.5px; font-weight: 500;
+  }
+  .calib-row .calib-days {
+    font-size: 11px; color: #475569; font-weight: 600;
+  }
+
+  /* First Now preview */
+  .now-preview { align-items: stretch; padding: 16px 28px 28px; }
+  .now-preview-content {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; text-align: center;
+    width: 100%;
+  }
+  .now-preview .q-eyebrow {
+    text-align: center; margin-bottom: 14px;
+    margin-top: 16px;
+  }
+  .now-preview .q-title {
+    text-align: center; margin-bottom: 8px;
+    font-size: 26px;
+  }
+  .now-preview .q-hint {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .now-card {
+    background: linear-gradient(180deg, #0D1623, #0A1018);
+    border: 1px solid #1E293B;
+    border-radius: 22px;
+    padding: 24px 20px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  .now-status-row {
+    display: flex; justify-content: space-between;
+    align-items: flex-start; margin-bottom: 18px;
+  }
+  .now-status-l .now-status-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: #64748B; margin-bottom: 4px;
+  }
+  .now-status-l .now-status-state {
+    font-size: 19px; font-weight: 800;
+    color: #F8FAFC; letter-spacing: -0.4px;
+  }
+  .now-status-pill {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase;
+    color: #FBBF24;
+    padding: 5px 11px;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 999px;
+  }
+  .now-decision {
+    font-size: 15.5px; font-weight: 500;
+    color: #CBD5E1; line-height: 1.5;
+    margin-bottom: 18px;
+    letter-spacing: -0.1px;
+    text-align: left;
+  }
+  .now-decision em {
+    color: #34D399; font-style: normal; font-weight: 700;
+  }
+  .now-mini-actions {
+    display: flex; gap: 8px;
+  }
+  .now-mini-actions button {
+    background: rgba(16,185,129,0.08);
+    color: #34D399;
+    border: 1px solid rgba(16,185,129,0.2);
+    padding: 9px 14px;
+    border-radius: 10px;
+    font-size: 12.5px; font-weight: 600;
+    font-family: inherit;
+    pointer-events: none;
+  }
+
+  /* Below the card */
+  .below-preview {
+    width: 100%;
+    margin-top: 26px;
+  }
+  .below-preview-hint {
+    text-align: center;
+    font-size: 12.5px;
+    color: #64748B;
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+  .below-preview-hint strong {
+    color: #94A3B8;
+    font-weight: 600;
+  }
+  .below-preview-buttons {
+    display: flex; flex-direction: column; gap: 10px;
+  }
+
+  .back-btn {
+    background: transparent; border: none;
+    color: #475569; font-size: 22px;
+    padding: 4px 0; cursor: pointer;
+    align-self: flex-start;
+    margin-bottom: 8px;
+    font-family: inherit;
+    transition: color 0.2s; line-height: 1;
+  }
+  .back-btn:hover { color: #94A3B8; }
+
+  .info-link {
+    background: transparent; border: none;
+    color: #475569; font-size: 12px; font-weight: 500;
+    cursor: pointer; font-family: inherit;
+    margin-top: 16px;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .info-link:hover { color: #94A3B8; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <!-- Composición & rendimiento -->
+    <symbol id="i-fatloss" viewBox="0 0 24 24">
+      <path d="M12 4v14"/>
+      <path d="M7 13l5 5 5-5"/>
+      <line x1="5" y1="22" x2="19" y2="22"/>
+    </symbol>
+    <symbol id="i-muscle" viewBox="0 0 24 24">
+      <path d="M6.5 7.5h11M5 10.5h14M5 13.5h14M6.5 16.5h11"/>
+      <line x1="3" y1="10.5" x2="3" y2="13.5"/>
+      <line x1="21" y1="10.5" x2="21" y2="13.5"/>
+    </symbol>
+    <symbol id="i-performance" viewBox="0 0 24 24">
+      <polyline points="3 17 9 11 13 15 21 7"/>
+      <polyline points="14 7 21 7 21 14"/>
+    </symbol>
+    <symbol id="i-recovery" viewBox="0 0 24 24">
+      <path d="M21 12c0 5-4 9-9 9s-9-4-9-9 4-9 9-9c2 0 4 1 5 2"/>
+      <polyline points="21 5 21 12 14 12"/>
+    </symbol>
+
+    <!-- Bienestar diario -->
+    <symbol id="i-energy" viewBox="0 0 24 24">
+      <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+    </symbol>
+    <symbol id="i-sleep" viewBox="0 0 24 24">
+      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </symbol>
+    <symbol id="i-stress" viewBox="0 0 24 24">
+      <path d="M2 7c2 0 2 2 4 2s2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2"/>
+      <path d="M2 13c2 0 2 2 4 2s2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2"/>
+      <path d="M2 19c2 0 2 2 4 2s2-2 4-2 2 2 4 2 2-2 4-2 2 2 4 2"/>
+    </symbol>
+    <symbol id="i-focus" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <circle cx="12" cy="12" r="5"/>
+      <circle cx="12" cy="12" r="1.5"/>
+    </symbol>
+
+    <!-- Salud profunda -->
+    <symbol id="i-longevity" viewBox="0 0 24 24">
+      <path d="M3 12h4l2-7 4 14 3-8 2 1h3"/>
+    </symbol>
+    <symbol id="i-hormonal" viewBox="0 0 24 24">
+      <path d="M5 3c5 0 9 4 9 9s4 9 9 9"/>
+      <path d="M5 21c5 0 9-4 9-9s4-9 9-9"/>
+      <path d="M5 3h14"/>
+      <path d="M5 21h14"/>
+    </symbol>
+    <symbol id="i-metabolic" viewBox="0 0 24 24">
+      <path d="M12 2c0 4-3 6-3 10a3 3 0 0 0 6 0c0-2 1-3 1-5 0 4 2 5 2 8 0 4-4 7-6 7s-6-3-6-7c0-5 6-9 6-13z"/>
+    </symbol>
+    <symbol id="i-aesthetic" viewBox="0 0 24 24">
+      <path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/>
+      <path d="M19 3v3M21 4.5h-3"/>
+      <path d="M5 18v2M6 19h-2"/>
+    </symbol>
+
+    <!-- Levels -->
+    <symbol id="i-starter" viewBox="0 0 24 24">
+      <path d="M12 22V12"/>
+      <path d="M12 12C12 8 14 4 19 4c0 4-3 7-7 8z"/>
+      <path d="M12 14C12 11 10 7 5 7c0 4 3 7 7 7z"/>
+      <line x1="5" y1="22" x2="19" y2="22"/>
+    </symbol>
+    <symbol id="i-familiar" viewBox="0 0 24 24">
+      <line x1="5" y1="20" x2="5" y2="14"/>
+      <line x1="12" y1="20" x2="12" y2="8"/>
+      <line x1="19" y1="20" x2="19" y2="11"/>
+    </symbol>
+    <symbol id="i-advanced" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="2"/>
+      <ellipse cx="12" cy="12" rx="10" ry="4"/>
+      <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(60 12 12)"/>
+      <ellipse cx="12" cy="12" rx="10" ry="4" transform="rotate(120 12 12)"/>
+    </symbol>
+
+    <!-- Wearables -->
+    <symbol id="i-whoop" viewBox="0 0 24 24">
+      <rect x="3" y="9" width="18" height="6" rx="3"/>
+      <line x1="9" y1="9" x2="9" y2="15"/>
+      <line x1="15" y1="9" x2="15" y2="15"/>
+    </symbol>
+    <symbol id="i-oura" viewBox="0 0 24 24">
+      <circle cx="12" cy="13" r="6"/>
+      <line x1="9" y1="7" x2="15" y2="7"/>
+    </symbol>
+    <symbol id="i-apple" viewBox="0 0 24 24">
+      <rect x="7" y="6" width="10" height="12" rx="2"/>
+      <line x1="9" y1="2" x2="15" y2="2"/>
+      <line x1="9" y1="22" x2="15" y2="22"/>
+      <line x1="19" y1="10" x2="19" y2="14"/>
+    </symbol>
+    <symbol id="i-garmin" viewBox="0 0 24 24">
+      <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+    </symbol>
+    <symbol id="i-none" viewBox="0 0 24 24">
+      <path d="M18 11V6a2 2 0 0 0-4 0v5"/>
+      <path d="M14 10V4a2 2 0 0 0-4 0v6"/>
+      <path d="M10 10.5V6a2 2 0 0 0-4 0v8"/>
+      <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+    </symbol>
+
+    <!-- Misc -->
+    <symbol id="i-camera" viewBox="0 0 24 24">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24">
+      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+      <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="app-frame">
+
+  <div class="status-bar">
+    <span id="time-display">9:24</span>
+    <div class="battery">
+      <span style="font-size:11px;">100%</span>
+      <span style="display:inline-block; width:22px; height:11px; border:1px solid #F1F5F9; border-radius:2px; position:relative;">
+        <span style="display:block; position:absolute; left:1px; top:1px; bottom:1px; width:18px; background:#34D399; border-radius:1px;"></span>
+      </span>
+    </div>
+  </div>
+
+  <!-- ============== SPLASH ============== -->
+  <div class="screen splash active" data-step="0">
+    <div class="splash-content">
+      <div class="savia-mark">S</div>
+      <div class="splash-title">SAVIA</div>
+      <div class="splash-tag">Tu cuerpo, entendido.</div>
+    </div>
+    <div class="splash-buttons">
+      <button class="btn-primary" onclick="goStep(1)">Comenzar</button>
+      <button class="btn-ghost" onclick="alert('Login con cuenta existente')">Ya tengo cuenta</button>
+    </div>
+  </div>
+
+  <!-- ============== Q1: Objetivos (12 opciones agrupadas) ============== -->
+  <div class="screen" data-step="1">
+    <button class="back-btn" onclick="goStep(0)">‹</button>
+    <div class="progress-row">
+      <div class="progress-seg active"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+
+    <div class="q-eyebrow">Pregunta 1 de 4</div>
+    <div class="q-title">¿Qué quieres optimizar?</div>
+    <div class="q-hint">Elige uno o varios. Si hay tensión entre tus objetivos, la resolvemos en el siguiente paso.</div>
+
+    <div class="section-label">Composición y rendimiento</div>
+    <div class="feel-grid">
+      <div class="feel-chip" data-goal="fat-loss" onclick="toggleGoal(this, 'fat-loss')">
+        <svg class="icon"><use href="#i-fatloss"/></svg>
+        <div class="label">Perder grasa</div>
+      </div>
+      <div class="feel-chip" data-goal="muscle-gain" onclick="toggleGoal(this, 'muscle-gain')">
+        <svg class="icon"><use href="#i-muscle"/></svg>
+        <div class="label">Aumentar músculo</div>
+      </div>
+      <div class="feel-chip" data-goal="performance" onclick="toggleGoal(this, 'performance')">
+        <svg class="icon"><use href="#i-performance"/></svg>
+        <div class="label">Rendimiento atlético</div>
+      </div>
+      <div class="feel-chip" data-goal="recovery" onclick="toggleGoal(this, 'recovery')">
+        <svg class="icon"><use href="#i-recovery"/></svg>
+        <div class="label">Recuperación</div>
+      </div>
+    </div>
+
+    <div class="section-label">Bienestar diario</div>
+    <div class="feel-grid">
+      <div class="feel-chip" data-goal="energy" onclick="toggleGoal(this, 'energy')">
+        <svg class="icon"><use href="#i-energy"/></svg>
+        <div class="label">Más energía</div>
+      </div>
+      <div class="feel-chip" data-goal="sleep" onclick="toggleGoal(this, 'sleep')">
+        <svg class="icon"><use href="#i-sleep"/></svg>
+        <div class="label">Mejor sueño</div>
+      </div>
+      <div class="feel-chip" data-goal="stress" onclick="toggleGoal(this, 'stress')">
+        <svg class="icon"><use href="#i-stress"/></svg>
+        <div class="label">Menos estrés</div>
+      </div>
+      <div class="feel-chip" data-goal="focus" onclick="toggleGoal(this, 'focus')">
+        <svg class="icon"><use href="#i-focus"/></svg>
+        <div class="label">Foco mental</div>
+      </div>
+    </div>
+
+    <div class="section-label">Salud profunda</div>
+    <div class="feel-grid">
+      <div class="feel-chip" data-goal="longevity" onclick="toggleGoal(this, 'longevity')">
+        <svg class="icon"><use href="#i-longevity"/></svg>
+        <div class="label">Longevidad</div>
+      </div>
+      <div class="feel-chip" data-goal="hormonal" onclick="toggleGoal(this, 'hormonal')">
+        <svg class="icon"><use href="#i-hormonal"/></svg>
+        <div class="label">Salud hormonal</div>
+      </div>
+      <div class="feel-chip" data-goal="metabolic" onclick="toggleGoal(this, 'metabolic')">
+        <svg class="icon"><use href="#i-metabolic"/></svg>
+        <div class="label">Salud metabólica</div>
+      </div>
+      <div class="feel-chip" data-goal="aesthetic" onclick="toggleGoal(this, 'aesthetic')">
+        <svg class="icon"><use href="#i-aesthetic"/></svg>
+        <div class="label">Verme mejor</div>
+      </div>
+    </div>
+
+    <button class="continue-btn" id="continue-1" onclick="afterQ1()">Continuar</button>
+  </div>
+
+  <!-- ============== Q1.5: Conflict Resolution (fat loss + muscle gain) ============== -->
+  <div class="screen" data-step="1.5">
+    <button class="back-btn" onclick="goStep(1)">‹</button>
+    <div class="progress-row">
+      <div class="progress-seg active"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+
+    <div class="q-eyebrow">Resolviendo tensión · Pregunta 1.5</div>
+    <div class="q-title">Grasa y músculo no se llevan bien juntos.</div>
+    <div class="q-hint">Perder grasa requiere déficit calórico. Ganar músculo requiere superávit. Tienes tres caminos serios:</div>
+
+    <div class="conflict-banner">
+      <svg class="icon icon-sm cb-icon"><use href="#i-alert"/></svg>
+      <div class="cb-text">
+        <strong>No se puede maximizar ambos al mismo tiempo.</strong> Hacerlo simultáneo es posible, pero más lento. Elige tu camino y SAVIA lo respeta.
+      </div>
+    </div>
+
+    <div class="resolve-card recommended" onclick="selectResolution(this, 'recomp')">
+      <div class="resolve-head">
+        <div class="resolve-letter">A</div>
+        <div class="resolve-title">Body recomp</div>
+        <div class="resolve-pill-recommended">Recomendado</div>
+      </div>
+      <div class="resolve-timeline">Avance lento en ambos · 6–12 meses</div>
+      <div class="resolve-body">
+        Mantenimiento calórico con timing inteligente. Pierdes grasa y ganas músculo al mismo tiempo, pero a 30–40% del ritmo de cada uno en aislado. <strong>Mejor para principiantes, mujeres en fase luteal, o regreso al entrenamiento.</strong>
+      </div>
+    </div>
+
+    <div class="resolve-card" onclick="selectResolution(this, 'cut-first')">
+      <div class="resolve-head">
+        <div class="resolve-letter">B</div>
+        <div class="resolve-title">Cut primero · luego bulk</div>
+      </div>
+      <div class="resolve-timeline">3 meses pérdida → 6 meses músculo</div>
+      <div class="resolve-body">
+        Déficit calórico moderado por 3 meses (resultados visibles rápido). Luego superávit controlado para construir músculo sin recuperar grasa. <strong>Mejor si tu body fat actual es alto (>20% hombre, >28% mujer).</strong>
+      </div>
+    </div>
+
+    <div class="resolve-card" onclick="selectResolution(this, 'bulk-first')">
+      <div class="resolve-head">
+        <div class="resolve-letter">C</div>
+        <div class="resolve-title">Bulk primero · luego cut</div>
+      </div>
+      <div class="resolve-timeline">6 meses músculo → 3 meses pérdida</div>
+      <div class="resolve-body">
+        Superávit calórico moderado por 6 meses, aceptas algo de grasa temporal. Luego cut limpio. <strong>Mejor si eres delgado, novato en fuerza, y la masa muscular es tu prioridad real.</strong>
+      </div>
+    </div>
+
+    <button class="continue-btn" id="continue-15" onclick="goStep(2)">Continuar</button>
+  </div>
+
+  <!-- ============== Q2: ¿Cuánto te conoces? ============== -->
+  <div class="screen" data-step="2">
+    <button class="back-btn" onclick="backFromQ2()">‹</button>
+    <div class="progress-row">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg active"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+
+    <div class="q-eyebrow">Pregunta 2 de 4</div>
+    <div class="q-title">¿Cuánto te conoces ahora?</div>
+    <div class="q-hint">Define qué tan profundo arrancamos. Puedes cambiarlo después.</div>
+
+    <div class="list-card" onclick="selectLevel(this, 'empezando')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-starter"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Empezando</div>
+        <div class="lc-sub">Quiero cuidarme mejor, sin rutina ni data aún</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <div class="list-card" onclick="selectLevel(this, 'familiar')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-familiar"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Familiar</div>
+        <div class="lc-sub">Uso wearable, peso ocasional, entreno con cierta consistencia</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <div class="list-card" onclick="selectLevel(this, 'avanzado')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-advanced"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Avanzado</div>
+        <div class="lc-sub">Biomarkers, HRV, macros — quiero ir al siguiente nivel</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <button class="continue-btn" id="continue-2" onclick="goStep(3)">Continuar</button>
+  </div>
+
+  <!-- ============== Q3: ¿Tienes wearable? ============== -->
+  <div class="screen" data-step="3">
+    <button class="back-btn" onclick="goStep(2)">‹</button>
+    <div class="progress-row">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg active"></div>
+      <div class="progress-seg"></div>
+    </div>
+
+    <div class="q-eyebrow">Pregunta 3 de 4</div>
+    <div class="q-title">¿Tienes un wearable activo?</div>
+    <div class="q-hint">Conectarlo nos ahorra 50+ preguntas. SAVIA aprende en background.</div>
+
+    <div class="list-card" onclick="selectWearable(this, 'whoop')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-whoop"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Whoop</div>
+        <div class="lc-sub">Sincroniza HRV, strain, recovery, sueño</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <div class="list-card" onclick="selectWearable(this, 'oura')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-oura"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Oura Ring</div>
+        <div class="lc-sub">Sueño, temperatura, readiness, HRV</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <div class="list-card" onclick="selectWearable(this, 'apple')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-apple"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Apple Watch</div>
+        <div class="lc-sub">Apple Health — vitales, workouts, sueño, ciclo</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <div class="list-card" onclick="selectWearable(this, 'garmin')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-garmin"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Garmin</div>
+        <div class="lc-sub">Performance, training load, VO2 max</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <div class="list-card" onclick="selectWearable(this, 'ninguno')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-none"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">No tengo wearable</div>
+        <div class="lc-sub">Empezamos con check-ins manuales — puedes añadir uno después</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <button class="continue-btn" id="continue-3" onclick="goStep(4)">Continuar</button>
+  </div>
+
+  <!-- ============== Q4: Nombre + Foto ============== -->
+  <div class="screen" data-step="4">
+    <button class="back-btn" onclick="goStep(3)">‹</button>
+    <div class="progress-row">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg done"></div>
+      <div class="progress-seg active"></div>
+    </div>
+
+    <div class="q-eyebrow">Última pregunta</div>
+    <div class="q-title">Pongámosle cara y nombre a tu SAVIA.</div>
+    <div class="q-hint">Foto opcional. Tu data nunca sale de tu cohort.</div>
+
+    <input type="file" id="photo-input" class="photo-input" accept="image/*">
+    <div class="photo-circle" id="photo-zone" onclick="document.getElementById('photo-input').click()">
+      <svg class="icon icon-xl"><use href="#i-camera"/></svg>
+    </div>
+    <div class="photo-helper">Toca para subir foto</div>
+
+    <label class="field-label">Tu nombre</label>
+    <input type="text" id="name-input" class="field-input" placeholder="Ej: Victor" oninput="validateNameStep()"/>
+
+    <label class="field-label">Email</label>
+    <input type="email" id="email-input" class="field-input" placeholder="tu@email.com" oninput="validateNameStep()"/>
+
+    <button class="continue-btn" id="continue-4" onclick="startCalculation()">Crear mi SAVIA</button>
+  </div>
+
+  <!-- ============== Calibrando ============== -->
+  <div class="screen calc-screen" data-step="5">
+    <div class="calc-pulse">
+      <div class="calc-pulse-core">S</div>
+    </div>
+    <div class="calc-status" id="calc-status">
+      <span>Calibrando</span>
+      <span class="calc-dots"><span></span><span></span><span></span></span>
+    </div>
+
+    <div class="calibrating-section" id="calibrating-section">
+      <div class="calibrating-label">Wellness Quotient</div>
+      <div class="calibrating-title">Calibrando · 0 de 7 días</div>
+      <div class="calibrating-explain">
+        Tu WQ se construye con tus señales reales — no con estimaciones. Necesitamos 7 días de data para generar un número honesto.
+      </div>
+
+      <div class="calibrating-progress">
+        <div class="calib-row">
+          <div class="calib-check"></div>
+          <div class="calib-text">HRV en reposo</div>
+          <div class="calib-days">7 días</div>
+        </div>
+        <div class="calib-row">
+          <div class="calib-check"></div>
+          <div class="calib-text">Calidad del sueño</div>
+          <div class="calib-days">5 noches</div>
+        </div>
+        <div class="calib-row">
+          <div class="calib-check"></div>
+          <div class="calib-text">Check-ins de energía</div>
+          <div class="calib-days">3 días</div>
+        </div>
+        <div class="calib-row">
+          <div class="calib-check"></div>
+          <div class="calib-text">Carga de entrenamiento</div>
+          <div class="calib-days">3 sesiones</div>
+        </div>
+      </div>
+
+      <button class="info-link" onclick="showWQExplain()">Cómo se calcula el WQ →</button>
+    </div>
+  </div>
+
+  <!-- ============== First Now Preview + entry choice ============== -->
+  <div class="screen now-preview" data-step="6">
+    <div class="now-preview-content">
+      <div class="q-eyebrow">Bienvenido a SAVIA</div>
+      <div class="q-title">Tu SAVIA está lista, <span id="welcome-name">Victor</span>.</div>
+      <div class="q-hint">Así se verá tu Now Screen.</div>
+
+      <div class="now-card">
+        <div class="now-status-row">
+          <div class="now-status-l">
+            <div class="now-status-label">Hoy</div>
+            <div class="now-status-state">Día 1 de calibración</div>
+          </div>
+          <div class="now-status-pill">Aprendiendo</div>
+        </div>
+
+        <div class="now-decision">
+          Para empezar: <em>registra tu primer check-in</em>. Te tomará 30 segundos.
+        </div>
+
+        <div class="now-mini-actions">
+          <button>Check-in</button>
+          <button>Por qué</button>
+        </div>
+      </div>
+
+      <div class="below-preview">
+        <div class="below-preview-hint">
+          El check-in toma 30 segundos y es lo que vuelve a SAVIA precisa contigo. <strong>Sin él, las recomendaciones son genéricas.</strong> Puedes hacerlo ahora o cuando quieras — no hay presión.
+        </div>
+        <div class="below-preview-buttons">
+          <button class="btn-primary" onclick="enterWithCheckin()">Entrar y hacer check-in</button>
+          <button class="btn-secondary" onclick="enterExplore()">Solo explorar por ahora</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const state = {
+  step: 0,
+  goals: [],         // array of selected goal ids
+  resolution: null,  // 'recomp' | 'cut-first' | 'bulk-first' | null
+  level: '',
+  wearable: '',
+  name: '',
+  email: '',
+  photo: null,
+  exploreFirst: false,
+};
+
+function goStep(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = document.querySelector(`[data-step="${n}"]`);
+  if (target) {
+    target.classList.add('active');
+    target.scrollTop = 0;
+  }
+  state.step = n;
+}
+
+// =============================================
+//  Q1: Goal selection with conflict detection
+// =============================================
+function toggleGoal(chip, value) {
+  if (state.goals.includes(value)) {
+    state.goals = state.goals.filter(v => v !== value);
+    chip.classList.remove('selected');
+  } else {
+    state.goals.push(value);
+    chip.classList.add('selected');
+  }
+  document.getElementById('continue-1').classList.toggle('show', state.goals.length > 0);
+}
+
+function hasConflict() {
+  return state.goals.includes('fat-loss') && state.goals.includes('muscle-gain');
+}
+
+function afterQ1() {
+  if (hasConflict()) {
+    // reset resolution if user changes goals
+    state.resolution = null;
+    document.querySelectorAll('[data-step="1.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('continue-15').classList.remove('show');
+    goStep(1.5);
+  } else {
+    goStep(2);
+  }
+}
+
+function selectResolution(card, value) {
+  document.querySelectorAll('[data-step="1.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.resolution = value;
+  document.getElementById('continue-15').classList.add('show');
+}
+
+function backFromQ2() {
+  if (hasConflict()) goStep(1.5);
+  else goStep(1);
+}
+
+// =============================================
+//  Q2: Level
+// =============================================
+function selectLevel(card, value) {
+  document.querySelectorAll('[data-step="2"] .list-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.level = value;
+  document.getElementById('continue-2').classList.add('show');
+  setTimeout(() => goStep(3), 420);
+}
+
+// =============================================
+//  Q3: Wearable
+// =============================================
+function selectWearable(card, value) {
+  document.querySelectorAll('[data-step="3"] .list-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.wearable = value;
+  document.getElementById('continue-3').classList.add('show');
+  setTimeout(() => goStep(4), 420);
+}
+
+// =============================================
+//  Q4: Photo + name
+// =============================================
+document.getElementById('photo-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    state.photo = evt.target.result;
+    const zone = document.getElementById('photo-zone');
+    zone.style.backgroundImage = `url(${evt.target.result})`;
+    zone.classList.add('has-photo');
+  };
+  reader.readAsDataURL(file);
+});
+
+function validateNameStep() {
+  const name = document.getElementById('name-input').value.trim();
+  const email = document.getElementById('email-input').value.trim();
+  const valid = name.length >= 2 && email.includes('@');
+  document.getElementById('continue-4').classList.toggle('show', valid);
+  state.name = name;
+  state.email = email;
+}
+
+// =============================================
+//  Calibrating
+// =============================================
+function startCalculation() {
+  goStep(5);
+  // Calibrando con dots animados (CSS) por un momento, luego revela el detalle
+  setTimeout(() => {
+    revealCalibrating();
+  }, 2400);
+}
+
+function getWearableName() {
+  const map = { whoop: 'Whoop', oura: 'Oura Ring', apple: 'Apple Health', garmin: 'Garmin' };
+  return map[state.wearable] || 'wearable';
+}
+function getLevelLabel() {
+  const map = { empezando: 'Empezando', familiar: 'Familiar', avanzado: 'Avanzado' };
+  return map[state.level] || '';
+}
+function getResolutionLabel() {
+  const map = {
+    'recomp': 'Body recomp',
+    'cut-first': 'Cut → Bulk',
+    'bulk-first': 'Bulk → Cut',
+  };
+  return map[state.resolution] || '';
+}
+
+function revealCalibrating() {
+  document.getElementById('calibrating-section').classList.add('show');
+  setTimeout(() => {
+    document.getElementById('welcome-name').textContent = state.name.split(' ')[0] || 'Victor';
+    goStep(6);
+  }, 2200);
+}
+
+function showWQExplain() {
+  alert(
+    'Cómo se calcula el Wellness Quotient (WQ)\n\n' +
+    'El WQ es una síntesis ponderada de tus señales reales, calibrada a TU baseline (no a promedios poblacionales).\n\n' +
+    'Componentes principales:\n\n' +
+    '· Recovery (HRV en reposo, comparado con tu propio baseline de 30 días)\n' +
+    '· Sleep quality (sueño profundo + REM + eficiencia + latencia)\n' +
+    '· Strain balance (ACWR — ratio carga aguda vs crónica, ideal ≈ 1.0)\n' +
+    '· Subjective (energía, ánimo, estrés — autoreportados en check-ins)\n' +
+    '· Resting HR trend (tendencia de 7 días)\n\n' +
+    'Cada usuario tiene un modelo bayesiano único. Lo que predice bien para ti puede no predecir bien para otro. Por eso los primeros 7 días son críticos.\n\n' +
+    'Zonas: <45 Caution · 45-64 Recover · 65-84 Steady · 85+ Apex'
+  );
+}
+
+// =============================================
+//  Entry: check-in vs explore
+// =============================================
+function enterWithCheckin() {
+  state.exploreFirst = false;
+  alert(
+    `Perfecto, ${state.name.split(' ')[0]}.\n\n` +
+    `Te llevamos al check-in (30 seg).\n\n` +
+    `Después de eso, tu WQ empieza a calibrarse con data real.`
+  );
+}
+
+function enterExplore() {
+  state.exploreFirst = true;
+  alert(
+    `Te llevamos al app, ${state.name.split(' ')[0]}.\n\n` +
+    `Vas a ver estados "calibrando" en las recomendaciones — es normal hasta que hagas tu primer check-in.\n\n` +
+    `Cuando llegues a una decisión que necesite tu data, SAVIA te lo pedirá ahí. Sin presión.`
+  );
+}
+
+// =============================================
+//  Time
+// =============================================
+function updateTime() {
+  const now = new Date();
+  const hh = now.getHours();
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const period = hh >= 12 ? 'pm' : 'am';
+  const h12 = ((hh + 11) % 12 + 1);
+  document.getElementById('time-display').textContent = `${h12}:${mm} ${period}`;
+}
+updateTime();
+setInterval(updateTime, 30000);
+</script>
+</body>
+</html>
