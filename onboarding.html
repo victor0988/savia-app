@@ -818,6 +818,224 @@
   }
   .info-link:hover { color: #94A3B8; }
 
+  /* ===== App simulated screen ===== */
+  .app-screen {
+    padding: 0;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+  }
+  .app-topbar {
+    padding: 18px 22px 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #1E293B;
+    flex-shrink: 0;
+  }
+  .app-user-block {
+    display: flex; gap: 12px; align-items: center;
+  }
+  .app-avatar {
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #10B981, #064E3B);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 14px;
+    flex-shrink: 0;
+    border: 1px solid rgba(16,185,129,0.3);
+  }
+  .app-greeting {
+    font-size: 15px; font-weight: 700;
+    color: #F1F5F9;
+    letter-spacing: -0.2px;
+    line-height: 1.1;
+  }
+  .app-subgreeting {
+    font-size: 11px; color: #64748B;
+    margin-top: 3px;
+    font-weight: 500;
+  }
+  .app-logout-btn {
+    background: transparent; border: none;
+    color: #64748B; cursor: pointer;
+    padding: 10px; border-radius: 10px;
+    transition: all 0.2s;
+    font-family: inherit;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .app-logout-btn:hover {
+    background: rgba(255,255,255,0.04);
+    color: #F87171;
+  }
+  .app-logout-btn:active { transform: scale(0.95); }
+  .app-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 22px 22px 32px;
+  }
+  .app-content::-webkit-scrollbar { display: none; }
+
+  .app-wq-card {
+    background: linear-gradient(180deg, #0D1623, #0A1018);
+    border: 1px solid #1E293B;
+    border-radius: 22px;
+    padding: 24px 22px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .app-wq-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.4px; text-transform: uppercase;
+    color: #64748B; margin-bottom: 12px;
+  }
+  .app-wq-state {
+    font-size: 28px; font-weight: 800;
+    color: #F8FAFC; letter-spacing: -0.7px;
+    margin-bottom: 18px;
+  }
+  .app-wq-progress {
+    height: 6px; background: #1E293B;
+    border-radius: 3px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .app-wq-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10B981, #34D399);
+    border-radius: 3px;
+    transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .app-wq-day {
+    font-size: 11px; color: #34D399;
+    font-weight: 600; letter-spacing: 0.5px;
+  }
+
+  .app-now-card {
+    background: #0D1623;
+    border: 1px solid #1E293B;
+    border-radius: 18px;
+    padding: 22px 20px;
+    margin-bottom: 14px;
+  }
+  .app-now-label {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    color: #34D399; margin-bottom: 10px;
+  }
+  .app-now-decision {
+    font-size: 15px; color: #CBD5E1;
+    line-height: 1.5;
+    margin-bottom: 16px;
+    letter-spacing: -0.1px;
+  }
+  .app-now-decision em {
+    color: #34D399; font-style: normal; font-weight: 700;
+  }
+  .app-now-action {
+    background: #10B981; color: #050810;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 13.5px; font-weight: 700;
+    cursor: pointer; font-family: inherit;
+    letter-spacing: -0.2px;
+    box-shadow: 0 0 20px rgba(16,185,129,0.2);
+  }
+  .app-now-action:active { transform: scale(0.97); }
+
+  .app-section-title {
+    font-size: 10px; font-weight: 700;
+    letter-spacing: 1.4px; text-transform: uppercase;
+    color: #475569;
+    margin: 22px 0 10px 4px;
+  }
+
+  .app-feature-card {
+    background: #0D1623;
+    border: 1px solid #1E293B;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: #94A3B8;
+  }
+  .app-feature-icon {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: rgba(16,185,129,0.08);
+    display: flex; align-items: center; justify-content: center;
+    color: #34D399;
+    flex-shrink: 0;
+  }
+  .app-feature-text {
+    flex: 1; min-width: 0;
+  }
+  .app-feature-title {
+    font-size: 13px; font-weight: 600;
+    color: #E2E8F0;
+  }
+  .app-feature-sub {
+    font-size: 11.5px;
+    color: #64748B;
+    margin-top: 2px;
+    line-height: 1.4;
+  }
+  .app-feature-pill {
+    font-size: 10px; font-weight: 700;
+    color: #FBBF24;
+    padding: 4px 8px;
+    background: rgba(251,191,36,0.08);
+    border: 1px solid rgba(251,191,36,0.25);
+    border-radius: 999px;
+    letter-spacing: 0.5px;
+  }
+
+  .app-prototype-note {
+    text-align: center;
+    font-size: 11.5px;
+    color: #475569;
+    padding: 20px 16px 6px;
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  /* Inline messages (replacing alerts) */
+  .inline-message {
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  .inline-message.show { display: block; }
+  .inline-message.info {
+    background: rgba(96,165,250,0.06);
+    border: 1px solid rgba(96,165,250,0.25);
+    color: #93C5FD;
+  }
+  .inline-message.error {
+    background: rgba(248,113,113,0.06);
+    border: 1px solid rgba(248,113,113,0.25);
+    color: #FCA5A5;
+  }
+  .inline-message.warn {
+    background: rgba(251,191,36,0.06);
+    border: 1px solid rgba(251,191,36,0.25);
+    color: #FDE68A;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -993,6 +1211,11 @@
     <symbol id="i-check" viewBox="0 0 24 24">
       <polyline points="20 6 9 17 4 12"/>
     </symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24">
+      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+      <polyline points="16 17 21 12 16 7"/>
+      <line x1="21" y1="12" x2="9" y2="12"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -1016,9 +1239,16 @@
       <div class="splash-tag">Tu cuerpo, entendido.</div>
     </div>
     <div class="splash-buttons">
-      <button class="btn-primary" onclick="goStep('signup')">Crear cuenta</button>
-      <button class="btn-secondary" onclick="goStep('login')">Iniciar sesión</button>
-      <button class="btn-ghost" onclick="resetAll()" style="opacity: 0.5; font-size: 11px; padding: 8px;">Reiniciar cuenta (testing)</button>
+      <div class="inline-message warn" id="reset-confirm" style="margin-bottom: 0;">
+        ¿Borrar cuenta y biometría de este dispositivo?
+        <div style="display:flex; gap:8px; margin-top:10px;">
+          <button class="btn-primary" style="flex:1; padding:10px; font-size:13px; box-shadow:none;" onclick="confirmReset()">Sí, borrar</button>
+          <button class="btn-secondary" style="flex:1; padding:10px; font-size:13px;" onclick="cancelReset()">Cancelar</button>
+        </div>
+      </div>
+      <button class="btn-primary" id="btn-signup" onclick="goStep('signup')">Crear cuenta</button>
+      <button class="btn-secondary" id="btn-login" onclick="goStep('login')">Iniciar sesión</button>
+      <button class="btn-ghost" id="btn-reset" onclick="askReset()" style="opacity: 0.5; font-size: 11px; padding: 8px;">Reiniciar cuenta (testing)</button>
     </div>
   </div>
 
@@ -1570,6 +1800,76 @@
     </div>
   </div>
 
+  <!-- ============== App (simulated) ============== -->
+  <div class="screen app-screen" data-step="app">
+    <div class="app-topbar">
+      <div class="app-user-block">
+        <div class="app-avatar" id="app-avatar"></div>
+        <div>
+          <div class="app-greeting" id="app-greeting">Hola</div>
+          <div class="app-subgreeting" id="app-subgreeting">Día 1 de calibración</div>
+        </div>
+      </div>
+      <button class="app-logout-btn" onclick="logout()" title="Cerrar sesión">
+        <svg class="icon icon-sm"><use href="#i-logout"/></svg>
+      </button>
+    </div>
+
+    <div class="app-content">
+      <div class="inline-message info" id="app-intro-msg"></div>
+
+      <div class="app-wq-card">
+        <div class="app-wq-label">Wellness Quotient</div>
+        <div class="app-wq-state">Calibrando</div>
+        <div class="app-wq-progress">
+          <div class="app-wq-bar" id="app-wq-bar" style="width: 14%"></div>
+        </div>
+        <div class="app-wq-day">Día 1 de 7</div>
+      </div>
+
+      <div class="app-now-card">
+        <div class="app-now-label">Para hoy</div>
+        <div class="app-now-decision" id="app-now-decision">
+          Tu primer <em>check-in</em> toma 30 segundos y empieza tu calibración. Sin él, las recomendaciones son genéricas.
+        </div>
+        <button class="app-now-action">Hacer check-in</button>
+      </div>
+
+      <div class="app-section-title">En esta versión final</div>
+
+      <div class="app-feature-card">
+        <div class="app-feature-icon"><svg class="icon icon-sm"><use href="#i-energy"/></svg></div>
+        <div class="app-feature-text">
+          <div class="app-feature-title">Decisión del momento</div>
+          <div class="app-feature-sub">SAVIA actualiza tu Now Screen 4 veces al día</div>
+        </div>
+        <div class="app-feature-pill">Próximo</div>
+      </div>
+
+      <div class="app-feature-card">
+        <div class="app-feature-icon"><svg class="icon icon-sm"><use href="#i-whoop"/></svg></div>
+        <div class="app-feature-text">
+          <div class="app-feature-title">Wearables sincronizados</div>
+          <div class="app-feature-sub" id="app-wearables-sub">Whoop, Oura, Apple Watch · auto-sync</div>
+        </div>
+        <div class="app-feature-pill">Próximo</div>
+      </div>
+
+      <div class="app-feature-card">
+        <div class="app-feature-icon"><svg class="icon icon-sm"><use href="#i-focus"/></svg></div>
+        <div class="app-feature-text">
+          <div class="app-feature-title">Ask SAVIA</div>
+          <div class="app-feature-sub">Pregunta y recibe respuestas con tu data + literatura</div>
+        </div>
+        <div class="app-feature-pill">Próximo</div>
+      </div>
+
+      <div class="app-prototype-note">
+        Prototipo en construcción · esta es la entrada a tu SAVIA real
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -1677,7 +1977,9 @@ function doSignup() {
     }));
   } catch (e) {
     console.warn('Storage error en signup:', e);
-    alert('Tu navegador no permite guardar data localmente. Usa otro navegador o sal del modo privado.');
+    const errEl = document.getElementById('signup-email-error');
+    if (errEl) errEl.textContent = 'Tu navegador no permite guardar data localmente. Sal del modo privado o usa otro navegador.';
+    document.getElementById('signup-email').classList.add('error');
     return;
   }
 
@@ -1719,8 +2021,12 @@ function doLogin() {
       'Email no coincide con la cuenta registrada en este dispositivo.';
     return;
   }
-  // En prototype no validamos password real
-  alert(`Bienvenido de vuelta, ${(acc.name || 'usuario').split(' ')[0]}.\n\nLogin exitoso (en producción se validaría password con backend seguro).`);
+  // Login OK — entrar al app simulado
+  state.email = acc.email;
+  state.name = acc.name || '';
+  state.photo = acc.photo || null;
+  state.wearables = acc.wearables || [];
+  enterAppSimulation('login');
 }
 
 // =============================================
@@ -2059,21 +2365,79 @@ async function activateFaceID() {
 function skipFaceID() { enterFinalApp(); }
 
 function enterFinalApp() {
-  const intent = state.entryIntent;
-  const firstName = (state.name || 'usuario').split(' ')[0];
-  if (intent === 'checkin') {
-    alert(
-      `Perfecto, ${firstName}.\n\n` +
-      `Te llevamos al check-in (30 seg).\n\n` +
-      `Después de eso, tu WQ empieza a calibrarse con data real.`
-    );
+  const intent = state.entryIntent || 'explore';
+  enterAppSimulation(intent);
+}
+
+function enterAppSimulation(source) {
+  const firstName = (state.name || 'usuario').split(' ')[0] || 'usuario';
+
+  // Avatar
+  const avatar = document.getElementById('app-avatar');
+  if (state.photo) {
+    avatar.style.backgroundImage = `url(${state.photo})`;
+    avatar.textContent = '';
   } else {
-    alert(
-      `Te llevamos al app, ${firstName}.\n\n` +
-      `Verás estados "calibrando" — es normal hasta que hagas tu primer check-in.\n\n` +
-      `Sin presión.`
-    );
+    avatar.style.backgroundImage = '';
+    avatar.textContent = firstName[0].toUpperCase();
   }
+  document.getElementById('app-greeting').textContent = `Hola, ${firstName}`;
+
+  // Intro message based on source
+  const msg = document.getElementById('app-intro-msg');
+  msg.classList.remove('info', 'warn', 'error', 'show');
+  if (source === 'login') {
+    msg.classList.add('info', 'show');
+    msg.textContent = `Bienvenido de vuelta. Tu calibración continúa donde la dejaste.`;
+  } else if (source === 'checkin') {
+    msg.classList.add('info', 'show');
+    msg.textContent = `Listo para tu primer check-in. 30 segundos y tu WQ empieza a aprender.`;
+    document.getElementById('app-now-decision').innerHTML =
+      `Empecemos. Tu primer <em>check-in</em> toma 30 segundos. Te preguntaremos cómo dormiste, tu energía y tu objetivo del día.`;
+  } else { // explore
+    msg.classList.add('warn', 'show');
+    msg.textContent = `Estás en modo exploración. Las recomendaciones serán genéricas hasta que hagas tu primer check-in.`;
+  }
+
+  // Wearables hint
+  const wearablesSub = document.getElementById('app-wearables-sub');
+  if (state.wearables && state.wearables.length > 0 && !state.wearables.includes('ninguno')) {
+    const names = { whoop: 'Whoop', oura: 'Oura', apple: 'Apple Watch', garmin: 'Garmin', fitbit: 'Fitbit' };
+    const list = state.wearables.map(w => names[w] || w).join(', ');
+    wearablesSub.textContent = `${list} · auto-sync`;
+  }
+
+  goStep('app');
+}
+
+function logout() {
+  // Reset sesión but keep account + biometric (so login is fast)
+  state.email = '';
+  state.name = '';
+  state.photo = null;
+  goStep(0);
+  // Reset Face ID screen state for next time
+  const fid = document.getElementById('faceid-icon');
+  if (fid) {
+    fid.classList.remove('success');
+    fid.innerHTML = '<svg class="icon" style="width:56px; height:56px; stroke-width:1.3;"><use href="#i-faceid"/></svg>';
+  }
+  const fidBtns = document.getElementById('faceid-buttons');
+  if (fidBtns) {
+    fidBtns.innerHTML = `
+      <button class="btn-primary" onclick="activateFaceID()">Activar biometría</button>
+      <button class="btn-secondary" onclick="skipFaceID()">Más tarde</button>
+    `;
+  }
+  const fidTitle = document.getElementById('faceid-title');
+  const fidSub = document.getElementById('faceid-subtitle');
+  if (fidTitle) fidTitle.textContent = 'Próximos logins, instantáneos.';
+  if (fidSub) fidSub.textContent = 'Activa Face ID o Touch ID. Entra a SAVIA en un segundo, sin escribir tu email otra vez.';
+}
+
+function setLoginError(text) {
+  const errEl = document.getElementById('login-email-error');
+  if (errEl) errEl.textContent = text || '';
 }
 
 async function tryFaceIDLogin() {
@@ -2082,11 +2446,11 @@ async function tryFaceIDLogin() {
   const acc = getStoredAccount();
 
   if (enabled !== 'true' || !credentialId || !acc) {
-    alert('No hay biometría activa en este dispositivo. Inicia sesión con email.');
+    setLoginError('No hay biometría activa en este dispositivo. Inicia sesión con email.');
     return;
   }
   if (!window.PublicKeyCredential || !navigator.credentials) {
-    alert('Tu navegador no soporta biometría web. Usa email.');
+    setLoginError('Tu navegador no soporta biometría web. Usa email.');
     return;
   }
 
@@ -2103,14 +2467,21 @@ async function tryFaceIDLogin() {
       }
     });
 
-    const firstName = (acc.name || 'usuario').split(' ')[0];
-    alert(`Bienvenido de vuelta, ${firstName}.\n\nLogin con biometría exitoso. Te llevamos a tu Now Screen.`);
+    // Success — load account into state and enter app
+    state.email = acc.email;
+    state.name = acc.name || '';
+    state.photo = acc.photo || null;
+    state.wearables = acc.wearables || [];
+    setLoginError('');
+    enterAppSimulation('login');
   } catch (err) {
-    console.warn('Face ID login error:', err);
+    console.warn('Face ID login error:', err.name, err.message);
     if (err.name === 'NotAllowedError') {
-      alert('Autenticación cancelada o fallida.');
+      setLoginError('Autenticación cancelada. Intenta de nuevo o usa email.');
+    } else if (err.name === 'SecurityError') {
+      setLoginError('Conexión no segura. La biometría requiere HTTPS.');
     } else {
-      alert('No se pudo verificar. Usa email para entrar.');
+      setLoginError('No se pudo verificar la biometría. Usa email para entrar.');
     }
   }
 }
@@ -2129,8 +2500,19 @@ function updateTime() {
 updateTime();
 setInterval(updateTime, 30000);
 
-function resetAll() {
-  if (!confirm('Esto borra tu cuenta y biometría guardada en este dispositivo. ¿Continuar?')) return;
+function askReset() {
+  document.getElementById('reset-confirm').classList.add('show');
+  document.getElementById('btn-signup').style.display = 'none';
+  document.getElementById('btn-login').style.display = 'none';
+  document.getElementById('btn-reset').style.display = 'none';
+}
+function cancelReset() {
+  document.getElementById('reset-confirm').classList.remove('show');
+  document.getElementById('btn-signup').style.display = '';
+  document.getElementById('btn-login').style.display = '';
+  document.getElementById('btn-reset').style.display = '';
+}
+function confirmReset() {
   try {
     localStorage.removeItem(STORAGE.account);
     localStorage.removeItem(STORAGE.enabled);
