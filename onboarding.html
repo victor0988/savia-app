@@ -1018,6 +1018,7 @@
     <div class="splash-buttons">
       <button class="btn-primary" onclick="goStep('signup')">Crear cuenta</button>
       <button class="btn-secondary" onclick="goStep('login')">Iniciar sesión</button>
+      <button class="btn-ghost" onclick="resetAll()" style="opacity: 0.5; font-size: 11px; padding: 8px;">Reiniciar cuenta (testing)</button>
     </div>
   </div>
 
@@ -1663,6 +1664,23 @@ function validateSignup() {
 function doSignup() {
   state.email = document.getElementById('signup-email').value.trim();
   state.password = document.getElementById('signup-password').value;
+
+  // Save the account NOW so login works even if user doesn't finish onboarding
+  try {
+    const existing = getStoredAccount() || {};
+    localStorage.setItem(STORAGE.account, JSON.stringify({
+      ...existing,
+      email: state.email,
+      password: state.password, // NOTE: en producción real esto se hashea + se valida en backend
+      createdAt: existing.createdAt || new Date().toISOString(),
+      isOnboarded: false,
+    }));
+  } catch (e) {
+    console.warn('Storage error en signup:', e);
+    alert('Tu navegador no permite guardar data localmente. Usa otro navegador o sal del modo privado.');
+    return;
+  }
+
   goStep(1);
 }
 
@@ -1872,9 +1890,11 @@ function validateNameStep() {
 //  Calibrating
 // =============================================
 function startCalculation() {
-  // Save account to localStorage at this point
+  // Merge final onboarding data with the partial account saved at signup
   try {
+    const existing = getStoredAccount() || {};
     localStorage.setItem(STORAGE.account, JSON.stringify({
+      ...existing,
       email: state.email,
       name: state.name,
       sex: state.sex,
@@ -1885,7 +1905,8 @@ function startCalculation() {
       photo: state.photo,
       maintenanceMode: state.maintenanceMode,
       resolution: state.resolution,
-      createdAt: new Date().toISOString(),
+      isOnboarded: true,
+      updatedAt: new Date().toISOString(),
     }));
   } catch (e) { console.warn('Storage error:', e); }
 
@@ -1936,16 +1957,35 @@ function base64UrlDecode(str) {
   return Uint8Array.from(atob(str), c => c.charCodeAt(0));
 }
 
+async function checkFaceIDAvailable() {
+  if (!window.PublicKeyCredential || !navigator.credentials) return false;
+  if (!window.isSecureContext) return false; // requires HTTPS
+  try {
+    if (typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return false;
+    return await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable();
+  } catch { return false; }
+}
+
 async function activateFaceID() {
   const buttonsEl = document.getElementById('faceid-buttons');
   const titleEl = document.getElementById('faceid-title');
   const subtitleEl = document.getElementById('faceid-subtitle');
   const iconEl = document.getElementById('faceid-icon');
 
-  if (!window.PublicKeyCredential || !navigator.credentials) {
-    titleEl.textContent = 'Tu dispositivo no soporta biometría web';
-    subtitleEl.textContent = 'Usaremos email para tus próximos logins.';
-    setTimeout(skipFaceID, 1800);
+  // Pre-check device capability
+  const available = await checkFaceIDAvailable();
+  if (!available) {
+    titleEl.textContent = 'Biometría no disponible';
+    let reason = 'Tu dispositivo o navegador no soporta Face ID / Touch ID web.';
+    if (!window.isSecureContext) {
+      reason = 'WebAuthn requiere HTTPS. Abre la URL en https://...';
+    } else if (!window.PublicKeyCredential) {
+      reason = 'Tu navegador es muy viejo. Usa Safari (iPhone), Chrome o Edge actualizado.';
+    } else {
+      reason = 'Asegúrate de tener Face ID, Touch ID o Windows Hello configurado en tu dispositivo.';
+    }
+    subtitleEl.textContent = reason;
+    buttonsEl.innerHTML = '<button class="btn-primary" onclick="skipFaceID()">Continuar sin biometría</button>';
     return;
   }
 
@@ -1957,7 +1997,7 @@ async function activateFaceID() {
       publicKey: {
         challenge: challenge,
         rp: { name: 'SAVIA', id: window.location.hostname },
-        user: { id: userIdBytes, name: state.email, displayName: state.name },
+        user: { id: userIdBytes, name: state.email, displayName: state.name || state.email },
         pubKeyCredParams: [
           { alg: -7, type: 'public-key' },
           { alg: -257, type: 'public-key' }
@@ -1986,16 +2026,33 @@ async function activateFaceID() {
     setTimeout(enterFinalApp, 1800);
 
   } catch (err) {
-    console.warn('Face ID error:', err);
+    console.warn('Face ID activation error:', err.name, err.message);
+    let title = 'No se pudo activar';
+    let subtitle = 'Algo salió mal. Puedes activarla después.';
+
     if (err.name === 'NotAllowedError') {
-      titleEl.textContent = 'Activación cancelada';
-      subtitleEl.textContent = 'Puedes activarla más tarde desde Configuración.';
-      buttonsEl.innerHTML = '<button class="btn-primary" onclick="skipFaceID()">Continuar</button>';
-    } else {
-      titleEl.textContent = 'No se pudo configurar';
-      subtitleEl.textContent = 'Tu dispositivo o navegador no permite biometría web. Usaremos email.';
-      setTimeout(skipFaceID, 2000);
+      title = 'Activación cancelada';
+      subtitle = 'Cancelaste el prompt de biometría. Puedes intentar de nuevo o activarla más tarde.';
+    } else if (err.name === 'InvalidStateError') {
+      title = 'Ya está registrada';
+      subtitle = 'Esta biometría ya está vinculada a tu cuenta en este dispositivo. Listo para usar.';
+      try {
+        localStorage.setItem(STORAGE.enabled, 'true');
+      } catch {}
+    } else if (err.name === 'NotSupportedError') {
+      title = 'Algoritmo no soportado';
+      subtitle = 'Tu dispositivo soporta biometría pero no el algoritmo requerido. Usaremos email.';
+    } else if (err.name === 'SecurityError') {
+      title = 'Conexión no segura';
+      subtitle = 'Esta página debe servirse por HTTPS para usar biometría.';
     }
+
+    titleEl.textContent = title;
+    subtitleEl.textContent = subtitle;
+    buttonsEl.innerHTML = `
+      <button class="btn-primary" onclick="activateFaceID()">Intentar de nuevo</button>
+      <button class="btn-secondary" onclick="skipFaceID()">Continuar sin biometría</button>
+    `;
   }
 }
 
@@ -2072,13 +2129,29 @@ function updateTime() {
 updateTime();
 setInterval(updateTime, 30000);
 
-// On load: if Face ID was enabled, prefill login email and emphasize Face ID button
+function resetAll() {
+  if (!confirm('Esto borra tu cuenta y biometría guardada en este dispositivo. ¿Continuar?')) return;
+  try {
+    localStorage.removeItem(STORAGE.account);
+    localStorage.removeItem(STORAGE.enabled);
+    localStorage.removeItem(STORAGE.credentialId);
+  } catch (e) { console.warn(e); }
+  location.reload();
+}
+
+// On load: if Face ID was enabled, prefill login email
 (function init() {
   const acc = getStoredAccount();
   if (acc && acc.email) {
-    document.getElementById('login-email').value = acc.email;
-    document.getElementById('signup-email').value = acc.email;
-    // If Face ID enabled, splash could route to login by default — but keep the user choice
+    const loginEmail = document.getElementById('login-email');
+    if (loginEmail) loginEmail.value = acc.email;
+    // En signup, NO prefillamos — si hay cuenta, debería ir al login
+  }
+  // If FaceID was not previously enabled, hide the Face ID button on login screen
+  const enabled = localStorage.getItem(STORAGE.enabled);
+  const faceBtn = document.getElementById('faceid-login-btn');
+  if (faceBtn && enabled !== 'true') {
+    faceBtn.style.display = 'none';
   }
 })();
 </script>
