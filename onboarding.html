@@ -80,7 +80,7 @@
 
   .progress-row {
     display: flex; gap: 5px;
-    padding-top: 4px; margin-bottom: 40px;
+    padding-top: 4px; margin-bottom: 36px;
   }
   .progress-seg {
     height: 3px; flex: 1;
@@ -106,7 +106,6 @@
     line-height: 1.5; margin-bottom: 28px;
   }
 
-  /* Section labels in goals */
   .section-label {
     font-size: 10px; font-weight: 700;
     letter-spacing: 1.2px; text-transform: uppercase;
@@ -152,6 +151,26 @@
     color: #F1F5F9; margin-top: auto;
     line-height: 1.25;
   }
+  .feel-chip.full-width {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    align-items: center;
+    min-height: 64px;
+    padding: 14px 16px;
+    gap: 14px;
+  }
+  .feel-chip.full-width .icon { flex-shrink: 0; }
+  .feel-chip.full-width .label-stack {
+    display: flex; flex-direction: column; gap: 3px;
+    margin-top: 0; flex: 1; min-width: 0;
+  }
+  .feel-chip.full-width .label { margin-top: 0; font-size: 14px; }
+  .feel-chip.full-width .sublabel {
+    font-size: 11.5px; font-weight: 500;
+    color: #64748B; line-height: 1.4;
+    letter-spacing: 0;
+  }
+  .feel-chip.full-width.selected .sublabel { color: #94A3B8; }
 
   /* List cards */
   .list-card {
@@ -179,10 +198,7 @@
     flex-shrink: 0; color: #94A3B8;
     transition: all 0.25s;
   }
-  .list-card.selected .lc-icon {
-    background: rgba(16,185,129,0.12);
-    color: #34D399;
-  }
+  .list-card.selected .lc-icon { background: rgba(16,185,129,0.12); color: #34D399; }
   .list-card .lc-text { flex: 1; min-width: 0; }
   .list-card .lc-title { font-size: 15px; font-weight: 700; color: #F1F5F9; }
   .list-card .lc-sub { font-size: 12px; color: #64748B; margin-top: 3px; line-height: 1.4; }
@@ -193,10 +209,7 @@
     display: flex; align-items: center; justify-content: center;
     transition: all 0.2s;
   }
-  .list-card.selected .lc-check {
-    background: #10B981;
-    border-color: #10B981;
-  }
+  .list-card.selected .lc-check { background: #10B981; border-color: #10B981; }
   .list-card.selected .lc-check::after {
     content: '';
     width: 6px; height: 10px;
@@ -205,7 +218,47 @@
     transform: rotate(45deg) translate(-1px, -1px);
   }
 
-  /* Conflict resolution cards (larger) */
+  /* Sex cards (2 side by side) */
+  .sex-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .sex-card {
+    background: #0D1623;
+    border: 1.5px solid #1E293B;
+    border-radius: 18px;
+    padding: 26px 16px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    color: #94A3B8;
+  }
+  .sex-card:hover {
+    border-color: rgba(16,185,129,0.4);
+    transform: translateY(-1px);
+    color: #CBD5E1;
+  }
+  .sex-card:active { transform: scale(0.97); }
+  .sex-card.selected {
+    border-color: #10B981;
+    background: linear-gradient(135deg, rgba(16,185,129,0.10), rgba(16,185,129,0.02));
+    color: #34D399;
+  }
+  .sex-card .sex-icon {
+    margin-bottom: 14px;
+    display: inline-flex;
+  }
+  .sex-card .sex-icon svg { width: 36px; height: 36px; stroke-width: 1.6; }
+  .sex-card .sex-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #F1F5F9;
+    letter-spacing: -0.2px;
+  }
+
+  /* Conflict resolution cards */
   .resolve-card {
     background: #0D1623;
     border: 1.5px solid #1E293B;
@@ -225,10 +278,7 @@
     background: linear-gradient(135deg, rgba(16,185,129,0.06), rgba(16,185,129,0.01));
     border-color: rgba(16,185,129,0.25);
   }
-  .resolve-head {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 6px;
-  }
+  .resolve-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
   .resolve-letter {
     width: 28px; height: 28px;
     border-radius: 8px;
@@ -240,18 +290,12 @@
   }
   .resolve-card.selected .resolve-letter,
   .resolve-card.recommended .resolve-letter {
-    background: rgba(16,185,129,0.15);
-    color: #34D399;
+    background: rgba(16,185,129,0.15); color: #34D399;
   }
-  .resolve-title {
-    font-size: 15px; font-weight: 700;
-    color: #F1F5F9;
-    flex: 1;
-  }
+  .resolve-title { font-size: 15px; font-weight: 700; color: #F1F5F9; flex: 1; }
   .resolve-pill-recommended {
     font-size: 9px; font-weight: 700;
-    letter-spacing: 0.8px;
-    text-transform: uppercase;
+    letter-spacing: 0.8px; text-transform: uppercase;
     color: #34D399;
     padding: 3px 8px;
     background: rgba(16,185,129,0.10);
@@ -260,16 +304,11 @@
   }
   .resolve-timeline {
     font-size: 12px; font-weight: 600;
-    color: #94A3B8;
-    margin-bottom: 8px;
+    color: #94A3B8; margin-bottom: 8px;
   }
-  .resolve-body {
-    font-size: 12.5px; color: #64748B;
-    line-height: 1.5;
-  }
+  .resolve-body { font-size: 12.5px; color: #64748B; line-height: 1.5; }
   .resolve-body strong { color: #94A3B8; font-weight: 600; }
 
-  /* Conflict insight banner */
   .conflict-banner {
     background: linear-gradient(135deg, rgba(251,191,36,0.06), rgba(251,191,36,0.02));
     border: 1px solid rgba(251,191,36,0.25);
@@ -280,20 +319,9 @@
     gap: 12px;
     align-items: flex-start;
   }
-  .conflict-banner .cb-icon {
-    color: #FBBF24;
-    flex-shrink: 0;
-    margin-top: 1px;
-  }
-  .conflict-banner .cb-text {
-    font-size: 12.5px;
-    line-height: 1.5;
-    color: #CBD5E1;
-  }
-  .conflict-banner .cb-text strong {
-    color: #FBBF24;
-    font-weight: 700;
-  }
+  .conflict-banner .cb-icon { color: #FBBF24; flex-shrink: 0; margin-top: 1px; }
+  .conflict-banner .cb-text { font-size: 12.5px; line-height: 1.5; color: #CBD5E1; }
+  .conflict-banner .cb-text strong { color: #FBBF24; font-weight: 700; }
 
   /* Continue button */
   .continue-btn {
@@ -347,10 +375,8 @@
     background-clip: text;
   }
   .splash-tag {
-    font-size: 18px;
-    color: #94A3B8;
-    line-height: 1.5;
-    max-width: 300px;
+    font-size: 18px; color: #94A3B8;
+    line-height: 1.5; max-width: 300px;
     margin-bottom: 60px;
     font-weight: 500;
     letter-spacing: -0.3px;
@@ -372,6 +398,10 @@
     width: 100%;
   }
   .btn-primary:active { transform: scale(0.98); }
+  .btn-primary:disabled {
+    background: #1E293B; color: #475569;
+    box-shadow: none; cursor: not-allowed;
+  }
   .btn-secondary {
     background: #0D1623;
     color: #34D399;
@@ -394,6 +424,17 @@
     cursor: pointer; font-family: inherit;
   }
   .btn-ghost:hover { color: #F1F5F9; }
+  .btn-link {
+    background: transparent;
+    color: #34D399;
+    border: none; padding: 12px;
+    font-size: 13.5px; font-weight: 600;
+    cursor: pointer; font-family: inherit;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+  }
+  .btn-link:hover { color: #6EE7B7; }
 
   /* Photo */
   .photo-circle {
@@ -437,10 +478,52 @@
     font-size: 16px; color: #F1F5F9;
     outline: none; font-family: inherit;
     transition: all 0.2s;
-    margin-bottom: 18px;
+    margin-bottom: 8px;
   }
   .field-input:focus { border-color: #34D399; background: #15233B; }
   .field-input::placeholder { color: #475569; }
+  .field-input.error { border-color: #F87171; }
+
+  .field-error {
+    font-size: 12px;
+    color: #F87171;
+    margin: -4px 0 14px 4px;
+    line-height: 1.4;
+    min-height: 16px;
+  }
+  .field-hint {
+    font-size: 11.5px;
+    color: #64748B;
+    margin: -4px 0 14px 4px;
+    line-height: 1.4;
+  }
+
+  /* Duplicate warning */
+  .duplicate-warning {
+    background: linear-gradient(135deg, rgba(251,191,36,0.08), rgba(251,191,36,0.02));
+    border: 1px solid rgba(251,191,36,0.3);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  .duplicate-warning .dw-icon { color: #FBBF24; flex-shrink: 0; margin-top: 1px; }
+  .duplicate-warning .dw-text { font-size: 13px; line-height: 1.5; color: #E2E8F0; flex: 1; }
+  .duplicate-warning .dw-text strong { color: #FBBF24; font-weight: 700; }
+  .duplicate-warning .dw-action {
+    background: rgba(251,191,36,0.12);
+    border: 1px solid rgba(251,191,36,0.4);
+    color: #FBBF24;
+    padding: 8px 12px;
+    border-radius: 10px;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 8px;
+  }
 
   /* Calculating */
   .calc-screen {
@@ -632,12 +715,7 @@
     font-family: inherit;
     pointer-events: none;
   }
-
-  /* Below the card */
-  .below-preview {
-    width: 100%;
-    margin-top: 26px;
-  }
+  .below-preview { width: 100%; margin-top: 26px; }
   .below-preview-hint {
     text-align: center;
     font-size: 12.5px;
@@ -645,12 +723,77 @@
     line-height: 1.55;
     margin-bottom: 16px;
   }
-  .below-preview-hint strong {
-    color: #94A3B8;
-    font-weight: 600;
+  .below-preview-hint strong { color: #94A3B8; font-weight: 600; }
+  .below-preview-buttons { display: flex; flex-direction: column; gap: 10px; }
+
+  /* Face ID */
+  .faceid-screen {
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 60px;
+    padding-bottom: 40px;
   }
-  .below-preview-buttons {
-    display: flex; flex-direction: column; gap: 10px;
+  .faceid-content {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; width: 100%;
+  }
+  .faceid-icon-circle {
+    width: 116px; height: 116px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, rgba(16,185,129,0.16), rgba(16,185,129,0.04));
+    border: 1px solid rgba(16,185,129,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 38px;
+    color: #34D399;
+    box-shadow: 0 0 56px rgba(16,185,129,0.18);
+    animation: float 4s ease-in-out infinite;
+  }
+  .faceid-icon-circle.success {
+    background: linear-gradient(135deg, #10B981, #064E3B);
+    color: white; border-color: #10B981;
+    animation: pop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1); opacity: 1; }
+  }
+  .faceid-title {
+    font-size: 28px; font-weight: 800;
+    letter-spacing: -0.7px; margin-bottom: 14px;
+    color: #F8FAFC; max-width: 320px;
+    line-height: 1.18;
+  }
+  .faceid-subtitle {
+    font-size: 15px; color: #94A3B8;
+    line-height: 1.55; max-width: 290px;
+    margin-bottom: 40px;
+    font-weight: 500;
+  }
+  .faceid-benefit {
+    display: flex; align-items: center;
+    gap: 10px;
+    background: rgba(16,185,129,0.06);
+    border: 1px solid rgba(16,185,129,0.2);
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    color: #CBD5E1;
+    font-size: 13px;
+    width: 100%; max-width: 320px;
+  }
+  .faceid-benefit svg { color: #34D399; flex-shrink: 0; }
+
+  /* Generic centered content for login/signup */
+  .form-screen {
+    align-items: stretch;
+    padding-top: 28px;
+  }
+  .form-header {
+    margin-bottom: 28px;
+    text-align: left;
   }
 
   .back-btn {
@@ -682,6 +825,18 @@
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
+    <!-- Sex -->
+    <symbol id="i-male" viewBox="0 0 24 24">
+      <circle cx="10" cy="14" r="5"/>
+      <line x1="14" y1="10" x2="19" y2="5"/>
+      <polyline points="14 5 19 5 19 10"/>
+    </symbol>
+    <symbol id="i-female" viewBox="0 0 24 24">
+      <circle cx="12" cy="9" r="5"/>
+      <line x1="12" y1="14" x2="12" y2="22"/>
+      <line x1="9" y1="19" x2="15" y2="19"/>
+    </symbol>
+
     <!-- Composición & rendimiento -->
     <symbol id="i-fatloss" viewBox="0 0 24 24">
       <path d="M12 4v14"/>
@@ -700,6 +855,11 @@
     <symbol id="i-recovery" viewBox="0 0 24 24">
       <path d="M21 12c0 5-4 9-9 9s-9-4-9-9 4-9 9-9c2 0 4 1 5 2"/>
       <polyline points="21 5 21 12 14 12"/>
+    </symbol>
+    <symbol id="i-maintenance" viewBox="0 0 24 24">
+      <line x1="3" y1="12" x2="21" y2="12"/>
+      <polyline points="8 7 4 12 8 17"/>
+      <polyline points="16 7 20 12 16 17"/>
     </symbol>
 
     <!-- Bienestar diario -->
@@ -737,6 +897,21 @@
       <path d="M12 3l1.8 5.4L19 10l-5.2 1.6L12 17l-1.8-5.4L5 10l5.2-1.6z"/>
       <path d="M19 3v3M21 4.5h-3"/>
       <path d="M5 18v2M6 19h-2"/>
+    </symbol>
+
+    <!-- Específico mujer -->
+    <symbol id="i-pregnancy" viewBox="0 0 24 24">
+      <circle cx="11" cy="5" r="2"/>
+      <path d="M11 7v2"/>
+      <path d="M11 9c-2 0-3 1.5-3 4 0 1 .5 2 2 2.5"/>
+      <path d="M11 9c3 0 5 2 5 5 0 2-1.5 3.5-3.5 3.5h-2.5c-1 0-2-.5-2-1.5"/>
+      <line x1="11" y1="18" x2="11" y2="22"/>
+      <line x1="15" y1="20" x2="15" y2="22"/>
+    </symbol>
+    <symbol id="i-cycle" viewBox="0 0 24 24">
+      <path d="M21 12a9 9 0 1 1-3-6.7"/>
+      <polyline points="21 4 21 9 16 9"/>
+      <circle cx="12" cy="12" r="2"/>
     </symbol>
 
     <!-- Levels -->
@@ -777,6 +952,17 @@
     <symbol id="i-garmin" viewBox="0 0 24 24">
       <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
     </symbol>
+    <symbol id="i-fitbit" viewBox="0 0 24 24">
+      <circle cx="6" cy="6" r="2"/>
+      <circle cx="12" cy="6" r="2"/>
+      <circle cx="18" cy="6" r="2"/>
+      <circle cx="6" cy="12" r="2.5"/>
+      <circle cx="12" cy="12" r="2.5"/>
+      <circle cx="18" cy="12" r="2.5"/>
+      <circle cx="6" cy="18" r="2"/>
+      <circle cx="12" cy="18" r="2"/>
+      <circle cx="18" cy="18" r="2"/>
+    </symbol>
     <symbol id="i-none" viewBox="0 0 24 24">
       <path d="M18 11V6a2 2 0 0 0-4 0v5"/>
       <path d="M14 10V4a2 2 0 0 0-4 0v6"/>
@@ -793,6 +979,19 @@
       <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
       <line x1="12" y1="9" x2="12" y2="13"/>
       <line x1="12" y1="17" x2="12.01" y2="17"/>
+    </symbol>
+    <symbol id="i-faceid" viewBox="0 0 24 24">
+      <path d="M4 8V6a2 2 0 0 1 2-2h2"/>
+      <path d="M20 8V6a2 2 0 0 0-2-2h-2"/>
+      <path d="M4 16v2a2 2 0 0 0 2 2h2"/>
+      <path d="M20 16v2a2 2 0 0 1-2 2h-2"/>
+      <line x1="9" y1="10" x2="9" y2="11.5"/>
+      <line x1="15" y1="10" x2="15" y2="11.5"/>
+      <path d="M9 15c.6.8 1.6 1.3 3 1.3s2.4-.5 3-1.3"/>
+      <line x1="12" y1="9" x2="12" y2="13"/>
+    </symbol>
+    <symbol id="i-check" viewBox="0 0 24 24">
+      <polyline points="20 6 9 17 4 12"/>
     </symbol>
   </defs>
 </svg>
@@ -817,24 +1016,116 @@
       <div class="splash-tag">Tu cuerpo, entendido.</div>
     </div>
     <div class="splash-buttons">
-      <button class="btn-primary" onclick="goStep(1)">Comenzar</button>
-      <button class="btn-ghost" onclick="alert('Login con cuenta existente')">Ya tengo cuenta</button>
+      <button class="btn-primary" onclick="goStep('signup')">Crear cuenta</button>
+      <button class="btn-secondary" onclick="goStep('login')">Iniciar sesión</button>
     </div>
   </div>
 
-  <!-- ============== Q1: Objetivos (12 opciones agrupadas) ============== -->
-  <div class="screen" data-step="1">
+  <!-- ============== LOGIN ============== -->
+  <div class="screen form-screen" data-step="login">
     <button class="back-btn" onclick="goStep(0)">‹</button>
+    <div class="form-header">
+      <div class="q-eyebrow">Iniciar sesión</div>
+      <div class="q-title">Bienvenido de vuelta.</div>
+      <div class="q-hint">Tu data te espera.</div>
+    </div>
+
+    <button class="btn-secondary" id="faceid-login-btn" onclick="tryFaceIDLogin()" style="margin-bottom: 24px;">
+      <span style="display:inline-flex; align-items:center; gap:10px; justify-content:center;">
+        <svg class="icon icon-sm" style="stroke-width: 1.8;"><use href="#i-faceid"/></svg>
+        Usar Face ID o Touch ID
+      </span>
+    </button>
+
+    <label class="field-label">Email</label>
+    <input type="email" id="login-email" class="field-input" placeholder="tu@email.com" oninput="validateLogin()" autocomplete="email"/>
+    <div class="field-error" id="login-email-error"></div>
+
+    <label class="field-label">Contraseña</label>
+    <input type="password" id="login-password" class="field-input" placeholder="••••••••" oninput="validateLogin()" autocomplete="current-password"/>
+    <div class="field-error" id="login-password-error"></div>
+
+    <button class="btn-primary" id="login-btn" disabled onclick="doLogin()" style="margin-top: 14px;">Iniciar sesión</button>
+    <button class="btn-link" onclick="goStep('signup')" style="margin-top: 8px;">¿Sin cuenta? Crear cuenta</button>
+  </div>
+
+  <!-- ============== SIGNUP CREDENTIALS ============== -->
+  <div class="screen form-screen" data-step="signup">
+    <button class="back-btn" onclick="goStep(0)">‹</button>
+    <div class="form-header">
+      <div class="q-eyebrow">Paso 1 de 6</div>
+      <div class="q-title">Crea tu cuenta.</div>
+      <div class="q-hint">Solo necesitamos email y contraseña para empezar.</div>
+    </div>
+
+    <div class="duplicate-warning hidden" id="duplicate-warning">
+      <svg class="icon icon-sm dw-icon"><use href="#i-alert"/></svg>
+      <div class="dw-text">
+        <strong>Esta cuenta ya existe en este dispositivo.</strong> ¿Quieres iniciar sesión con esta cuenta?
+        <button class="dw-action" onclick="goStep('login')">Iniciar sesión</button>
+      </div>
+    </div>
+
+    <label class="field-label">Email</label>
+    <input type="email" id="signup-email" class="field-input" placeholder="tu@email.com" oninput="validateSignup()" autocomplete="email"/>
+    <div class="field-error" id="signup-email-error"></div>
+
+    <label class="field-label">Contraseña</label>
+    <input type="password" id="signup-password" class="field-input" placeholder="Mínimo 8 caracteres" oninput="validateSignup()" autocomplete="new-password"/>
+    <div class="field-hint" id="signup-password-hint">Mínimo 8 caracteres.</div>
+
+    <button class="btn-primary" id="signup-btn" disabled onclick="doSignup()" style="margin-top: 14px;">Continuar</button>
+    <button class="btn-link" onclick="goStep('login')" style="margin-top: 8px;">¿Ya tienes cuenta? Iniciar sesión</button>
+  </div>
+
+  <!-- ============== Q1: Sex + Age ============== -->
+  <div class="screen" data-step="1">
+    <button class="back-btn" onclick="goStep('signup')">‹</button>
     <div class="progress-row">
+      <div class="progress-seg active"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+
+    <div class="q-eyebrow">Paso 2 de 6</div>
+    <div class="q-title">Cuéntame sobre ti.</div>
+    <div class="q-hint">Tu fisiología guía las recomendaciones de SAVIA. Toma 10 segundos.</div>
+
+    <label class="field-label">Sexo biológico</label>
+    <div class="sex-grid">
+      <div class="sex-card" id="sex-m" onclick="selectSex('m')">
+        <div class="sex-icon"><svg><use href="#i-male"/></svg></div>
+        <div class="sex-label">Hombre</div>
+      </div>
+      <div class="sex-card" id="sex-f" onclick="selectSex('f')">
+        <div class="sex-icon"><svg><use href="#i-female"/></svg></div>
+        <div class="sex-label">Mujer</div>
+      </div>
+    </div>
+
+    <label class="field-label">Edad</label>
+    <input type="number" id="age-input" class="field-input" placeholder="34" min="16" max="100" oninput="validateSexAge()"/>
+    <div class="field-hint">Necesaria para calcular tu BMR, recovery y zonas de entrenamiento.</div>
+
+    <button class="continue-btn" id="continue-1" onclick="goStep(2)">Continuar</button>
+  </div>
+
+  <!-- ============== Q2: Objetivos ============== -->
+  <div class="screen" data-step="2">
+    <button class="back-btn" onclick="goStep(1)">‹</button>
+    <div class="progress-row">
+      <div class="progress-seg done"></div>
       <div class="progress-seg active"></div>
       <div class="progress-seg"></div>
       <div class="progress-seg"></div>
       <div class="progress-seg"></div>
     </div>
 
-    <div class="q-eyebrow">Pregunta 1 de 4</div>
+    <div class="q-eyebrow">Paso 3 de 6</div>
     <div class="q-title">¿Qué quieres optimizar?</div>
-    <div class="q-hint">Elige uno o varios. Si hay tensión entre tus objetivos, la resolvemos en el siguiente paso.</div>
+    <div class="q-hint">Elige uno o varios. Si hay tensión entre objetivos, la resolvemos.</div>
 
     <div class="section-label">Composición y rendimiento</div>
     <div class="feel-grid">
@@ -853,6 +1144,13 @@
       <div class="feel-chip" data-goal="recovery" onclick="toggleGoal(this, 'recovery')">
         <svg class="icon"><use href="#i-recovery"/></svg>
         <div class="label">Recuperación</div>
+      </div>
+      <div class="feel-chip full-width" data-goal="maintenance" onclick="toggleGoal(this, 'maintenance')">
+        <svg class="icon"><use href="#i-maintenance"/></svg>
+        <div class="label-stack">
+          <div class="label">Mantenimiento</div>
+          <div class="sublabel">Dieta para mantener tu composición actual</div>
+        </div>
       </div>
     </div>
 
@@ -896,27 +1194,90 @@
       </div>
     </div>
 
-    <button class="continue-btn" id="continue-1" onclick="afterQ1()">Continuar</button>
+    <!-- Solo mujeres -->
+    <div id="women-section" class="hidden">
+      <div class="section-label">Específico para ti</div>
+      <div class="feel-grid">
+        <div class="feel-chip" data-goal="pregnancy" onclick="toggleGoal(this, 'pregnancy')">
+          <svg class="icon"><use href="#i-pregnancy"/></svg>
+          <div class="label">Embarazo o lactancia</div>
+        </div>
+        <div class="feel-chip" data-goal="cycle" onclick="toggleGoal(this, 'cycle')">
+          <svg class="icon"><use href="#i-cycle"/></svg>
+          <div class="label">Optimizar con mi ciclo</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="continue-btn" id="continue-2" onclick="afterQ2()">Continuar</button>
   </div>
 
-  <!-- ============== Q1.5: Conflict Resolution (fat loss + muscle gain) ============== -->
-  <div class="screen" data-step="1.5">
-    <button class="back-btn" onclick="goStep(1)">‹</button>
+  <!-- ============== Q2.4: Maintenance Conflict ============== -->
+  <div class="screen" data-step="2.4">
+    <button class="back-btn" onclick="goStep(2)">‹</button>
     <div class="progress-row">
+      <div class="progress-seg done"></div>
       <div class="progress-seg active"></div>
       <div class="progress-seg"></div>
       <div class="progress-seg"></div>
       <div class="progress-seg"></div>
     </div>
 
-    <div class="q-eyebrow">Resolviendo tensión · Pregunta 1.5</div>
-    <div class="q-title">Grasa y músculo no se llevan bien juntos.</div>
-    <div class="q-hint">Perder grasa requiere déficit calórico. Ganar músculo requiere superávit. Tienes tres caminos serios:</div>
+    <div class="q-eyebrow">Resolviendo una decisión clave</div>
+    <div class="q-title">¿Mantener o cambiar?</div>
+    <div class="q-hint">Marcaste mantenimiento y un objetivo de cambio. Fisiológicamente, son opuestos. Elige tu prioridad.</div>
 
     <div class="conflict-banner">
       <svg class="icon icon-sm cb-icon"><use href="#i-alert"/></svg>
       <div class="cb-text">
-        <strong>No se puede maximizar ambos al mismo tiempo.</strong> Hacerlo simultáneo es posible, pero más lento. Elige tu camino y SAVIA lo respeta.
+        <strong>No puedes mantener y transformar al mismo tiempo.</strong> Mantenimiento = estabilidad calórica. Cambio = déficit o superávit.
+      </div>
+    </div>
+
+    <div class="resolve-card" onclick="selectMaintenanceMode(this, 'maintain')">
+      <div class="resolve-head">
+        <div class="resolve-letter">A</div>
+        <div class="resolve-title">Mantener mi composición</div>
+      </div>
+      <div class="resolve-timeline">Estabilidad calórica · sin déficit ni superávit</div>
+      <div class="resolve-body">
+        SAVIA optimiza para preservar tu lean mass y body fat actual. Enfoque en consistencia, sueño, recovery y rendimiento sostenible. <strong>Mejor si estás contento con tu cuerpo.</strong>
+      </div>
+    </div>
+
+    <div class="resolve-card" onclick="selectMaintenanceMode(this, 'change')">
+      <div class="resolve-head">
+        <div class="resolve-letter">B</div>
+        <div class="resolve-title">Cambiar mi composición</div>
+      </div>
+      <div class="resolve-timeline">Transformación activa · déficit o superávit calórico</div>
+      <div class="resolve-body">
+        SAVIA prioriza tu objetivo de transformación. Removemos mantenimiento del plan. <strong>Tienes una meta clara y quieres avanzar.</strong>
+      </div>
+    </div>
+
+    <button class="continue-btn" id="continue-24" onclick="afterMaintenanceResolution()">Continuar</button>
+  </div>
+
+  <!-- ============== Q2.5: Recomp Conflict ============== -->
+  <div class="screen" data-step="2.5">
+    <button class="back-btn" onclick="goStep(2)">‹</button>
+    <div class="progress-row">
+      <div class="progress-seg done"></div>
+      <div class="progress-seg active"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+      <div class="progress-seg"></div>
+    </div>
+
+    <div class="q-eyebrow">Resolviendo tensión</div>
+    <div class="q-title">Grasa y músculo no se llevan bien juntos.</div>
+    <div class="q-hint">Perder grasa requiere déficit calórico. Ganar músculo requiere superávit. Tres caminos serios:</div>
+
+    <div class="conflict-banner">
+      <svg class="icon icon-sm cb-icon"><use href="#i-alert"/></svg>
+      <div class="cb-text">
+        <strong>No se puede maximizar ambos al mismo tiempo.</strong> Hacerlo simultáneo es posible, pero más lento. Elige tu camino.
       </div>
     </div>
 
@@ -928,7 +1289,7 @@
       </div>
       <div class="resolve-timeline">Avance lento en ambos · 6–12 meses</div>
       <div class="resolve-body">
-        Mantenimiento calórico con timing inteligente. Pierdes grasa y ganas músculo al mismo tiempo, pero a 30–40% del ritmo de cada uno en aislado. <strong>Mejor para principiantes, mujeres en fase luteal, o regreso al entrenamiento.</strong>
+        Mantenimiento calórico con timing inteligente. Pierdes grasa y ganas músculo al mismo tiempo, a 30–40% del ritmo aislado. <strong>Mejor para principiantes, mujeres en luteal, o regreso al entrenamiento.</strong>
       </div>
     </div>
 
@@ -939,7 +1300,7 @@
       </div>
       <div class="resolve-timeline">3 meses pérdida → 6 meses músculo</div>
       <div class="resolve-body">
-        Déficit calórico moderado por 3 meses (resultados visibles rápido). Luego superávit controlado para construir músculo sin recuperar grasa. <strong>Mejor si tu body fat actual es alto (>20% hombre, >28% mujer).</strong>
+        Déficit moderado por 3 meses (resultados visibles rápido). Luego superávit controlado. <strong>Mejor si tu body fat es alto (>20%h, >28%m).</strong>
       </div>
     </div>
 
@@ -950,24 +1311,25 @@
       </div>
       <div class="resolve-timeline">6 meses músculo → 3 meses pérdida</div>
       <div class="resolve-body">
-        Superávit calórico moderado por 6 meses, aceptas algo de grasa temporal. Luego cut limpio. <strong>Mejor si eres delgado, novato en fuerza, y la masa muscular es tu prioridad real.</strong>
+        Superávit moderado por 6 meses, aceptas grasa temporal. Luego cut limpio. <strong>Mejor si eres delgado, novato en fuerza.</strong>
       </div>
     </div>
 
-    <button class="continue-btn" id="continue-15" onclick="goStep(2)">Continuar</button>
+    <button class="continue-btn" id="continue-25" onclick="goStep(3)">Continuar</button>
   </div>
 
-  <!-- ============== Q2: ¿Cuánto te conoces? ============== -->
-  <div class="screen" data-step="2">
-    <button class="back-btn" onclick="backFromQ2()">‹</button>
+  <!-- ============== Q3: Nivel ============== -->
+  <div class="screen" data-step="3">
+    <button class="back-btn" onclick="backFromQ3()">‹</button>
     <div class="progress-row">
+      <div class="progress-seg done"></div>
       <div class="progress-seg done"></div>
       <div class="progress-seg active"></div>
       <div class="progress-seg"></div>
       <div class="progress-seg"></div>
     </div>
 
-    <div class="q-eyebrow">Pregunta 2 de 4</div>
+    <div class="q-eyebrow">Paso 4 de 6</div>
     <div class="q-title">¿Cuánto te conoces ahora?</div>
     <div class="q-hint">Define qué tan profundo arrancamos. Puedes cambiarlo después.</div>
 
@@ -998,33 +1360,34 @@
       <div class="lc-check"></div>
     </div>
 
-    <button class="continue-btn" id="continue-2" onclick="goStep(3)">Continuar</button>
+    <button class="continue-btn" id="continue-3" onclick="goStep(4)">Continuar</button>
   </div>
 
-  <!-- ============== Q3: ¿Tienes wearable? ============== -->
-  <div class="screen" data-step="3">
-    <button class="back-btn" onclick="goStep(2)">‹</button>
+  <!-- ============== Q4: Wearables (multi-select) ============== -->
+  <div class="screen" data-step="4">
+    <button class="back-btn" onclick="goStep(3)">‹</button>
     <div class="progress-row">
+      <div class="progress-seg done"></div>
       <div class="progress-seg done"></div>
       <div class="progress-seg done"></div>
       <div class="progress-seg active"></div>
       <div class="progress-seg"></div>
     </div>
 
-    <div class="q-eyebrow">Pregunta 3 de 4</div>
-    <div class="q-title">¿Tienes un wearable activo?</div>
-    <div class="q-hint">Conectarlo nos ahorra 50+ preguntas. SAVIA aprende en background.</div>
+    <div class="q-eyebrow">Paso 5 de 6</div>
+    <div class="q-title">¿Qué wearables usas?</div>
+    <div class="q-hint">Selecciona todos los que tengas. SAVIA sincroniza todos a la vez y combina su data.</div>
 
-    <div class="list-card" onclick="selectWearable(this, 'whoop')">
+    <div class="list-card" data-wearable="whoop" onclick="toggleWearable(this, 'whoop')">
       <div class="lc-icon"><svg class="icon"><use href="#i-whoop"/></svg></div>
       <div class="lc-text">
         <div class="lc-title">Whoop</div>
-        <div class="lc-sub">Sincroniza HRV, strain, recovery, sueño</div>
+        <div class="lc-sub">HRV, strain, recovery, sueño</div>
       </div>
       <div class="lc-check"></div>
     </div>
 
-    <div class="list-card" onclick="selectWearable(this, 'oura')">
+    <div class="list-card" data-wearable="oura" onclick="toggleWearable(this, 'oura')">
       <div class="lc-icon"><svg class="icon"><use href="#i-oura"/></svg></div>
       <div class="lc-text">
         <div class="lc-title">Oura Ring</div>
@@ -1033,7 +1396,7 @@
       <div class="lc-check"></div>
     </div>
 
-    <div class="list-card" onclick="selectWearable(this, 'apple')">
+    <div class="list-card" data-wearable="apple" onclick="toggleWearable(this, 'apple')">
       <div class="lc-icon"><svg class="icon"><use href="#i-apple"/></svg></div>
       <div class="lc-text">
         <div class="lc-title">Apple Watch</div>
@@ -1042,7 +1405,7 @@
       <div class="lc-check"></div>
     </div>
 
-    <div class="list-card" onclick="selectWearable(this, 'garmin')">
+    <div class="list-card" data-wearable="garmin" onclick="toggleWearable(this, 'garmin')">
       <div class="lc-icon"><svg class="icon"><use href="#i-garmin"/></svg></div>
       <div class="lc-text">
         <div class="lc-title">Garmin</div>
@@ -1051,7 +1414,16 @@
       <div class="lc-check"></div>
     </div>
 
-    <div class="list-card" onclick="selectWearable(this, 'ninguno')">
+    <div class="list-card" data-wearable="fitbit" onclick="toggleWearable(this, 'fitbit')">
+      <div class="lc-icon"><svg class="icon"><use href="#i-fitbit"/></svg></div>
+      <div class="lc-text">
+        <div class="lc-title">Fitbit</div>
+        <div class="lc-sub">Sueño, pasos, frecuencia cardíaca</div>
+      </div>
+      <div class="lc-check"></div>
+    </div>
+
+    <div class="list-card" data-wearable="ninguno" onclick="toggleWearable(this, 'ninguno')">
       <div class="lc-icon"><svg class="icon"><use href="#i-none"/></svg></div>
       <div class="lc-text">
         <div class="lc-title">No tengo wearable</div>
@@ -1060,20 +1432,21 @@
       <div class="lc-check"></div>
     </div>
 
-    <button class="continue-btn" id="continue-3" onclick="goStep(4)">Continuar</button>
+    <button class="continue-btn" id="continue-4" onclick="goStep(5)">Continuar</button>
   </div>
 
-  <!-- ============== Q4: Nombre + Foto ============== -->
-  <div class="screen" data-step="4">
-    <button class="back-btn" onclick="goStep(3)">‹</button>
+  <!-- ============== Q5: Nombre + Foto ============== -->
+  <div class="screen" data-step="5">
+    <button class="back-btn" onclick="goStep(4)">‹</button>
     <div class="progress-row">
+      <div class="progress-seg done"></div>
       <div class="progress-seg done"></div>
       <div class="progress-seg done"></div>
       <div class="progress-seg done"></div>
       <div class="progress-seg active"></div>
     </div>
 
-    <div class="q-eyebrow">Última pregunta</div>
+    <div class="q-eyebrow">Último paso</div>
     <div class="q-title">Pongámosle cara y nombre a tu SAVIA.</div>
     <div class="q-hint">Foto opcional. Tu data nunca sale de tu cohort.</div>
 
@@ -1085,15 +1458,13 @@
 
     <label class="field-label">Tu nombre</label>
     <input type="text" id="name-input" class="field-input" placeholder="Ej: Victor" oninput="validateNameStep()"/>
+    <div class="field-hint" style="margin-top: -4px;"></div>
 
-    <label class="field-label">Email</label>
-    <input type="email" id="email-input" class="field-input" placeholder="tu@email.com" oninput="validateNameStep()"/>
-
-    <button class="continue-btn" id="continue-4" onclick="startCalculation()">Crear mi SAVIA</button>
+    <button class="continue-btn" id="continue-5" onclick="startCalculation()">Crear mi SAVIA</button>
   </div>
 
   <!-- ============== Calibrando ============== -->
-  <div class="screen calc-screen" data-step="5">
+  <div class="screen calc-screen" data-step="6">
     <div class="calc-pulse">
       <div class="calc-pulse-core">S</div>
     </div>
@@ -1136,8 +1507,8 @@
     </div>
   </div>
 
-  <!-- ============== First Now Preview + entry choice ============== -->
-  <div class="screen now-preview" data-step="6">
+  <!-- ============== Welcome ============== -->
+  <div class="screen now-preview" data-step="7">
     <div class="now-preview-content">
       <div class="q-eyebrow">Bienvenido a SAVIA</div>
       <div class="q-title">Tu SAVIA está lista, <span id="welcome-name">Victor</span>.</div>
@@ -1167,10 +1538,34 @@
           El check-in toma 30 segundos y es lo que vuelve a SAVIA precisa contigo. <strong>Sin él, las recomendaciones son genéricas.</strong> Puedes hacerlo ahora o cuando quieras — no hay presión.
         </div>
         <div class="below-preview-buttons">
-          <button class="btn-primary" onclick="enterWithCheckin()">Entrar y hacer check-in</button>
-          <button class="btn-secondary" onclick="enterExplore()">Solo explorar por ahora</button>
+          <button class="btn-primary" onclick="proceedToFaceID('checkin')">Entrar y hacer check-in</button>
+          <button class="btn-secondary" onclick="proceedToFaceID('explore')">Solo explorar por ahora</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============== Face ID setup ============== -->
+  <div class="screen faceid-screen" data-step="8">
+    <div class="faceid-content">
+      <div class="faceid-icon-circle" id="faceid-icon">
+        <svg class="icon" style="width:56px; height:56px; stroke-width:1.3;"><use href="#i-faceid"/></svg>
+      </div>
+      <div class="faceid-title" id="faceid-title">Próximos logins, instantáneos.</div>
+      <div class="faceid-subtitle" id="faceid-subtitle">Activa Face ID o Touch ID. Entra a SAVIA en un segundo, sin escribir tu email otra vez.</div>
+
+      <div class="faceid-benefit">
+        <svg class="icon icon-sm"><use href="#i-check"/></svg>
+        <span>Tu biometría nunca sale de tu dispositivo</span>
+      </div>
+      <div class="faceid-benefit">
+        <svg class="icon icon-sm"><use href="#i-check"/></svg>
+        <span>Se desactiva cuando quieras desde Configuración</span>
+      </div>
+    </div>
+    <div class="splash-buttons" id="faceid-buttons">
+      <button class="btn-primary" onclick="activateFaceID()">Activar biometría</button>
+      <button class="btn-secondary" onclick="skipFaceID()">Más tarde</button>
     </div>
   </div>
 
@@ -1179,14 +1574,24 @@
 <script>
 const state = {
   step: 0,
-  goals: [],         // array of selected goal ids
-  resolution: null,  // 'recomp' | 'cut-first' | 'bulk-first' | null
-  level: '',
-  wearable: '',
-  name: '',
   email: '',
+  password: '',
+  sex: '',
+  age: '',
+  goals: [],
+  resolution: null,
+  maintenanceMode: null,
+  level: '',
+  wearables: [],
+  name: '',
   photo: null,
-  exploreFirst: false,
+  entryIntent: null,
+};
+
+const STORAGE = {
+  account: 'savia_account',          // serialized user account
+  enabled: 'savia_faceid_enabled',
+  credentialId: 'savia_credential_id',
 };
 
 function goStep(n) {
@@ -1200,7 +1605,128 @@ function goStep(n) {
 }
 
 // =============================================
-//  Q1: Goal selection with conflict detection
+//  Email validation + duplicate check
+// =============================================
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+}
+
+function accountExists(email) {
+  try {
+    const stored = localStorage.getItem(STORAGE.account);
+    if (!stored) return false;
+    const acc = JSON.parse(stored);
+    return acc.email && acc.email.toLowerCase() === email.toLowerCase();
+  } catch { return false; }
+}
+
+function getStoredAccount() {
+  try {
+    const stored = localStorage.getItem(STORAGE.account);
+    return stored ? JSON.parse(stored) : null;
+  } catch { return null; }
+}
+
+// =============================================
+//  SIGNUP
+// =============================================
+function validateSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const emailEl = document.getElementById('signup-email');
+  const errorEl = document.getElementById('signup-email-error');
+  const dupEl = document.getElementById('duplicate-warning');
+  const btn = document.getElementById('signup-btn');
+
+  let validEmail = false;
+  let isDuplicate = false;
+  errorEl.textContent = '';
+  emailEl.classList.remove('error');
+  dupEl.classList.add('hidden');
+
+  if (email.length > 0) {
+    if (!isValidEmail(email)) {
+      errorEl.textContent = 'Email inválido. Formato: tu@email.com';
+      emailEl.classList.add('error');
+    } else if (accountExists(email)) {
+      isDuplicate = true;
+      dupEl.classList.remove('hidden');
+    } else {
+      validEmail = true;
+    }
+  }
+
+  const validPassword = password.length >= 8;
+  btn.disabled = !(validEmail && validPassword && !isDuplicate);
+}
+
+function doSignup() {
+  state.email = document.getElementById('signup-email').value.trim();
+  state.password = document.getElementById('signup-password').value;
+  goStep(1);
+}
+
+// =============================================
+//  LOGIN
+// =============================================
+function validateLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const emailErr = document.getElementById('login-email-error');
+  const passErr = document.getElementById('login-password-error');
+  const btn = document.getElementById('login-btn');
+
+  emailErr.textContent = '';
+  passErr.textContent = '';
+
+  let canSubmit = true;
+  if (email.length > 0 && !isValidEmail(email)) {
+    emailErr.textContent = 'Email inválido';
+    canSubmit = false;
+  }
+  if (email.length === 0 || password.length === 0) canSubmit = false;
+  btn.disabled = !canSubmit;
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const acc = getStoredAccount();
+  if (!acc) {
+    document.getElementById('login-email-error').textContent =
+      'No encontramos cuenta en este dispositivo. Crea una nueva.';
+    return;
+  }
+  if (acc.email.toLowerCase() !== email.toLowerCase()) {
+    document.getElementById('login-email-error').textContent =
+      'Email no coincide con la cuenta registrada en este dispositivo.';
+    return;
+  }
+  // En prototype no validamos password real
+  alert(`Bienvenido de vuelta, ${(acc.name || 'usuario').split(' ')[0]}.\n\nLogin exitoso (en producción se validaría password con backend seguro).`);
+}
+
+// =============================================
+//  Q1: Sex + Age
+// =============================================
+function selectSex(value) {
+  state.sex = value;
+  document.getElementById('sex-m').classList.toggle('selected', value === 'm');
+  document.getElementById('sex-f').classList.toggle('selected', value === 'f');
+  // Show / hide women's section in objectives
+  document.getElementById('women-section').classList.toggle('hidden', value !== 'f');
+  validateSexAge();
+}
+
+function validateSexAge() {
+  const age = parseInt(document.getElementById('age-input').value, 10);
+  const validAge = age >= 16 && age <= 100;
+  const valid = state.sex && validAge;
+  document.getElementById('continue-1').classList.toggle('show', valid);
+  if (validAge) state.age = age;
+}
+
+// =============================================
+//  Q2: Goals
 // =============================================
 function toggleGoal(chip, value) {
   if (state.goals.includes(value)) {
@@ -1210,61 +1736,117 @@ function toggleGoal(chip, value) {
     state.goals.push(value);
     chip.classList.add('selected');
   }
-  document.getElementById('continue-1').classList.toggle('show', state.goals.length > 0);
+  document.getElementById('continue-2').classList.toggle('show', state.goals.length > 0);
 }
 
-function hasConflict() {
+function hasMaintenanceConflict() {
+  return state.goals.includes('maintenance') &&
+         (state.goals.includes('fat-loss') || state.goals.includes('muscle-gain'));
+}
+function hasRecompConflict() {
   return state.goals.includes('fat-loss') && state.goals.includes('muscle-gain');
 }
 
-function afterQ1() {
-  if (hasConflict()) {
-    // reset resolution if user changes goals
+function afterQ2() {
+  if (hasMaintenanceConflict()) {
+    state.maintenanceMode = null;
+    document.querySelectorAll('[data-step="2.4"] .resolve-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('continue-24').classList.remove('show');
+    goStep(2.4);
+  } else if (hasRecompConflict()) {
     state.resolution = null;
-    document.querySelectorAll('[data-step="1.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('continue-15').classList.remove('show');
-    goStep(1.5);
+    document.querySelectorAll('[data-step="2.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('continue-25').classList.remove('show');
+    goStep(2.5);
   } else {
-    goStep(2);
+    goStep(3);
+  }
+}
+
+function selectMaintenanceMode(card, mode) {
+  document.querySelectorAll('[data-step="2.4"] .resolve-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  state.maintenanceMode = mode;
+  document.getElementById('continue-24').classList.add('show');
+}
+
+function afterMaintenanceResolution() {
+  if (state.maintenanceMode === 'maintain') {
+    state.goals = state.goals.filter(g => g !== 'fat-loss' && g !== 'muscle-gain');
+    goStep(3);
+  } else {
+    state.goals = state.goals.filter(g => g !== 'maintenance');
+    if (hasRecompConflict()) {
+      state.resolution = null;
+      document.querySelectorAll('[data-step="2.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
+      document.getElementById('continue-25').classList.remove('show');
+      goStep(2.5);
+    } else {
+      goStep(3);
+    }
   }
 }
 
 function selectResolution(card, value) {
-  document.querySelectorAll('[data-step="1.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('[data-step="2.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
   state.resolution = value;
-  document.getElementById('continue-15').classList.add('show');
+  document.getElementById('continue-25').classList.add('show');
 }
 
-function backFromQ2() {
-  if (hasConflict()) goStep(1.5);
-  else goStep(1);
+function backFromQ3() {
+  if (hasMaintenanceConflict()) goStep(2.4);
+  else if (hasRecompConflict()) goStep(2.5);
+  else goStep(2);
 }
 
 // =============================================
-//  Q2: Level
+//  Q3: Level
 // =============================================
 function selectLevel(card, value) {
-  document.querySelectorAll('[data-step="2"] .list-card').forEach(c => c.classList.remove('selected'));
-  card.classList.add('selected');
-  state.level = value;
-  document.getElementById('continue-2').classList.add('show');
-  setTimeout(() => goStep(3), 420);
-}
-
-// =============================================
-//  Q3: Wearable
-// =============================================
-function selectWearable(card, value) {
   document.querySelectorAll('[data-step="3"] .list-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
-  state.wearable = value;
+  state.level = value;
   document.getElementById('continue-3').classList.add('show');
   setTimeout(() => goStep(4), 420);
 }
 
 // =============================================
-//  Q4: Photo + name
+//  Q4: Wearables (multi-select with explicit Continue)
+// =============================================
+function toggleWearable(card, value) {
+  // "Ninguno" is exclusive — if it's selected and user picks another, remove ninguno
+  // If user picks ninguno, remove all others
+  if (value === 'ninguno') {
+    if (state.wearables.includes('ninguno')) {
+      state.wearables = state.wearables.filter(v => v !== 'ninguno');
+      card.classList.remove('selected');
+    } else {
+      // Deselect all others
+      state.wearables = ['ninguno'];
+      document.querySelectorAll('[data-step="4"] .list-card').forEach(c => {
+        c.classList.toggle('selected', c.dataset.wearable === 'ninguno');
+      });
+    }
+  } else {
+    // Remove ninguno if present
+    if (state.wearables.includes('ninguno')) {
+      state.wearables = state.wearables.filter(v => v !== 'ninguno');
+      document.querySelector('[data-wearable="ninguno"]').classList.remove('selected');
+    }
+    if (state.wearables.includes(value)) {
+      state.wearables = state.wearables.filter(v => v !== value);
+      card.classList.remove('selected');
+    } else {
+      state.wearables.push(value);
+      card.classList.add('selected');
+    }
+  }
+  document.getElementById('continue-4').classList.toggle('show', state.wearables.length > 0);
+}
+
+// =============================================
+//  Q5: Name + Photo
 // =============================================
 document.getElementById('photo-input').addEventListener('change', function(e) {
   const file = e.target.files[0];
@@ -1281,83 +1863,199 @@ document.getElementById('photo-input').addEventListener('change', function(e) {
 
 function validateNameStep() {
   const name = document.getElementById('name-input').value.trim();
-  const email = document.getElementById('email-input').value.trim();
-  const valid = name.length >= 2 && email.includes('@');
-  document.getElementById('continue-4').classList.toggle('show', valid);
+  const valid = name.length >= 2;
+  document.getElementById('continue-5').classList.toggle('show', valid);
   state.name = name;
-  state.email = email;
 }
 
 // =============================================
 //  Calibrating
 // =============================================
 function startCalculation() {
-  goStep(5);
-  // Calibrando con dots animados (CSS) por un momento, luego revela el detalle
-  setTimeout(() => {
-    revealCalibrating();
-  }, 2400);
-}
+  // Save account to localStorage at this point
+  try {
+    localStorage.setItem(STORAGE.account, JSON.stringify({
+      email: state.email,
+      name: state.name,
+      sex: state.sex,
+      age: state.age,
+      goals: state.goals,
+      level: state.level,
+      wearables: state.wearables,
+      photo: state.photo,
+      maintenanceMode: state.maintenanceMode,
+      resolution: state.resolution,
+      createdAt: new Date().toISOString(),
+    }));
+  } catch (e) { console.warn('Storage error:', e); }
 
-function getWearableName() {
-  const map = { whoop: 'Whoop', oura: 'Oura Ring', apple: 'Apple Health', garmin: 'Garmin' };
-  return map[state.wearable] || 'wearable';
-}
-function getLevelLabel() {
-  const map = { empezando: 'Empezando', familiar: 'Familiar', avanzado: 'Avanzado' };
-  return map[state.level] || '';
-}
-function getResolutionLabel() {
-  const map = {
-    'recomp': 'Body recomp',
-    'cut-first': 'Cut → Bulk',
-    'bulk-first': 'Bulk → Cut',
-  };
-  return map[state.resolution] || '';
+  goStep(6);
+  setTimeout(revealCalibrating, 2400);
 }
 
 function revealCalibrating() {
   document.getElementById('calibrating-section').classList.add('show');
   setTimeout(() => {
-    document.getElementById('welcome-name').textContent = state.name.split(' ')[0] || 'Victor';
-    goStep(6);
+    document.getElementById('welcome-name').textContent = state.name.split(' ')[0] || 'usuario';
+    goStep(7);
   }, 2200);
 }
 
 function showWQExplain() {
   alert(
     'Cómo se calcula el Wellness Quotient (WQ)\n\n' +
-    'El WQ es una síntesis ponderada de tus señales reales, calibrada a TU baseline (no a promedios poblacionales).\n\n' +
-    'Componentes principales:\n\n' +
-    '· Recovery (HRV en reposo, comparado con tu propio baseline de 30 días)\n' +
-    '· Sleep quality (sueño profundo + REM + eficiencia + latencia)\n' +
-    '· Strain balance (ACWR — ratio carga aguda vs crónica, ideal ≈ 1.0)\n' +
-    '· Subjective (energía, ánimo, estrés — autoreportados en check-ins)\n' +
-    '· Resting HR trend (tendencia de 7 días)\n\n' +
-    'Cada usuario tiene un modelo bayesiano único. Lo que predice bien para ti puede no predecir bien para otro. Por eso los primeros 7 días son críticos.\n\n' +
+    'El WQ es una síntesis ponderada de tus señales reales, calibrada a TU baseline.\n\n' +
+    'Componentes principales:\n' +
+    '· Recovery (HRV vs tu baseline de 30 días)\n' +
+    '· Sleep quality (profundo + REM + eficiencia + latencia)\n' +
+    '· Strain balance (ACWR — ratio carga aguda vs crónica)\n' +
+    '· Subjective (energía, ánimo, estrés — check-ins)\n' +
+    '· Resting HR trend (7 días)\n\n' +
     'Zonas: <45 Caution · 45-64 Recover · 65-84 Steady · 85+ Apex'
   );
 }
 
 // =============================================
-//  Entry: check-in vs explore
+//  Welcome → Face ID
 // =============================================
-function enterWithCheckin() {
-  state.exploreFirst = false;
-  alert(
-    `Perfecto, ${state.name.split(' ')[0]}.\n\n` +
-    `Te llevamos al check-in (30 seg).\n\n` +
-    `Después de eso, tu WQ empieza a calibrarse con data real.`
-  );
+function proceedToFaceID(intent) {
+  state.entryIntent = intent;
+  goStep(8);
 }
 
-function enterExplore() {
-  state.exploreFirst = true;
-  alert(
-    `Te llevamos al app, ${state.name.split(' ')[0]}.\n\n` +
-    `Vas a ver estados "calibrando" en las recomendaciones — es normal hasta que hagas tu primer check-in.\n\n` +
-    `Cuando llegues a una decisión que necesite tu data, SAVIA te lo pedirá ahí. Sin presión.`
-  );
+// =============================================
+//  Face ID / WebAuthn
+// =============================================
+function base64UrlEncode(buf) {
+  return btoa(String.fromCharCode(...new Uint8Array(buf)))
+    .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function base64UrlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  while (str.length % 4) str += '=';
+  return Uint8Array.from(atob(str), c => c.charCodeAt(0));
+}
+
+async function activateFaceID() {
+  const buttonsEl = document.getElementById('faceid-buttons');
+  const titleEl = document.getElementById('faceid-title');
+  const subtitleEl = document.getElementById('faceid-subtitle');
+  const iconEl = document.getElementById('faceid-icon');
+
+  if (!window.PublicKeyCredential || !navigator.credentials) {
+    titleEl.textContent = 'Tu dispositivo no soporta biometría web';
+    subtitleEl.textContent = 'Usaremos email para tus próximos logins.';
+    setTimeout(skipFaceID, 1800);
+    return;
+  }
+
+  try {
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const userIdBytes = new TextEncoder().encode(state.email || ('savia-' + Date.now()));
+
+    const credential = await navigator.credentials.create({
+      publicKey: {
+        challenge: challenge,
+        rp: { name: 'SAVIA', id: window.location.hostname },
+        user: { id: userIdBytes, name: state.email, displayName: state.name },
+        pubKeyCredParams: [
+          { alg: -7, type: 'public-key' },
+          { alg: -257, type: 'public-key' }
+        ],
+        authenticatorSelection: {
+          authenticatorAttachment: 'platform',
+          userVerification: 'required',
+          residentKey: 'preferred'
+        },
+        timeout: 60000,
+        attestation: 'none'
+      }
+    });
+
+    const credentialId = base64UrlEncode(credential.rawId);
+    try {
+      localStorage.setItem(STORAGE.enabled, 'true');
+      localStorage.setItem(STORAGE.credentialId, credentialId);
+    } catch (e) { console.warn(e); }
+
+    iconEl.classList.add('success');
+    iconEl.innerHTML = '<svg class="icon" style="width:48px; height:48px; stroke-width:2;"><use href="#i-check"/></svg>';
+    titleEl.textContent = 'Biometría activada';
+    subtitleEl.textContent = 'Tu próximo login será automático. Bienvenido a SAVIA.';
+    buttonsEl.innerHTML = '';
+    setTimeout(enterFinalApp, 1800);
+
+  } catch (err) {
+    console.warn('Face ID error:', err);
+    if (err.name === 'NotAllowedError') {
+      titleEl.textContent = 'Activación cancelada';
+      subtitleEl.textContent = 'Puedes activarla más tarde desde Configuración.';
+      buttonsEl.innerHTML = '<button class="btn-primary" onclick="skipFaceID()">Continuar</button>';
+    } else {
+      titleEl.textContent = 'No se pudo configurar';
+      subtitleEl.textContent = 'Tu dispositivo o navegador no permite biometría web. Usaremos email.';
+      setTimeout(skipFaceID, 2000);
+    }
+  }
+}
+
+function skipFaceID() { enterFinalApp(); }
+
+function enterFinalApp() {
+  const intent = state.entryIntent;
+  const firstName = (state.name || 'usuario').split(' ')[0];
+  if (intent === 'checkin') {
+    alert(
+      `Perfecto, ${firstName}.\n\n` +
+      `Te llevamos al check-in (30 seg).\n\n` +
+      `Después de eso, tu WQ empieza a calibrarse con data real.`
+    );
+  } else {
+    alert(
+      `Te llevamos al app, ${firstName}.\n\n` +
+      `Verás estados "calibrando" — es normal hasta que hagas tu primer check-in.\n\n` +
+      `Sin presión.`
+    );
+  }
+}
+
+async function tryFaceIDLogin() {
+  const enabled = localStorage.getItem(STORAGE.enabled);
+  const credentialId = localStorage.getItem(STORAGE.credentialId);
+  const acc = getStoredAccount();
+
+  if (enabled !== 'true' || !credentialId || !acc) {
+    alert('No hay biometría activa en este dispositivo. Inicia sesión con email.');
+    return;
+  }
+  if (!window.PublicKeyCredential || !navigator.credentials) {
+    alert('Tu navegador no soporta biometría web. Usa email.');
+    return;
+  }
+
+  try {
+    const challenge = crypto.getRandomValues(new Uint8Array(32));
+    const rawId = base64UrlDecode(credentialId);
+
+    await navigator.credentials.get({
+      publicKey: {
+        challenge: challenge,
+        allowCredentials: [{ id: rawId, type: 'public-key', transports: ['internal'] }],
+        userVerification: 'required',
+        timeout: 60000,
+      }
+    });
+
+    const firstName = (acc.name || 'usuario').split(' ')[0];
+    alert(`Bienvenido de vuelta, ${firstName}.\n\nLogin con biometría exitoso. Te llevamos a tu Now Screen.`);
+  } catch (err) {
+    console.warn('Face ID login error:', err);
+    if (err.name === 'NotAllowedError') {
+      alert('Autenticación cancelada o fallida.');
+    } else {
+      alert('No se pudo verificar. Usa email para entrar.');
+    }
+  }
 }
 
 // =============================================
@@ -1373,6 +2071,16 @@ function updateTime() {
 }
 updateTime();
 setInterval(updateTime, 30000);
+
+// On load: if Face ID was enabled, prefill login email and emphasize Face ID button
+(function init() {
+  const acc = getStoredAccount();
+  if (acc && acc.email) {
+    document.getElementById('login-email').value = acc.email;
+    document.getElementById('signup-email').value = acc.email;
+    // If Face ID enabled, splash could route to login by default — but keep the user choice
+  }
+})();
 </script>
 </body>
 </html>
