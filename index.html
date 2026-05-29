@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0A0F1C">
+<meta name="description" content="SAVIA — Wellness OS · Tu copiloto de salud integral">
+<title>SAVIA — Wellness OS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ============== RESET ============== */
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(ellipse at 50% 0%, #0F1F1A 0%, #050810 60%);
+    color: #F1F5F9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    overflow: hidden;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* ============== APP FRAME ============== */
+  .app-frame {
+    width: 420px;
+    height: 900px;
+    max-height: 96vh;
+    background: #0A0F1C;
+    border-radius: 36px;
+    border: 1px solid #1E293B;
+    box-shadow:
+      0 0 0 8px #050810,
+      0 0 60px rgba(16, 185, 129, 0.08),
+      0 20px 80px rgba(0,0,0,0.5);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  @media (max-width: 500px) {
+    .app-frame {
+      width: 100vw;
+      height: 100vh;
+      max-height: 100vh;
+      border-radius: 0;
+      border: none;
+      box-shadow: none;
+    }
+  }
+
+  /* ============== STATUS BAR ============== */
+  .status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 24px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #F1F5F9;
+    flex-shrink: 0;
+  }
+  .battery { display: flex; align-items: center; gap: 4px; }
+
+  /* ============== SCREENS ============== */
+  .screens {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    position: relative;
+  }
+  .screens::-webkit-scrollbar { display: none; }
+  .screens { scrollbar-width: none; }
+  .screen {
+    display: none;
+    padding: 0 20px 16px;
+    animation: fadeIn 0.4s ease-out;
+  }
+  .screen.active { display: block; }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ============== AUTH SCREENS ============== */
+  .auth-container {
+    display: none;
+    flex: 1;
+    flex-direction: column;
+    padding: 0 24px 32px;
+    overflow-y: auto;
+  }
+  .auth-container.active { display: flex; }
+  .auth-container::-webkit-scrollbar { display: none; }
+
+  .savia-logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #10B981, #064E3B);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 900;
+    font-size: 38px;
+    box-shadow: 0 0 32px rgba(16, 185, 129, 0.3);
+    margin: 40px auto 24px;
+  }
+
+  .auth-title {
+    font-size: 28px;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+  .auth-subtitle {
+    font-size: 14px;
+    color: #94A3B8;
+    text-align: center;
+    margin-bottom: 32px;
+    line-height: 1.5;
+  }
+
+  .input-group { margin-bottom: 16px; }
+  .input-label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #64748B;
+    margin-bottom: 8px;
+  }
+  .input-field {
+    width: 100%;
+    background: #131C2E;
+    border: 1px solid #1E293B;
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-size: 14px;
+    color: #F1F5F9;
+    outline: none;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  .input-field:focus { border-color: #34D399; background: #15233B; }
+  .input-field::placeholder { color: #475569; }
+
+  .input-row { display: flex; gap: 10px; }
+  .input-row .input-group { flex: 1; }
+
+  .option-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-top: 8px;
+  }
+  .option-card {
+    background: #131C2E;
+    border: 1px solid #1E293B;
+    border-radius: 14px;
+    padding: 16px 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  .option-card:hover { border-color: #34D399; }
+  .option-card.selected {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10B981;
+  }
+  .option-card .opt-ico { font-size: 24px; margin-bottom: 6px; }
+  .option-card .opt-name { font-size: 13px; font-weight: 600; }
+  .option-card .opt-sub { font-size: 10px; color: #64748B; margin-top: 2px; }
+
+  .photo-upload {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #131C2E;
+    border: 2px dashed #334155;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+    background-size: cover;
+    background-position: center;
+  }
+  .photo-upload:hover { border-color: #34D399; }
+  .photo-upload .photo-icon {
+    color: #475569;
+    font-size: 36px;
+  }
+  .photo-upload.has-photo .photo-icon { display: none; }
+  .photo-upload.has-photo {
+    border-style: solid;
+    border-color: #10B981;
+  }
+  .photo-upload-text {
+    text-align: center;
+    font-size: 12px;
+    color: #64748B;
+    margin-bottom: 24px;
+  }
+  .photo-hidden-input { display: none; }
+
+  .auth-btn {
+    background: #10B981;
+    color: #0A0F1C;
+    border: none;
+    padding: 16px;
+    border-radius: 14px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 16px;
+    transition: all 0.15s;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+    font-family: inherit;
+  }
+  .auth-btn:active { transform: scale(0.98); }
+  .auth-btn:disabled { background: #475569; box-shadow: none; opacity: 0.5; cursor: not-allowed; }
+  .auth-btn-secondary {
+    background: transparent;
+    color: #34D399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    box-shadow: none;
+  }
+
+  .auth-link {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 13px;
+    color: #94A3B8;
+  }
+  .auth-link a {
+    color: #34D399;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .step-indicator {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .step-dot {
+    width: 30px;
+    height: 4px;
+    background: #1E293B;
+    border-radius: 2px;
+    transition: all 0.3s;
+  }
+  .step-dot.active { background: #10B981; }
+  .step-dot.done { background: #34D399; opacity: 0.6; }
+
+  .features-list {
+    margin: 16px 0 24px;
+  }
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .feature-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(16, 185, 129, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .feature-text {
+    font-size: 13px;
+    color: #CBD5E1;
+    line-height: 1.5;
+  }
+  .feature-text strong { color: #F1F5F9; }
+
+  /* ============== TYPOGRAPHY ============== */
+  .greeting { font-size: 24px; font-weight: 700; letter-spacing: -0.5px; margin-top: 8px; }
+  .subtitle { font-size: 13px; color: #94A3B8; margin-top: 4px; line-height: 1.4; }
+  .context-badge {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #FBBF24;
+    padding: 4px 10px;
+    background: rgba(251, 191, 36, 0.08);
+    border-radius: 999px;
+    margin-top: 12px;
+  }
+  .label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #64748B;
+  }
+  .stat-big { font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; }
+  .stat-mid { font-size: 20px; font-weight: 700; }
+  .stat-sub { font-size: 12px; color: #94A3B8; margin-top: 2px; }
+  .stat-accent { color: #34D399; font-weight: 600; }
+  .stat-warn { color: #FBBF24; font-weight: 600; }
+  .stat-violet { color: #C4B5FD; font-weight: 600; }
+  .stat-pink { color: #F472B6; font-weight: 600; }
+
+  /* ============== CARDS ============== */
+  .card {
+    background: #131C2E;
+    border: 1px solid #1E293B;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 14px;
+    transition: transform 0.15s ease;
+  }
+  .card:active { transform: scale(0.98); }
+  .card-row { display: flex; gap: 12px; }
+  .card-row .card { flex: 1; margin-top: 0; }
+  .card-accent { background: linear-gradient(135deg, rgba(16, 185, 129, 0.12), rgba(15, 118, 110, 0.04)); border-color: rgba(16, 185, 129, 0.3); }
+  .card-violet { background: linear-gradient(135deg, rgba(167, 139, 250, 0.12), rgba(76, 29, 149, 0.04)); border-color: rgba(167, 139, 250, 0.3); }
+  .card-warm { background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(180, 83, 9, 0.03)); border-color: rgba(251, 191, 36, 0.2); }
+  .card-pink { background: linear-gradient(135deg, rgba(244, 114, 182, 0.10), rgba(157, 23, 77, 0.03)); border-color: rgba(244, 114, 182, 0.25); }
+  .card-blue { background: linear-gradient(135deg, rgba(96, 165, 250, 0.10), rgba(30, 64, 175, 0.03)); border-color: rgba(96, 165, 250, 0.25); }
+
+  /* ============== RINGS ============== */
+  .rings-container { display: flex; justify-content: center; gap: 28px; margin: 16px 0 8px; }
+  .ring { position: relative; width: 108px; height: 108px; }
+  .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: #1E293B; stroke-width: 8; }
+  .ring-fg { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.2s cubic-bezier(0.65, 0, 0.35, 1); }
+  .ring-value {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .ring-value .n { font-size: 26px; font-weight: 800; letter-spacing: -1px; }
+  .ring-value .lbl { font-size: 11px; color: #94A3B8; margin-top: -2px; }
+
+  /* ============== MACROS ============== */
+  .macro-row { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; font-size: 13px; }
+  .macro-bar { height: 5px; background: #0F172A; border-radius: 3px; margin-top: 4px; overflow: hidden; }
+  .macro-fill { height: 100%; border-radius: 3px; transition: width 1s ease; }
+
+  /* ============== QUICK ACTIONS ============== */
+  .quick-actions { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+  .quick-action {
+    background: #131C2E;
+    border: 1px solid #1E293B;
+    border-radius: 14px;
+    padding: 14px 4px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+  }
+  .quick-action:active { transform: scale(0.95); }
+  .quick-action:hover { border-color: #34D399; }
+  .quick-action .ico { font-size: 22px; margin-bottom: 4px; }
+  .quick-action .name { font-size: 11px; font-weight: 600; color: #CBD5E1; }
+
+  .section-title { font-size: 16px; font-weight: 700; margin-top: 24px; margin-bottom: 4px; }
+  .section-sub { font-size: 12px; color: #94A3B8; margin-top: 2px; }
+
+  /* ============== PEPTIDE CARDS ============== */
+  .peptide-card {
+    background: #131C2E;
+    border: 1px solid #1E293B;
+    border-radius: 16px;
+    padding: 16px;
+    margin-top: 12px;
+    border-left: 4px solid #10B981;
+    transition: transform 0.15s ease;
+    cursor: pointer;
+  }
+  .peptide-card.bpc { border-left-color: #34D399; }
+  .peptide-card.nad { border-left-color: #A78BFA; }
+  .peptide-card.supp { border-left-color: #FBBF24; }
+  .peptide-name { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+  .peptide-desc { font-size: 12px; color: #C4B5FD; margin-bottom: 12px; }
+  .peptide-meta { display: flex; justify-content: space-between; align-items: flex-end; margin-top: 8px; gap: 12px; }
+  .peptide-meta-l { flex: 1; }
+  .peptide-meta-r { text-align: right; }
+  .cycle-bar { width: 100px; height: 4px; background: #0F172A; border-radius: 2px; margin-top: 4px; overflow: hidden; }
+  .cycle-fill { height: 100%; background: #10B981; border-radius: 2px; }
+
+  /* ============== BODY ============== */
+  .body-stage {
+    background: #07101A;
+    border: 1px solid #1E293B;
+    border-radius: 20px;
+    padding: 24px;
+    margin-top: 16px;
+    position: relative;
+    min-height: 480px;
+    background-image:
+      linear-gradient(rgba(16,185,129,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(16,185,129,0.04) 1px, transparent 1px);
+    background-size: 22px 22px;
+    overflow: hidden;
+  }
+  .body-stage svg { display: block; margin: 0 auto; width: 100%; max-width: 300px; height: 460px; }
+  .body-legend { display: flex; gap: 14px; justify-content: center; margin-top: 8px; font-size: 11px; color: #94A3B8; }
+  .body-legend .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; vertical-align: middle; margin-right: 4px; }
+
+  .scan-timeline { display: flex; gap: 8px; margin-top: 14px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .scan-timeline::-webkit-scrollbar { display: none; }
+  .scan-thumb {
+    flex-shrink: 0; width: 64px;
+    background: #131C2E; border: 1px solid #1E293B;
+    border-radius: 10px; padding: 8px 6px;
+    text-align: center; cursor: pointer; transition: all 0.2s;
+  }
+  .scan-thumb.current { border-color: #10B981; background: rgba(16, 185, 129, 0.08); }
+  .scan-thumb-svg { width: 30px; height: 50px; margin: 0 auto; display: block; }
+  .scan-thumb-date { font-size: 9px; font-weight: 600; color: #94A3B8; margin-top: 4px; }
+  .scan-thumb-bf { font-size: 9px; color: #64748B; }
+  .scan-thumb.current .scan-thumb-date, .scan-thumb.current .scan-thumb-bf { color: #34D399; }
+
+  /* ============== SYMPTOM GRID ============== */
+  .symptom-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 12px; }
+  .symptom-cell { background: #131C2E; border: 1px solid #1E293B; border-radius: 12px; padding: 12px; cursor: pointer; transition: all 0.15s; }
+  .symptom-cell:hover { border-color: #34D399; }
+  .symptom-cell:active { transform: scale(0.97); }
+  .symptom-cell .row { display: flex; align-items: center; gap: 8px; }
+  .symptom-cell .row .nm { font-size: 12px; color: #CBD5E1; font-weight: 500; }
+  .symptom-cell .val { font-size: 22px; font-weight: 800; margin-top: 6px; }
+  .symptom-cell .sub { font-size: 10px; color: #64748B; margin-top: 2px; }
+
+  /* ============== CHAT ============== */
+  .chat-container { display: flex; flex-direction: column; height: 100%; }
+  .chat-header { padding: 12px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #1E293B; flex-shrink: 0; }
+  .savia-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, #10B981, #064E3B);
+    display: flex; align-items: center; justify-content: center;
+    color: #ECFDF5; font-weight: 800; font-size: 15px;
+    box-shadow: 0 0 16px rgba(16, 185, 129, 0.4);
+  }
+  .chat-title { font-size: 15px; font-weight: 700; }
+  .chat-status { font-size: 11px; color: #64748B; margin-top: 1px; }
+  .chat-status .pulse { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #34D399; margin-right: 5px; animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.15); } }
+
+  .chat-messages {
+    flex: 1; overflow-y: auto;
+    padding: 16px 20px;
+    display: flex; flex-direction: column;
+    gap: 10px; scroll-behavior: smooth;
+  }
+  .chat-messages::-webkit-scrollbar { display: none; }
+
+  .msg {
+    max-width: 82%; padding: 12px 14px;
+    border-radius: 18px; font-size: 13.5px; line-height: 1.5;
+    animation: msgIn 0.3s ease-out; word-wrap: break-word;
+  }
+  @keyframes msgIn { from { opacity: 0; transform: translateY(6px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  .msg-user { background: linear-gradient(135deg, #064E3B, #0F766E); color: #ECFDF5; align-self: flex-end; border-bottom-right-radius: 6px; }
+  .msg-ai { background: #131C2E; border: 1px solid #1E293B; color: #E2E8F0; align-self: flex-start; border-bottom-left-radius: 6px; }
+  .msg-ai strong { color: #34D399; font-weight: 700; }
+  .msg-ai em { color: #C4B5FD; font-style: normal; font-weight: 600; }
+
+  .citations { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; align-self: flex-start; max-width: 90%; }
+  .citation-chip { font-size: 10px; font-weight: 600; color: #FBBF24; background: rgba(251, 191, 36, 0.08); border: 1px solid rgba(251, 191, 36, 0.25); padding: 4px 9px; border-radius: 999px; }
+
+  .quick-chips { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0 0; align-self: flex-start; max-width: 90%; }
+  .chip { background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); color: #34D399; padding: 7px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+  .chip:hover { background: rgba(16, 185, 129, 0.18); }
+  .chip:active { transform: scale(0.95); }
+
+  .typing { display: flex; gap: 4px; padding: 14px 16px; background: #131C2E; border: 1px solid #1E293B; border-radius: 18px; border-bottom-left-radius: 6px; align-self: flex-start; width: fit-content; }
+  .typing span { width: 7px; height: 7px; background: #34D399; border-radius: 50%; opacity: 0.4; animation: typing 1.4s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%, 60%, 100% { opacity: 0.4; transform: translateY(0); } 30% { opacity: 1; transform: translateY(-3px); } }
+
+  .suggested { padding: 8px 20px 14px; border-bottom: 1px solid #1E293B; flex-shrink: 0; }
+  .suggested-label { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; color: #64748B; text-transform: uppercase; margin-bottom: 8px; }
+  .suggested-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .suggested-row::-webkit-scrollbar { display: none; }
+  .suggested-pill { flex-shrink: 0; background: #131C2E; border: 1px solid #1E293B; color: #CBD5E1; padding: 8px 12px; border-radius: 999px; font-size: 12px; font-weight: 500; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+  .suggested-pill:hover { border-color: #34D399; color: #34D399; }
+
+  .chat-input-bar { display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid #1E293B; background: #0A0F1C; flex-shrink: 0; align-items: center; }
+  .chat-input { flex: 1; background: #131C2E; border: 1px solid #1E293B; border-radius: 999px; padding: 12px 18px; font-size: 13.5px; color: #F1F5F9; outline: none; font-family: inherit; transition: border-color 0.2s; }
+  .chat-input:focus { border-color: #34D399; }
+  .chat-input::placeholder { color: #64748B; }
+  .chat-send, .chat-voice { width: 42px; height: 42px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.15s; }
+  .chat-send { background: #10B981; color: #0A0F1C; font-size: 18px; box-shadow: 0 0 16px rgba(16, 185, 129, 0.4); }
+  .chat-voice { background: #131C2E; border: 1px solid #1E293B; color: #34D399; font-size: 16px; }
+  .chat-send:active, .chat-voice:active { transform: scale(0.92); }
+
+  /* ============== BOTTOM NAV ============== */
+  .bottom-nav { display: flex; justify-content: space-around; padding: 10px 4px 22px; border-top: 1px solid #1E293B; background: rgba(10, 15, 28, 0.95); backdrop-filter: blur(20px); flex-shrink: 0; }
+  .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 8px; cursor: pointer; transition: all 0.2s ease; border-radius: 14px; flex: 1; }
+  .nav-item .nav-ico { font-size: 19px; opacity: 0.5; transition: all 0.2s; }
+  .nav-item .nav-lbl { font-size: 10px; font-weight: 600; color: #64748B; }
+  .nav-item.active .nav-ico { opacity: 1; transform: scale(1.08); }
+  .nav-item.active .nav-lbl { color: #34D399; }
+
+  /* ============== CALIBRATION ============== */
+  .calibration { background: linear-gradient(135deg, #0F172A, #0F2A24); border: 1px solid #1E293B; border-radius: 16px; padding: 16px; margin-top: 14px; }
+  .calibration .top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+  .calibration-bar { height: 8px; background: #0A0F1C; border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .calibration-fill { height: 100%; background: linear-gradient(90deg, #10B981, #34D399); border-radius: 4px; transition: width 1.5s ease; }
+
+  /* ============== INSIGHT ============== */
+  .insight { background: rgba(251, 191, 36, 0.06); border: 1px solid rgba(251, 191, 36, 0.18); border-radius: 14px; padding: 14px; margin-top: 12px; }
+  .insight .ttl { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #FBBF24; margin-bottom: 6px; }
+  .insight .txt { font-size: 13px; line-height: 1.5; color: #E2E8F0; }
+
+  /* ============== RESTAURANT ============== */
+  .resto { display: flex; gap: 12px; align-items: center; background: #131C2E; border: 1px solid #1E293B; border-radius: 14px; padding: 12px; margin-top: 10px; cursor: pointer; transition: all 0.2s; }
+  .resto:hover { border-color: #34D399; }
+  .resto:active { transform: scale(0.98); }
+  .resto-photo { width: 54px; height: 54px; border-radius: 12px; background: linear-gradient(135deg, #B45309, #7C2D12); display: flex; align-items: center; justify-content: center; font-size: 24px; flex-shrink: 0; }
+  .resto-photo.j { background: linear-gradient(135deg, #0F766E, #064E3B); }
+  .resto-photo.s { background: linear-gradient(135deg, #7C3AED, #4C1D95); }
+  .resto-info { flex: 1; min-width: 0; }
+  .resto-name { font-size: 14px; font-weight: 700; }
+  .resto-meta { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+  .resto-match { font-size: 11px; color: #34D399; font-weight: 600; margin-top: 4px; }
+
+  /* ============== STREAK ============== */
+  .streak-bar { background: linear-gradient(90deg, rgba(251,191,36,0.12), rgba(251,191,36,0.02)); border: 1px solid rgba(251,191,36,0.3); border-radius: 14px; padding: 12px 14px; margin-top: 14px; display: flex; justify-content: space-between; align-items: center; }
+  .streak-bar .ico { font-size: 22px; }
+  .streak-bar .ttl { font-size: 13px; font-weight: 700; color: #F1F5F9; }
+  .streak-bar .sub { font-size: 11px; color: #FBBF24; margin-top: 2px; font-weight: 600; }
+  .streak-days { display: flex; gap: 4px; }
+  .streak-day { width: 6px; height: 18px; background: #292524; border-radius: 3px; }
+  .streak-day.done { background: #FBBF24; }
+
+  /* ============== INPUT SOURCES ============== */
+  .input-source { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #131C2E; border: 1px solid #1E293B; border-radius: 12px; margin-top: 10px; }
+  .input-source-l { display: flex; gap: 12px; align-items: center; flex: 1; min-width: 0; }
+  .input-source-ico { width: 36px; height: 36px; border-radius: 10px; background: rgba(16, 185, 129, 0.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .input-source-ico.warn { background: rgba(251, 191, 36, 0.1); }
+  .input-source-ico.off { background: rgba(100, 116, 139, 0.1); }
+  .input-source-name { font-size: 13px; font-weight: 600; color: #E2E8F0; }
+  .input-source-sub { font-size: 11px; color: #64748B; margin-top: 2px; }
+  .input-source-status { font-size: 11px; font-weight: 600; color: #34D399; }
+  .input-source-status.warn { color: #FBBF24; }
+  .input-source-status.off { color: #64748B; }
+
+  /* ============== MODEL PILLS ============== */
+  .model-pill { display: inline-block; padding: 6px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; margin-right: 6px; margin-bottom: 6px; }
+  .model-pill.base { background: rgba(16,185,129,0.1); color: #34D399; border: 1px solid rgba(16,185,129,0.3); }
+  .model-pill.athlete { background: rgba(167,139,250,0.1); color: #C4B5FD; border: 1px solid rgba(167,139,250,0.3); }
+  .model-pill.cycle { background: rgba(244,114,182,0.1); color: #F472B6; border: 1px solid rgba(244,114,182,0.3); }
+
+  /* ============== PROFILE AVATAR ============== */
+  .profile-avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0F766E, #064E3B);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 800; font-size: 28px;
+    margin: 4px auto 12px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    box-shadow: 0 0 32px rgba(16, 185, 129, 0.2);
+    border: 3px solid rgba(16, 185, 129, 0.3);
+  }
+  .profile-name-display {
+    text-align: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .profile-meta-display {
+    text-align: center;
+    font-size: 12px;
+    color: #94A3B8;
+    margin-bottom: 16px;
+  }
+
+  /* ============== MODAL ============== */
+  .modal-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index: 100; display: none; align-items: flex-end; justify-content: center; animation: fadeIn 0.2s ease; }
+  .modal-overlay.active { display: flex; }
+  .modal { background: #0F172A; border-top: 1px solid #1E293B; border-top-left-radius: 24px; border-top-right-radius: 24px; width: 100%; max-height: 85%; overflow-y: auto; padding: 24px 20px 28px; animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+  .modal::-webkit-scrollbar { display: none; }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-handle { width: 40px; height: 4px; background: #475569; border-radius: 2px; margin: -8px auto 16px; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+  .modal-sub { font-size: 12px; color: #94A3B8; margin-bottom: 16px; }
+  .modal-action { width: 100%; background: #10B981; color: #0A0F1C; border: none; padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; margin-top: 16px; font-family: inherit; }
+  .modal-action:active { transform: scale(0.98); }
+  .modal-action.secondary { background: #131C2E; color: #34D399; border: 1px solid rgba(16, 185, 129, 0.3); }
+
+  /* ============== WEEK + AGENDA ============== */
+  .week-strip { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; margin-top: 14px; }
+  .week-day { background: #131C2E; border: 1px solid #1E293B; border-radius: 10px; padding: 8px 4px; text-align: center; cursor: pointer; transition: all 0.15s; }
+  .week-day.today { background: rgba(16, 185, 129, 0.1); border-color: #10B981; }
+  .week-day .nm { font-size: 10px; color: #64748B; font-weight: 600; }
+  .week-day .num { font-size: 16px; font-weight: 700; margin-top: 2px; }
+  .week-day .dots { display: flex; justify-content: center; gap: 3px; margin-top: 4px; }
+  .week-day .dots span { width: 4px; height: 4px; border-radius: 50%; background: #475569; }
+  .week-day .dots span.dose { background: #A78BFA; }
+  .week-day .dots span.workout { background: #10B981; }
+  .week-day .dots span.appt { background: #60A5FA; }
+
+  .timeline-item { display: flex; gap: 12px; padding: 12px 14px; background: #131C2E; border: 1px solid #1E293B; border-radius: 12px; margin-top: 10px; border-left: 3px solid #10B981; }
+  .timeline-item.violet { border-left-color: #A78BFA; }
+  .timeline-item.warm { border-left-color: #FBBF24; }
+  .timeline-item.blue { border-left-color: #60A5FA; }
+  .timeline-time { font-size: 11px; font-weight: 700; color: #64748B; width: 56px; flex-shrink: 0; letter-spacing: 0.5px; }
+  .timeline-content { flex: 1; min-width: 0; }
+  .timeline-title { font-size: 13px; font-weight: 600; color: #F1F5F9; }
+  .timeline-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+  .timeline-status { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.8px; }
+  .status-done { color: #34D399; }
+  .status-pending { color: #FBBF24; }
+  .status-now { color: #60A5FA; }
+
+  /* ============== BUTTONS ============== */
+  .btn { background: #131C2E; border: 1px solid #1E293B; color: #F1F5F9; padding: 12px 14px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.15s; font-family: inherit; text-align: center; width: 100%; }
+  .btn:hover { border-color: #34D399; color: #34D399; }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: #10B981; color: #0A0F1C; border: none; box-shadow: 0 0 16px rgba(16, 185, 129, 0.3); }
+  .btn-danger { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #F87171; }
+
+  .spacer { height: 16px; }
+  .divider { height: 1px; background: #1E293B; margin: 16px 0; }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="app-frame">
+
+  <!-- ============== AUTH SCREENS ============== -->
+
+  <!-- Welcome -->
+  <div class="auth-container active" id="auth-welcome">
+    <div class="savia-logo">S</div>
+    <div class="auth-title">SAVIA</div>
+    <div class="auth-subtitle">El operating system de tu salud integral · wellness · péptidos · longevidad</div>
+
+    <div class="features-list">
+      <div class="feature-item">
+        <div class="feature-icon">⚡</div>
+        <div class="feature-text"><strong>Tu Personal Model</strong> aprende de ti cada día — wearable, dieta, ejercicio</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">⚗️</div>
+        <div class="feature-text"><strong>Trackeo de péptidos</strong> integrado con tu fisiología completa</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">💬</div>
+        <div class="feature-text"><strong>SAVIA IA</strong> responde con tu contexto + literatura citada</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🍽️</div>
+        <div class="feature-text"><strong>Sugerencias de comida</strong> contextuales según tus macros restantes</div>
+      </div>
+    </div>
+
+    <button class="auth-btn" onclick="showAuth('signup')">Crear cuenta gratis</button>
+    <button class="auth-btn auth-btn-secondary" onclick="showAuth('login')">Ya tengo cuenta</button>
+  </div>
+
+  <!-- Sign Up Step 1: Cuenta -->
+  <div class="auth-container" id="auth-signup">
+    <div class="savia-logo">S</div>
+    <div class="step-indicator">
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="auth-title">Crea tu cuenta</div>
+    <div class="auth-subtitle">Empezamos por lo básico</div>
+
+    <div class="input-group">
+      <label class="input-label">Tu nombre</label>
+      <input type="text" id="signup-name" class="input-field" placeholder="Ej: Victor Lacayo">
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Email</label>
+      <input type="email" id="signup-email" class="input-field" placeholder="tu@email.com">
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Password</label>
+      <input type="password" id="signup-password" class="input-field" placeholder="Mínimo 8 caracteres">
+    </div>
+
+    <button class="auth-btn" onclick="goSignupStep(2)">Continuar</button>
+    <div class="auth-link">¿Ya tienes cuenta? <a onclick="showAuth('login')">Inicia sesión</a></div>
+  </div>
+
+  <!-- Sign Up Step 2: Foto + perfil -->
+  <div class="auth-container" id="auth-profile-setup">
+    <div class="savia-logo">S</div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+    <div class="auth-title">Tu perfil</div>
+    <div class="auth-subtitle">Personaliza tu experiencia</div>
+
+    <input type="file" id="photo-input" class="photo-hidden-input" accept="image/*">
+    <div class="photo-upload" id="photo-upload-zone" onclick="document.getElementById('photo-input').click()">
+      <div class="photo-icon">📷</div>
+    </div>
+    <div class="photo-upload-text">Toca para subir foto · opcional</div>
+
+    <div class="input-row">
+      <div class="input-group">
+        <label class="input-label">Edad</label>
+        <input type="number" id="signup-age" class="input-field" placeholder="34" min="16" max="100">
+      </div>
+      <div class="input-group">
+        <label class="input-label">Sexo biológico</label>
+        <select id="signup-sex" class="input-field" style="appearance:none; padding-right:32px;">
+          <option value="">Seleccionar</option>
+          <option value="m">Masculino</option>
+          <option value="f">Femenino</option>
+          <option value="o">Otro / Prefiero no decir</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Modelo principal</label>
+      <div class="option-grid">
+        <div class="option-card" data-model="sano" onclick="selectOption(this, 'model')">
+          <div class="opt-ico">💚</div>
+          <div class="opt-name">Sano</div>
+          <div class="opt-sub">Adulto general</div>
+        </div>
+        <div class="option-card" data-model="atleta" onclick="selectOption(this, 'model')">
+          <div class="opt-ico">🏋️</div>
+          <div class="opt-name">Atleta</div>
+          <div class="opt-sub">+10h/sem entreno</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="auth-btn" onclick="goSignupStep(3)">Continuar</button>
+  </div>
+
+  <!-- Sign Up Step 3: Objetivos -->
+  <div class="auth-container" id="auth-goals">
+    <div class="savia-logo">S</div>
+    <div class="step-indicator">
+      <div class="step-dot done"></div>
+      <div class="step-dot done"></div>
+      <div class="step-dot active"></div>
+    </div>
+    <div class="auth-title">Tus objetivos</div>
+    <div class="auth-subtitle">Elige el principal · puedes cambiarlo después</div>
+
+    <div class="option-grid" style="margin-top:16px;">
+      <div class="option-card" data-goal="longevidad" onclick="selectOption(this, 'goal')">
+        <div class="opt-ico">🧬</div>
+        <div class="opt-name">Longevidad</div>
+        <div class="opt-sub">Healthspan</div>
+      </div>
+      <div class="option-card" data-goal="composicion" onclick="selectOption(this, 'goal')">
+        <div class="opt-ico">💪</div>
+        <div class="opt-name">Composición</div>
+        <div class="opt-sub">Body recomp</div>
+      </div>
+      <div class="option-card" data-goal="performance" onclick="selectOption(this, 'goal')">
+        <div class="opt-ico">⚡</div>
+        <div class="opt-name">Performance</div>
+        <div class="opt-sub">Atlético</div>
+      </div>
+      <div class="option-card" data-goal="recuperacion" onclick="selectOption(this, 'goal')">
+        <div class="opt-ico">🛌</div>
+        <div class="opt-name">Recuperación</div>
+        <div class="opt-sub">Lesión / fatiga</div>
+      </div>
+      <div class="option-card" data-goal="cognitivo" onclick="selectOption(this, 'goal')">
+        <div class="opt-ico">🧠</div>
+        <div class="opt-name">Cognitivo</div>
+        <div class="opt-sub">Foco y memoria</div>
+      </div>
+      <div class="option-card" data-goal="hormonal" onclick="selectOption(this, 'goal')">
+        <div class="opt-ico">🌙</div>
+        <div class="opt-name">Hormonal</div>
+        <div class="opt-sub">Optimización</div>
+      </div>
+    </div>
+
+    <div class="input-group" style="margin-top:24px;">
+      <label class="input-label">¿Estás usando péptidos actualmente?</label>
+      <div class="option-grid">
+        <div class="option-card" data-peptides="si" onclick="selectOption(this, 'peptides')">
+          <div class="opt-name" style="margin-top:4px;">Sí</div>
+        </div>
+        <div class="option-card" data-peptides="no" onclick="selectOption(this, 'peptides')">
+          <div class="opt-name" style="margin-top:4px;">No / Aún no</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="auth-btn" onclick="completeSignup()">Crear mi SAVIA</button>
+  </div>
+
+  <!-- Login -->
+  <div class="auth-container" id="auth-login">
+    <div class="savia-logo">S</div>
+    <div class="auth-title">Bienvenido de vuelta</div>
+    <div class="auth-subtitle">Tu data te espera</div>
+
+    <div class="input-group" style="margin-top:24px;">
+      <label class="input-label">Email</label>
+      <input type="email" id="login-email" class="input-field" placeholder="tu@email.com">
+    </div>
+
+    <div class="input-group">
+      <label class="input-label">Password</label>
+      <input type="password" id="login-password" class="input-field" placeholder="Tu contraseña">
+    </div>
+
+    <button class="auth-btn" onclick="doLogin()">Iniciar sesión</button>
+    <div class="auth-link">¿Sin cuenta? <a onclick="showAuth('signup')">Créala gratis</a></div>
+  </div>
+
+  <!-- ============== MAIN APP ============== -->
+  <div id="main-app" class="hidden" style="display:flex; flex-direction:column; height:100%;">
+    <div class="status-bar">
+      <span id="time-display">9:24</span>
+      <div class="battery">
+        <span style="font-size:11px;">100%</span>
+        <span style="display:inline-block; width:22px; height:11px; border:1px solid #F1F5F9; border-radius:2px; position:relative;">
+          <span style="display:block; position:absolute; left:1px; top:1px; bottom:1px; width:18px; background:#34D399; border-radius:1px;"></span>
+        </span>
+      </div>
+    </div>
+
+    <div class="screens" id="screens">
+
+      <!-- HOY -->
+      <div class="screen active" data-screen="hoy">
+        <div class="context-badge" id="day-context">☀️ Lunes · Push Day</div>
+        <div class="greeting" id="greeting-text">Buenos días</div>
+        <div class="subtitle" id="greeting-sub">Tu Personal Model está activo · 47% calibrado</div>
+
+        <div class="card">
+          <div class="label">Anoche dormiste</div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:6px;">
+            <div>
+              <div class="stat-big">7h 12m</div>
+              <div class="stat-sub">HRV 64 · estable</div>
+            </div>
+            <div style="text-align:right;">
+              <div class="stat-accent">Sueño profundo +23%</div>
+              <div class="stat-sub">vs línea base</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rings-container">
+          <div class="ring">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="42"/>
+              <circle class="ring-fg" cx="50" cy="50" r="42" stroke="#10B981" stroke-dasharray="264" stroke-dashoffset="66"/>
+            </svg>
+            <div class="ring-value"><div class="n">75</div><div class="lbl">Recovery</div></div>
+          </div>
+          <div class="ring">
+            <svg viewBox="0 0 100 100">
+              <circle class="ring-bg" cx="50" cy="50" r="42"/>
+              <circle class="ring-fg" cx="50" cy="50" r="42" stroke="#A78BFA" stroke-dasharray="264" stroke-dashoffset="53"/>
+            </svg>
+            <div class="ring-value"><div class="n">8.0</div><div class="lbl">Training</div></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="label">Presupuesto calórico</div>
+            <div class="stat-sub">3,950 kcal</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-top:8px;">
+            <div class="stat-big">1,420</div>
+            <div class="stat-accent" style="font-size:13px;">2,530 disponibles</div>
+          </div>
+          <div class="macro-row"><span>Proteína</span><span style="color:#CBD5E1; font-weight:600;">82g / 180g</span></div>
+          <div class="macro-bar"><div class="macro-fill" style="width:45%; background:#10B981;"></div></div>
+          <div class="macro-row"><span>Carbohidratos</span><span style="color:#CBD5E1; font-weight:600;">145g / 350g</span></div>
+          <div class="macro-bar"><div class="macro-fill" style="width:41%; background:#FBBF24;"></div></div>
+          <div class="macro-row"><span>Grasa</span><span style="color:#CBD5E1; font-weight:600;">45g / 120g</span></div>
+          <div class="macro-bar"><div class="macro-fill" style="width:37%; background:#A78BFA;"></div></div>
+          <div class="macro-row"><span>Hidratación</span><span style="color:#CBD5E1; font-weight:600;">1.8 L / 2.5 L</span></div>
+          <div class="macro-bar"><div class="macro-fill" style="width:72%; background:#60A5FA;"></div></div>
+        </div>
+
+        <div class="card card-accent">
+          <div style="display:flex; align-items:center; gap:10px;">
+            <span style="width:10px; height:10px; border-radius:50%; background:#34D399; box-shadow:0 0 12px #34D399;"></span>
+            <div class="label" style="color:#34D399;">Próxima dosis</div>
+          </div>
+          <div style="font-size:16px; font-weight:700; margin-top:8px;">CJC-1295 · 300mcg</div>
+          <div class="stat-sub" style="margin-top:2px;">post-entreno · ~10:30 am</div>
+          <div class="stat-violet" style="margin-top:8px; font-size:12px;">↑ +28% IGF-1 vs días sin entrenar</div>
+        </div>
+
+        <div class="quick-actions">
+          <div class="quick-action" onclick="openModal('meal')"><div class="ico">🍽️</div><div class="name">Comida</div></div>
+          <div class="quick-action" onclick="openModal('workout')"><div class="ico">🏋️</div><div class="name">Entreno</div></div>
+          <div class="quick-action" onclick="openModal('dose')"><div class="ico">💊</div><div class="name">Dosis</div></div>
+          <div class="quick-action" onclick="openModal('symptoms')"><div class="ico">📝</div><div class="name">Check-in</div></div>
+        </div>
+
+        <div class="section-title">Sugerencias para hoy</div>
+        <div class="section-sub">3 lugares · calzan con 2,530 kcal restantes</div>
+
+        <div class="resto" onclick="openModal('restaurant1')">
+          <div class="resto-photo">🍝</div>
+          <div class="resto-info">
+            <div class="resto-name">Trattoria Bella Vita</div>
+            <div class="resto-meta">★★★★★ · 1.4 km · pasta primavera 820 kcal</div>
+            <div class="resto-match">★ visitaste hace 2 meses · match 98%</div>
+          </div>
+        </div>
+
+        <div class="resto" onclick="openModal('restaurant2')">
+          <div class="resto-photo j">🍱</div>
+          <div class="resto-info">
+            <div class="resto-name">Kazu Sushi & Bowl</div>
+            <div class="resto-meta">Nuevo · 0.8 km · bowl salmón 680 kcal</div>
+            <div class="resto-match">★ descubrimiento · match 93%</div>
+          </div>
+        </div>
+
+        <div class="insight">
+          <div class="ttl">💡 Patrón descubierto</div>
+          <div class="txt">Tu sueño profundo subió 18% desde que iniciaste CJC. Los días con leg-day + dosis post = +31% adicional.</div>
+        </div>
+
+        <div class="streak-bar">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="ico">🔥</div>
+            <div>
+              <div class="ttl">14 días seguidos</div>
+              <div class="sub">Adherencia + entrenos + check-ins</div>
+            </div>
+          </div>
+          <div class="streak-days">
+            <div class="streak-day done"></div><div class="streak-day done"></div><div class="streak-day done"></div><div class="streak-day done"></div><div class="streak-day done"></div><div class="streak-day done"></div><div class="streak-day done"></div>
+          </div>
+        </div>
+
+        <div class="calibration">
+          <div class="top">
+            <div class="label">Personal Model</div>
+            <div class="stat-accent" style="font-size:13px;">47% calibrado</div>
+          </div>
+          <div class="calibration-bar"><div class="calibration-fill" style="width:47%;"></div></div>
+          <div style="font-size:11px; color:#94A3B8; line-height:1.4;">
+            Sube tu plan de nutricionista (+12%) · Sube tu último InBody (+18%) · Conecta Whoop (+8%)
+          </div>
+        </div>
+
+        <div class="spacer"></div>
+      </div>
+
+      <!-- STACK -->
+      <div class="screen" data-screen="stack">
+        <div class="greeting" style="margin-top:8px;">Mi Stack</div>
+        <div class="subtitle">3 péptidos activos · semana 9</div>
+
+        <div class="card card-accent" style="margin-top:18px;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div class="ring" style="width:64px; height:64px;">
+              <svg viewBox="0 0 100 100">
+                <circle class="ring-bg" cx="50" cy="50" r="42"/>
+                <circle class="ring-fg" cx="50" cy="50" r="42" stroke="#10B981" stroke-dasharray="264" stroke-dashoffset="29"/>
+              </svg>
+              <div class="ring-value"><div class="n" style="font-size:18px;">89%</div></div>
+            </div>
+            <div style="flex:1;">
+              <div class="label">Adherencia semana</div>
+              <div class="stat-accent" style="font-size:14px; margin-top:4px;">↑ +6 pts vs anterior</div>
+              <div class="stat-sub">62 de 70 dosis en ventana</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">Péptidos activos</div>
+
+        <div class="peptide-card" onclick="openModal('peptide-cjc')">
+          <div class="peptide-name">CJC-1295</div>
+          <div class="peptide-desc">Growth hormone · 300mcg · 2x/sem</div>
+          <div class="peptide-meta">
+            <div class="peptide-meta-l">
+              <div class="label">Próxima dosis</div>
+              <div style="font-size:14px; font-weight:700; margin-top:4px;">En 2h 14m</div>
+              <div class="stat-accent" style="font-size:11px;">Post-leg day</div>
+            </div>
+            <div class="peptide-meta-r">
+              <div class="label">Ciclo</div>
+              <div style="font-size:14px; font-weight:700; margin-top:4px;">9 / 12 sem</div>
+              <div class="cycle-bar"><div class="cycle-fill" style="width:75%;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="peptide-card bpc" onclick="openModal('peptide-bpc')">
+          <div class="peptide-name">BPC-157</div>
+          <div class="peptide-desc">Recuperación · 500mcg · daily</div>
+          <div class="peptide-meta">
+            <div class="peptide-meta-l">
+              <div class="label">Próxima</div>
+              <div style="font-size:14px; font-weight:700; margin-top:4px;">Hoy 8 pm</div>
+            </div>
+            <div class="peptide-meta-r">
+              <div class="label">Día</div>
+              <div style="font-size:14px; font-weight:700; margin-top:4px;">38 / 56</div>
+              <div class="cycle-bar"><div class="cycle-fill" style="width:68%; background:#34D399;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="peptide-card nad">
+          <div class="peptide-name">NAD+</div>
+          <div class="peptide-desc">Energía celular · 100mg · 3x/sem AM</div>
+          <div class="peptide-meta">
+            <div class="peptide-meta-l">
+              <div class="label">Próxima</div>
+              <div style="font-size:14px; font-weight:700; margin-top:4px;">Mañana 7 am</div>
+            </div>
+            <div class="peptide-meta-r">
+              <div class="label">Día</div>
+              <div style="font-size:14px; font-weight:700; margin-top:4px;">22 / 45</div>
+              <div class="cycle-bar"><div class="cycle-fill" style="width:49%; background:#A78BFA;"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="insight" style="margin-top:18px;">
+          <div class="ttl">🧠 SAVIA aprendió</div>
+          <div class="txt">Los días con CJC + BPC + entreno fuerza → sueño profundo +31% y energía +1.4 pts al día siguiente.</div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:12px;" onclick="openModal('schedule')">
+          📅 Agendar con Dr. Ramírez
+        </button>
+
+        <div class="spacer"></div>
+      </div>
+
+      <!-- CUERPO -->
+      <div class="screen" data-screen="body">
+        <div class="greeting" style="margin-top:8px;">Tu cuerpo hoy</div>
+        <div class="subtitle">Último scan · hace 6 días · 90 seg</div>
+
+        <div class="body-stage">
+          <svg viewBox="-100 -10 200 480" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <radialGradient id="lean" cx="50%" cy="40%" r="60%">
+                <stop offset="0%" stop-color="#10B981" stop-opacity="0.7"/>
+                <stop offset="55%" stop-color="#0F766E" stop-opacity="0.5"/>
+                <stop offset="100%" stop-color="#0F172A" stop-opacity="0.2"/>
+              </radialGradient>
+              <radialGradient id="fat" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#FBBF24" stop-opacity="0.65"/>
+                <stop offset="100%" stop-color="#0F172A" stop-opacity="0"/>
+              </radialGradient>
+            </defs>
+            <path d="M 0,-2 C 18,-2 30,12 30,30 C 30,46 22,58 8,62 L 8,72 L 42,80 L 62,98 L 78,170 L 70,210 L 62,220 L 54,210 L 48,170 L 42,150 L 46,210 L 52,310 L 56,420 C 56,438 50,452 40,460 L 18,460 L 12,378 L 0,278 L -12,378 L -18,460 L -40,460 C -50,452 -56,438 -56,420 L -52,310 L -46,210 L -42,150 L -48,170 L -54,210 L -62,220 L -70,210 L -78,170 L -62,98 L -42,80 L -8,72 L -8,62 C -22,58 -30,46 -30,30 C -30,12 -18,-2 0,-2 Z"
+                  fill="url(#lean)" stroke="#10B981" stroke-width="1.5" opacity="0.95"/>
+            <ellipse cx="0" cy="135" rx="32" ry="40" fill="url(#fat)"/>
+            <line x1="-80" y1="180" x2="80" y2="180" stroke="#10B981" stroke-width="0.5" opacity="0.3"/>
+            <circle cx="0" cy="135" r="3" fill="#FBBF24"/>
+            <line x1="0" y1="135" x2="50" y2="105" stroke="#475569" stroke-width="0.5" stroke-dasharray="2 2"/>
+            <text x="55" y="100" fill="#94A3B8" font-size="9" font-family="Inter">VISC. FAT</text>
+            <text x="55" y="112" fill="#FBBF24" font-size="11" font-weight="700" font-family="Inter">1.2 L ↓</text>
+            <circle cx="-40" cy="200" r="3" fill="#34D399"/>
+            <line x1="-40" y1="200" x2="-78" y2="170" stroke="#475569" stroke-width="0.5" stroke-dasharray="2 2"/>
+            <text x="-82" y="165" text-anchor="end" fill="#94A3B8" font-size="9" font-family="Inter">LEAN MASS</text>
+            <text x="-82" y="177" text-anchor="end" fill="#34D399" font-size="11" font-weight="700" font-family="Inter">58.2 kg ↑</text>
+            <circle cx="40" cy="320" r="3" fill="#34D399"/>
+            <line x1="40" y1="320" x2="78" y2="350" stroke="#475569" stroke-width="0.5" stroke-dasharray="2 2"/>
+            <text x="82" y="345" fill="#94A3B8" font-size="9" font-family="Inter">BODY FAT</text>
+            <text x="82" y="357" fill="#34D399" font-size="11" font-weight="700" font-family="Inter">18.4%</text>
+          </svg>
+        </div>
+
+        <div class="body-legend">
+          <span><span class="dot" style="background:#10B981;"></span>Lean</span>
+          <span><span class="dot" style="background:#FBBF24;"></span>Grasa</span>
+          <span><span class="dot" style="background:#F87171;"></span>Inflamación</span>
+        </div>
+
+        <div class="card-row" style="margin-top:16px;">
+          <div class="card">
+            <div class="label">Body Fat</div>
+            <div class="stat-mid">18.4%</div>
+            <div class="stat-accent" style="font-size:11px;">↓ -2.1% (90d)</div>
+          </div>
+          <div class="card">
+            <div class="label">Lean Mass</div>
+            <div class="stat-mid">58.2 kg</div>
+            <div class="stat-accent" style="font-size:11px;">↑ +1.8 kg</div>
+          </div>
+        </div>
+
+        <div class="section-title">Cómo te sientes</div>
+        <div class="section-sub">90 seg · alimenta tu Personal Model</div>
+
+        <div class="symptom-grid">
+          <div class="symptom-cell"><div class="row"><span style="font-size:14px;">⚡</span><span class="nm">Energía</span></div><div class="val">8</div><div class="sub stat-accent">↑ vs ayer</div></div>
+          <div class="symptom-cell"><div class="row"><span style="font-size:14px;">🧠</span><span class="nm">Foco</span></div><div class="val">7</div><div class="sub">estable</div></div>
+          <div class="symptom-cell"><div class="row"><span style="font-size:14px;">🔥</span><span class="nm">Libido</span></div><div class="val">7</div><div class="sub stat-accent">↑ CJC</div></div>
+          <div class="symptom-cell"><div class="row"><span style="font-size:14px;">💪</span><span class="nm">Dolor</span></div><div class="val">2</div><div class="sub stat-accent">↓ BPC</div></div>
+          <div class="symptom-cell"><div class="row"><span style="font-size:14px;">😊</span><span class="nm">Ánimo</span></div><div class="val">8</div><div class="sub">estable</div></div>
+          <div class="symptom-cell"><div class="row"><span style="font-size:14px;">🌙</span><span class="nm">Sueño</span></div><div class="val">9</div><div class="sub stat-accent">profundo</div></div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="alert('Iniciar body scan de 90 segundos · Computer Vision activa cámara')">
+          📷 Nuevo body scan
+        </button>
+
+        <div class="spacer"></div>
+      </div>
+
+      <!-- CHAT -->
+      <div class="screen" data-screen="chat" style="padding:0; height:100%;">
+        <div class="chat-container" style="height:100%;">
+          <div class="chat-header">
+            <div class="savia-avatar">S</div>
+            <div>
+              <div class="chat-title">Ask SAVIA</div>
+              <div class="chat-status"><span class="pulse"></span>Conoce tu contexto · siempre cita</div>
+            </div>
+          </div>
+
+          <div class="suggested">
+            <div class="suggested-label">Sugerencias rápidas</div>
+            <div class="suggested-row">
+              <div class="suggested-pill" onclick="quickAsk('¿Puedo entrenar fuerte hoy?')">🏋️ Entreno</div>
+              <div class="suggested-pill" onclick="quickAsk('¿Qué cenar hoy?')">🍽️ Cena</div>
+              <div class="suggested-pill" onclick="quickAsk('¿El ayuno intermitente me sirve?')">⏱️ Ayuno</div>
+              <div class="suggested-pill" onclick="quickAsk('¿Subo mi dosis de CJC?')">⚗️ Dosis</div>
+              <div class="suggested-pill" onclick="quickAsk('¿Por qué baja mi HRV en luteal?')">🌙 Ciclo</div>
+              <div class="suggested-pill" onclick="quickAsk('Agenda una cita')">📅 Cita</div>
+              <div class="suggested-pill" onclick="quickAsk('Análisis de mi último lab')">🩸 Lab</div>
+            </div>
+          </div>
+
+          <div class="chat-messages" id="chat-messages"></div>
+
+          <div class="chat-input-bar">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Pregúntame sobre fitness, dieta, péptidos..." autocomplete="off"/>
+            <button class="chat-voice" onclick="alert('🎙️ Modo voz · disponible próximamente')">🎙️</button>
+            <button class="chat-send" onclick="sendMessage()">➤</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- YO (PROFILE) -->
+      <div class="screen" data-screen="profile">
+        <div class="profile-avatar" id="profile-avatar" onclick="editPhoto()">VL</div>
+        <div class="profile-name-display" id="profile-name-display">Victor</div>
+        <div class="profile-meta-display" id="profile-meta-display">34 años · modelo atleta</div>
+
+        <div class="calibration">
+          <div class="top">
+            <div class="label">Personal Model</div>
+            <div class="stat-accent" style="font-size:13px;">47% calibrado</div>
+          </div>
+          <div class="calibration-bar"><div class="calibration-fill" style="width:47%;"></div></div>
+          <div style="font-size:11px; color:#94A3B8; line-height:1.4;">
+            <strong style="color:#34D399;">Tu data nunca se mezcla con otras poblaciones.</strong> Cada modelo se entrena por cohort específica.
+          </div>
+        </div>
+
+        <div class="section-title">Modelos activos para ti</div>
+        <div class="section-sub">Auto-declarados · cambia cuando quieras</div>
+
+        <div class="card">
+          <div style="margin-bottom:10px;" id="active-models-display">
+            <span class="model-pill base">✓ Adulto sano (base)</span>
+            <span class="model-pill athlete">✓ Atleta</span>
+          </div>
+          <div style="font-size:12px; color:#94A3B8; line-height:1.5;">
+            Tus recomendaciones se calibran solo con data de estos modelos.
+          </div>
+          <button class="btn" style="margin-top:12px;">Editar modelos</button>
+        </div>
+
+        <div class="section-title">Fuentes profesionales</div>
+        <div class="section-sub">SAVIA orquesta · no reemplaza</div>
+
+        <div class="input-source">
+          <div class="input-source-l">
+            <div class="input-source-ico">🥗</div>
+            <div>
+              <div class="input-source-name">Nutricionista · Dra. Vargas</div>
+              <div class="input-source-sub">Plan activo · 3,950 kcal/día</div>
+            </div>
+          </div>
+          <div class="input-source-status">✓</div>
+        </div>
+
+        <div class="input-source">
+          <div class="input-source-l">
+            <div class="input-source-ico">🏋️</div>
+            <div>
+              <div class="input-source-name">Entrenador · Coach Andrés</div>
+              <div class="input-source-sub">Programa hasta 15 jul</div>
+            </div>
+          </div>
+          <div class="input-source-status">✓</div>
+        </div>
+
+        <div class="input-source">
+          <div class="input-source-l">
+            <div class="input-source-ico">🩺</div>
+            <div>
+              <div class="input-source-name">Médico · Dr. Ramírez</div>
+              <div class="input-source-sub">Protocolo CJC ciclo 9</div>
+            </div>
+          </div>
+          <div class="input-source-status">✓</div>
+        </div>
+
+        <div class="input-source">
+          <div class="input-source-l">
+            <div class="input-source-ico warn">📏</div>
+            <div>
+              <div class="input-source-name">InBody / DEXA</div>
+              <div class="input-source-sub">Última: hace 87 días</div>
+            </div>
+          </div>
+          <div class="input-source-status warn">⚠</div>
+        </div>
+
+        <div class="input-source">
+          <div class="input-source-l">
+            <div class="input-source-ico">⌚</div>
+            <div>
+              <div class="input-source-name">Wearable · Whoop 4.0</div>
+              <div class="input-source-sub">Sincronizado · 24h</div>
+            </div>
+          </div>
+          <div class="input-source-status">✓</div>
+        </div>
+
+        <button class="btn btn-primary" style="margin-top:16px;" onclick="alert('Agregar nuevo profesional o subir documento')">
+          ➕ Agregar fuente
+        </button>
+
+        <div class="section-title">Configuración</div>
+
+        <button class="btn" style="margin-top:10px;" onclick="openModal('edit-profile')">✏️ Editar perfil</button>
+        <button class="btn" style="margin-top:8px;" onclick="alert('Notificaciones · push, recordatorios, insights')">🔔 Notificaciones</button>
+        <button class="btn" style="margin-top:8px;" onclick="alert('Privacidad · tu data nunca sale del modelo de tu cohort')">🔒 Privacidad y data</button>
+        <button class="btn btn-danger" style="margin-top:8px;" onclick="doLogout()">🚪 Cerrar sesión</button>
+
+        <div class="spacer"></div>
+      </div>
+
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item active" data-target="hoy" onclick="goTo('hoy')"><div class="nav-ico">🏠</div><div class="nav-lbl">Hoy</div></div>
+      <div class="nav-item" data-target="stack" onclick="goTo('stack')"><div class="nav-ico">⚗️</div><div class="nav-lbl">Stack</div></div>
+      <div class="nav-item" data-target="body" onclick="goTo('body')"><div class="nav-ico">👤</div><div class="nav-lbl">Cuerpo</div></div>
+      <div class="nav-item" data-target="chat" onclick="goTo('chat')"><div class="nav-ico">💬</div><div class="nav-lbl">SAVIA</div></div>
+      <div class="nav-item" data-target="profile" onclick="goTo('profile')"><div class="nav-ico">⚙️</div><div class="nav-lbl">Yo</div></div>
+    </div>
+  </div>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="modal" onclick="if(event.target===this) closeModal()">
+    <div class="modal" id="modal-content"></div>
+  </div>
+
+  <!-- Hidden file input for photo edit -->
+  <input type="file" id="photo-edit-input" class="photo-hidden-input" accept="image/*">
+
+</div>
+
+<script>
+// =============================================
+//   STORAGE HELPERS
+// =============================================
+const STORAGE_KEY = 'savia_user_profile';
+const SESSION_KEY = 'savia_session';
+
+function saveProfile(profile) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(profile)); }
+  catch(e) { console.error('Storage error', e); }
+}
+
+function loadProfile() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch(e) { return null; }
+}
+
+function setSession(active) {
+  try { localStorage.setItem(SESSION_KEY, active ? '1' : '0'); }
+  catch(e) {}
+}
+
+function isLoggedIn() {
+  try { return localStorage.getItem(SESSION_KEY) === '1'; }
+  catch(e) { return false; }
+}
+
+// =============================================
+//   SIGNUP STATE
+// =============================================
+let signupData = {
+  name: '', email: '', password: '',
+  age: '', sex: '', model: '',
+  goal: '', peptides: '',
+  photo: null,
+};
+
+// =============================================
+//   AUTH NAVIGATION
+// =============================================
+function showAuth(screen) {
+  document.querySelectorAll('.auth-container').forEach(c => c.classList.remove('active'));
+  const target = document.getElementById('auth-' + screen);
+  if (target) target.classList.add('active');
+}
+
+function goSignupStep(step) {
+  if (step === 2) {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    if (!name || !email || password.length < 6) {
+      alert('Completa todos los campos · password mínimo 6 caracteres');
+      return;
+    }
+    signupData.name = name;
+    signupData.email = email;
+    signupData.password = password;
+    showAuth('profile-setup');
+  } else if (step === 3) {
+    const age = document.getElementById('signup-age').value;
+    const sex = document.getElementById('signup-sex').value;
+    if (!age || !sex || !signupData.model) {
+      alert('Completa edad, sexo y modelo principal');
+      return;
+    }
+    signupData.age = age;
+    signupData.sex = sex;
+    showAuth('goals');
+  }
+}
+
+function selectOption(card, field) {
+  // Deselect siblings in same option-grid
+  const grid = card.parentElement;
+  grid.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  signupData[field] = card.dataset[field];
+}
+
+function completeSignup() {
+  if (!signupData.goal || !signupData.peptides) {
+    alert('Elige tu objetivo principal y si usas péptidos');
+    return;
+  }
+  const profile = {
+    name: signupData.name,
+    email: signupData.email,
+    age: signupData.age,
+    sex: signupData.sex,
+    model: signupData.model,
+    goal: signupData.goal,
+    usesPeptides: signupData.peptides === 'si',
+    photo: signupData.photo,
+    createdAt: new Date().toISOString(),
+  };
+  saveProfile(profile);
+  setSession(true);
+  enterApp(profile);
+}
+
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const profile = loadProfile();
+  if (!profile) {
+    alert('No hay cuenta registrada en este dispositivo. Crea una nueva.');
+    showAuth('signup');
+    return;
+  }
+  if (profile.email !== email) {
+    alert('Email no coincide con la cuenta registrada');
+    return;
+  }
+  setSession(true);
+  enterApp(profile);
+}
+
+function doLogout() {
+  if (!confirm('¿Cerrar sesión? Tu data queda guardada en este dispositivo.')) return;
+  setSession(false);
+  location.reload();
+}
+
+// =============================================
+//   PHOTO UPLOAD
+// =============================================
+document.getElementById('photo-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    signupData.photo = evt.target.result;
+    const zone = document.getElementById('photo-upload-zone');
+    zone.style.backgroundImage = `url(${evt.target.result})`;
+    zone.classList.add('has-photo');
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('photo-edit-input').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    const profile = loadProfile() || {};
+    profile.photo = evt.target.result;
+    saveProfile(profile);
+    updateProfileDisplay(profile);
+  };
+  reader.readAsDataURL(file);
+});
+
+function editPhoto() {
+  document.getElementById('photo-edit-input').click();
+}
+
+// =============================================
+//   ENTER APP / DISPLAY PROFILE
+// =============================================
+function enterApp(profile) {
+  document.querySelectorAll('.auth-container').forEach(c => c.classList.remove('active'));
+  const main = document.getElementById('main-app');
+  main.classList.remove('hidden');
+  updateProfileDisplay(profile);
+  updateTime();
+}
+
+function updateProfileDisplay(profile) {
+  if (!profile) return;
+  // Greeting
+  const firstName = profile.name.split(' ')[0];
+  const now = new Date();
+  const hh = now.getHours();
+  let greet = 'Buenas noches';
+  if (hh >= 5 && hh < 12) greet = 'Buenos días';
+  else if (hh >= 12 && hh < 19) greet = 'Buenas tardes';
+  document.getElementById('greeting-text').textContent = `${greet}, ${firstName}`;
+
+  // Profile screen
+  document.getElementById('profile-name-display').textContent = profile.name;
+  const modelName = profile.model === 'atleta' ? 'modelo atleta' : 'modelo saludable';
+  document.getElementById('profile-meta-display').textContent = `${profile.age} años · ${modelName}`;
+
+  // Profile avatar
+  const avatar = document.getElementById('profile-avatar');
+  if (profile.photo) {
+    avatar.style.backgroundImage = `url(${profile.photo})`;
+    avatar.textContent = '';
+  } else {
+    const initials = profile.name.split(' ').map(n => n[0]).slice(0,2).join('').toUpperCase();
+    avatar.textContent = initials;
+  }
+
+  // Active models
+  const modelsHTML = profile.model === 'atleta'
+    ? '<span class="model-pill base">✓ Adulto sano (base)</span><span class="model-pill athlete">✓ Atleta</span>'
+    : '<span class="model-pill base">✓ Adulto sano (base)</span>';
+  document.getElementById('active-models-display').innerHTML = modelsHTML;
+
+  // Add cycle model if female
+  if (profile.sex === 'f') {
+    document.getElementById('active-models-display').innerHTML += '<span class="model-pill cycle">✓ Ciclo femenino</span>';
+  }
+}
+
+// =============================================
+//   APP NAVIGATION
+// =============================================
+function goTo(screen) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.dataset.screen === screen));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.toggle('active', n.dataset.target === screen));
+  if (screen === 'chat') {
+    setTimeout(() => document.getElementById('chat-input').focus(), 300);
+    if (document.getElementById('chat-messages').children.length === 0) initChat();
+  }
+  document.getElementById('screens').scrollTop = 0;
+}
+
+function initChat() {
+  const profile = loadProfile();
+  const name = profile ? profile.name.split(' ')[0] : 'Victor';
+  const ctx = profile && profile.usesPeptides
+    ? '<strong>CJC-1295 ciclo 9</strong>, modelo atleta activo, push day hoy'
+    : 'modelo atleta activo, push day hoy';
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="msg msg-ai">
+      Hola ${name} 👋 Conozco tu contexto: ${ctx}. Pregúntame lo que quieras — siempre con tu data + literatura citada.
+    </div>
+  `;
+}
+
+// =============================================
+//   TIME
+// =============================================
+function updateTime() {
+  const now = new Date();
+  const hh = now.getHours();
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  const period = hh >= 12 ? 'pm' : 'am';
+  const h12 = ((hh + 11) % 12 + 1);
+  const timeEl = document.getElementById('time-display');
+  if (timeEl) timeEl.textContent = `${h12}:${mm} ${period}`;
+
+  const profile = loadProfile();
+  if (profile) updateProfileDisplay(profile);
+
+  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+  const day = days[now.getDay()];
+  let phase = '☀️ Mañana';
+  if (hh >= 12 && hh < 18) phase = '🌞 Tarde';
+  else if (hh >= 18) phase = '🌙 Noche';
+  const ctxEl = document.getElementById('day-context');
+  if (ctxEl) ctxEl.textContent = `${phase} · ${day} · Push Day`;
+}
+
+// =============================================
+//   MODALS
+// =============================================
+const modalContent = document.getElementById('modal-content');
+const modal = document.getElementById('modal');
+
+function openModal(type) {
+  const html = renderModal(type);
+  if (!html) return;
+  modalContent.innerHTML = `<div class="modal-handle"></div>${html}`;
+  modal.classList.add('active');
+}
+function closeModal() { modal.classList.remove('active'); }
+
+function renderModal(type) {
+  const profile = loadProfile() || {};
+  switch (type) {
+    case 'edit-profile':
+      return `
+        <div class="modal-title">Editar perfil</div>
+        <div class="modal-sub">Tu data se guarda en este dispositivo</div>
+        <div class="input-group">
+          <label class="input-label">Nombre</label>
+          <input type="text" id="edit-name" class="input-field" value="${profile.name || ''}">
+        </div>
+        <div class="input-row">
+          <div class="input-group">
+            <label class="input-label">Edad</label>
+            <input type="number" id="edit-age" class="input-field" value="${profile.age || ''}">
+          </div>
+          <div class="input-group">
+            <label class="input-label">Email</label>
+            <input type="email" id="edit-email" class="input-field" value="${profile.email || ''}">
+          </div>
+        </div>
+        <button class="modal-action" onclick="saveProfileEdits()">Guardar cambios</button>
+        <button class="modal-action secondary" onclick="closeModal()">Cancelar</button>
+      `;
+    case 'meal':
+      return `
+        <div class="modal-title">Loggear comida</div>
+        <div class="modal-sub">Te quedan 2,530 kcal hoy</div>
+        <div class="card-row" style="margin-top:8px;">
+          <div class="card" style="text-align:center; cursor:pointer;"><div style="font-size:28px;">📷</div><div style="font-size:12px; font-weight:600; margin-top:6px;">Foto del plato</div></div>
+          <div class="card" style="text-align:center; cursor:pointer;"><div style="font-size:28px;">📊</div><div style="font-size:12px; font-weight:600; margin-top:6px;">Código de barras</div></div>
+        </div>
+        <div class="card" style="text-align:center; cursor:pointer; margin-top:10px;"><div style="font-size:13px; font-weight:600;">🔍 Buscar alimento manual</div></div>
+        <button class="modal-action" onclick="closeModal()">Cerrar</button>
+      `;
+    case 'workout':
+      return `
+        <div class="modal-title">Loggear entrenamiento</div>
+        <div class="modal-sub">Auto-sync con Whoop</div>
+        <div class="card"><div style="font-size:13px; font-weight:600;">🏋️ Push day · 67 min</div><div class="stat-sub" style="margin-top:4px;">Strain 14.2 · 2 PRs · de Whoop</div></div>
+        <button class="modal-action" onclick="closeModal()">Cerrar</button>
+      `;
+    case 'dose':
+      return `
+        <div class="modal-title">Loggear dosis</div>
+        <div class="modal-sub">Pendientes hoy</div>
+        <div class="peptide-card" style="margin-top:0;">
+          <div class="peptide-name">CJC-1295 · 300mcg</div>
+          <div class="peptide-desc">Programada 10:30 am</div>
+          <button class="btn btn-primary" style="margin-top:10px;" onclick="closeModal(); setTimeout(()=>alert('✓ Dosis registrada'), 200);">✓ Marcar tomada</button>
+        </div>
+        <button class="modal-action secondary" onclick="closeModal()">Cerrar</button>
+      `;
+    case 'symptoms':
+      return `
+        <div class="modal-title">Check-in rápido</div>
+        <div class="modal-sub">90 segundos · alimenta tu modelo</div>
+        <p style="font-size:13px; color:#94A3B8; margin-top:12px;">En esta versión MVP, los sliders están en la pantalla Cuerpo. Tap en cada métrica para registrar.</p>
+        <button class="modal-action" onclick="closeModal(); goTo('body');">Ir a Cuerpo</button>
+      `;
+    case 'restaurant1':
+      return `
+        <div style="height:140px; margin:0 -20px 16px; background:linear-gradient(135deg,#B45309,#7C2D12); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:48px;">🍝</div>
+        <div class="modal-title">Trattoria Bella Vita</div>
+        <div class="modal-sub">Escazú · 1.4 km · ★★★★★</div>
+        <div class="card card-accent">
+          <div class="label" style="color:#34D399;">SAVIA SUGIERE PORQUE...</div>
+          <div style="font-size:13px; margin-top:8px; line-height:1.6;">
+            ✓ Lo visitaste 19 mar, lo amaste (5★)<br>
+            ✓ Italiano = top 3 cuisine tuyo<br>
+            ✓ Pasta primavera calza tus macros
+          </div>
+        </div>
+        <div class="card">
+          <div class="label">PLATO RECOMENDADO</div>
+          <div style="font-size:16px; font-weight:700; margin-top:6px;">Pasta Primavera</div>
+          <div style="display:flex; gap:14px; margin-top:10px;">
+            <div><div class="stat-mid">820</div><div class="stat-sub">kcal</div></div>
+            <div><div class="stat-mid">32g</div><div class="stat-sub">prot</div></div>
+            <div><div class="stat-mid">95g</div><div class="stat-sub">carbs</div></div>
+          </div>
+        </div>
+        <button class="modal-action" onclick="alert('✓ Reserva confirmada 7:30 pm'); closeModal();">Reservar</button>
+      `;
+    case 'restaurant2':
+      return `
+        <div style="height:140px; margin:0 -20px 16px; background:linear-gradient(135deg,#0F766E,#064E3B); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:48px;">🍱</div>
+        <div class="modal-title">Kazu Sushi & Bowl</div>
+        <div class="modal-sub">Nuevo · 0.8 km · match 93%</div>
+        <div class="card card-accent">
+          <div style="font-size:13px; margin-top:8px; line-height:1.6;">
+            ✓ 12 personas con tu perfil rateaon 4.8★<br>
+            ✓ Bowl salmón calza ventana anabólica
+          </div>
+        </div>
+        <button class="modal-action" onclick="closeModal()">Ver menú</button>
+      `;
+    case 'peptide-cjc':
+      return `
+        <div class="modal-title">CJC-1295</div>
+        <div class="modal-sub">GH analog · 300mcg · 2x/sem</div>
+        <div class="card">
+          <div class="label">Estado actual</div>
+          <div style="font-size:14px; margin-top:6px; line-height:1.6;">
+            Ciclo: <strong>9 de 12 semanas</strong><br>
+            Próxima: <strong>en 2h 14m</strong><br>
+            IGF-1: <strong>234 ng/mL</strong> (+22%)<br>
+            Respuesta: <strong style="color:#34D399;">percentil 70 cohort</strong>
+          </div>
+        </div>
+        <div class="card card-warm">
+          <div class="label" style="color:#FBBF24;">⚠ COMPLIANCE</div>
+          <div style="font-size:12px; margin-top:6px;">Ajustes de dosis los autoriza Dr. Ramírez.</div>
+        </div>
+        <button class="modal-action" onclick="closeModal()">Cerrar</button>
+      `;
+    case 'peptide-bpc':
+      return `
+        <div class="modal-title">BPC-157</div>
+        <div class="modal-sub">Body Protection · 500mcg daily</div>
+        <div class="card">
+          Día <strong>38 de 56</strong> · Próxima: <strong>hoy 8 pm</strong><br>
+          Dolor articular: <strong style="color:#34D399;">2/10 (↓ desde 6/10)</strong>
+        </div>
+        <button class="modal-action" onclick="closeModal()">Cerrar</button>
+      `;
+    case 'schedule':
+      return `
+        <div class="modal-title">Agendar con Dr. Ramírez</div>
+        <div class="modal-sub">Disponibilidad próximos 7 días</div>
+        <div class="card" style="cursor:pointer;"><div style="font-size:13px; font-weight:700;">Martes 3 jun · 9:00 am</div></div>
+        <div class="card card-accent" style="cursor:pointer; margin-top:10px;"><div style="font-size:13px; font-weight:700;">Miércoles 4 jun · 11:00 am</div><div class="stat-accent" style="font-size:11px;">★ Recomendado · post lab</div></div>
+        <div class="card" style="cursor:pointer; margin-top:10px;"><div style="font-size:13px; font-weight:700;">Jueves 5 jun · 3:00 pm</div></div>
+        <button class="modal-action" onclick="alert('✓ Cita confirmada'); closeModal();">Confirmar Mié 11 am</button>
+      `;
+  }
+  return null;
+}
+
+function saveProfileEdits() {
+  const profile = loadProfile() || {};
+  profile.name = document.getElementById('edit-name').value.trim() || profile.name;
+  profile.age = document.getElementById('edit-age').value || profile.age;
+  profile.email = document.getElementById('edit-email').value.trim() || profile.email;
+  saveProfile(profile);
+  updateProfileDisplay(profile);
+  closeModal();
+  alert('✓ Perfil actualizado');
+}
+
+// =============================================
+//   CHAT — Socratic AI
+// =============================================
+const chatInput = document.getElementById('chat-input');
+let convState = { awaitingClarification: null };
+
+function addMessage(html, who = 'ai', citations = [], chips = []) {
+  const messages = document.getElementById('chat-messages');
+  const div = document.createElement('div');
+  div.className = `msg msg-${who}`;
+  div.innerHTML = html;
+  messages.appendChild(div);
+  if (citations.length) {
+    const c = document.createElement('div');
+    c.className = 'citations';
+    citations.forEach(cite => {
+      const chip = document.createElement('div');
+      chip.className = 'citation-chip';
+      chip.textContent = '📚 ' + cite;
+      c.appendChild(chip);
+    });
+    messages.appendChild(c);
+  }
+  if (chips.length) {
+    const chipDiv = document.createElement('div');
+    chipDiv.className = 'quick-chips';
+    chips.forEach(c => {
+      const b = document.createElement('div');
+      b.className = 'chip';
+      b.textContent = c.label;
+      b.onclick = () => { chipDiv.remove(); if (c.action) c.action(); else quickAsk(c.label); };
+      chipDiv.appendChild(b);
+    });
+    messages.appendChild(chipDiv);
+  }
+  messages.scrollTop = messages.scrollHeight;
+}
+
+function addTyping() {
+  const messages = document.getElementById('chat-messages');
+  const t = document.createElement('div');
+  t.className = 'typing';
+  t.id = 'typing-indicator';
+  t.innerHTML = '<span></span><span></span><span></span>';
+  messages.appendChild(t);
+  messages.scrollTop = messages.scrollHeight;
+}
+function removeTyping() {
+  const t = document.getElementById('typing-indicator');
+  if (t) t.remove();
+}
+
+function quickAsk(text) { chatInput.value = text; sendMessage(); }
+
+function sendMessage() {
+  const text = chatInput.value.trim();
+  if (!text) return;
+  chatInput.value = '';
+  addMessage(text, 'user');
+  addTyping();
+  setTimeout(() => { removeTyping(); respondTo(text); }, 900 + Math.random() * 700);
+}
+
+function matches(text, keywords) {
+  return keywords.some(k => text.includes(k));
+}
+
+function respondTo(input) {
+  const txt = input.toLowerCase();
+  if (convState.awaitingClarification) {
+    const cl = convState.awaitingClarification;
+    convState.awaitingClarification = null;
+    cl.respond(txt);
+    return;
+  }
+  if (matches(txt, ['entren', 'ejercicio', 'pesas', 'cardio', 'gym'])) {
+    addMessage(`Buena pregunta. Antes de la mejor recomendación: <strong>¿qué tipo de entrenamiento?</strong>`, 'ai', [],
+      [{ label: '💪 Fuerza pesada' }, { label: '🏃 Cardio Z2' }, { label: '🔥 HIIT' }]);
+    convState.awaitingClarification = { respond: respondWorkout };
+    return;
+  }
+  if (matches(txt, ['cenar', 'comer', 'comida', 'desayunar'])) {
+    addMessage(`<strong>¿Prefieres cocinar o salir?</strong>`, 'ai', [],
+      [{ label: '🏠 Casa' }, { label: '🍽️ Salir' }, { label: '🥗 Rápido' }]);
+    convState.awaitingClarification = { respond: respondFood };
+    return;
+  }
+  if (matches(txt, ['ayuno', 'fasting', 'intermitente'])) {
+    addMessage(`<strong>¿Qué te lleva a considerar el ayuno?</strong>`, 'ai', [],
+      [{ label: '🔥 Pérdida grasa' }, { label: '⚡ Energía' }, { label: '🏋️ Optimizar CJC' }]);
+    convState.awaitingClarification = { respond: respondFasting };
+    return;
+  }
+  if (matches(txt, ['cjc', 'bpc', 'nad', 'dosis', 'subir'])) {
+    addMessage(`Considerando: <em>CJC 300mcg, ciclo 9, IGF-1 +22%, percentil 70</em>.<br><br><strong>No recomiendo subir dosis aún.</strong> Mantén 4 sem más.<br><br>El ajuste lo decide <strong>Dr. Ramírez</strong>.`, 'ai',
+      ['Sigalos 2013', 'Veldhuis 2010'],
+      [{ label: '📅 Agendar Dr. Ramírez' }]);
+    return;
+  }
+  if (matches(txt, ['hrv', 'luteal', 'ciclo', 'menstrual'])) {
+    addMessage(`En <strong>luteal</strong>, tu progesterona sube. HRV baja 10-20% naturalmente. <strong>No es overtraining</strong> — es fisiología. SAVIA ya ajusta tu Recovery.`, 'ai',
+      ['Bisson 2024', 'Schmalenberger 2021']);
+    return;
+  }
+  if (matches(txt, ['agenda', 'cita', 'ramirez'])) {
+    addMessage(`Dr. Ramírez tiene: Mar 9am · Mié 11am · Jue 3pm. Te recomiendo <strong>Mié 11am</strong> (post lab).`, 'ai', [],
+      [{ label: '✓ Mié 11 am' }]);
+    return;
+  }
+  if (matches(txt, ['hola', 'hey', 'buenos'])) {
+    const profile = loadProfile();
+    const name = profile ? profile.name.split(' ')[0] : 'Victor';
+    addMessage(`Hola ${name} 👋 Recovery 75, HRV 64. Día sólido. ¿Qué quieres optimizar?`, 'ai', [],
+      [{ label: '🏋️ Entreno' }, { label: '🍽️ Comer' }, { label: '⚗️ Stack' }]);
+    return;
+  }
+  if (matches(txt, ['lab', 'sangre', 'biomark'])) {
+    addMessage(`Último panel (hace 22d):<br>• IGF-1: <strong style="color:#34D399;">234 (+22%)</strong><br>• Testosterona: 678 ng/dL (óptimo)<br>• LDL: <strong style="color:#FBBF24;">132 (↑ leve)</strong><br><br>Próximo lab: <strong>5 jun</strong>.`, 'ai', ['Quest Diagnostics']);
+    return;
+  }
+  if (matches(txt, ['sueno', 'sueño', 'dormir'])) {
+    addMessage(`Anoche: <strong>7h 12m</strong>, profundo +23%. Patrón: noches con magnesio + ashwagandha → profundo +18%. Mantén el ritual.`, 'ai');
+    return;
+  }
+  addMessage(`<strong>¿Puedes contarme más contexto?</strong>`, 'ai', [],
+    [{ label: '⚗️ Stack' }, { label: '🍽️ Comida' }, { label: '🏋️ Entreno' }, { label: '💭 Otra' }]);
+}
+
+function respondWorkout(input) {
+  addTyping();
+  setTimeout(() => {
+    removeTyping();
+    if (matches(input, ['fuerza', 'pesa'])) {
+      addMessage(`<strong>✅ Día óptimo para fuerza.</strong> HRV verde, sueño suficiente, dosis CJC post-entreno amplifica anabolismo. <strong>80-85% 1RM, 4-6 reps</strong>. Tomar CJC 15 min post-última serie.`, 'ai', ['Plummer 2020']);
+    } else if (matches(input, ['cardio', 'z2'])) {
+      addMessage(`Z2: <strong>perfecto</strong>. 40-50 min en 142-152 bpm, idealmente en ayunas o antes de CJC.`, 'ai', ['Buchheit 2014']);
+    } else {
+      addMessage(`HIIT hoy: viable pero <strong>NO ideal</strong> con push mañana. ACWR subiría a 1.42. Mejor mover a miércoles.`, 'ai', ['Gabbett 2016']);
+    }
+  }, 800);
+}
+
+function respondFood(input) {
+  addTyping();
+  setTimeout(() => {
+    removeTyping();
+    if (matches(input, ['casa', 'cocin'])) {
+      addMessage(`Te quedan 2,530 kcal. Sugerencia: <strong>pollo 200g + arroz integral + aguacate + verduras</strong>. 720 kcal, 50g prot.`, 'ai');
+    } else if (matches(input, ['rapido', 'snack'])) {
+      addMessage(`Opciones rápidas:<br>• Yogurt griego + frutos rojos · 320 kcal<br>• Huevos + aguacate · 280 kcal<br>• Whey + plátano · 240 kcal`, 'ai');
+    } else {
+      addMessage(`<strong>3 lugares cerca:</strong><br>🍝 Bella Vita · pasta primavera 820 kcal<br>🍱 Kazu · bowl salmón 680 kcal<br>🥗 Sopa Nicoyana · 580 kcal`, 'ai', [],
+        [{ label: '🍝 Bella Vita' }, { label: '🍱 Kazu' }]);
+    }
+  }, 800);
+}
+
+function respondFasting(input) {
+  addTyping();
+  setTimeout(() => {
+    removeTyping();
+    if (matches(input, ['cjc', 'optimizar'])) {
+      addMessage(`<strong>Sí, hay sinergia.</strong> Ayuno eleva GH 2-5x, combinado con CJC amplifica spike. Trial: 14:10 por 3 semanas. Avisar a Dra. Vargas.`, 'ai', ['Hartman 1992', 'Veldhuis 2010']);
+    } else {
+      addMessage(`El ayuno tiene fundamento pero requiere coordinación. Sugerencia: 14:10 por 2 semanas, medir HRV/energía, reevaluar.`, 'ai', ['Sutton 2018']);
+    }
+  }, 800);
+}
+
+if (chatInput) {
+  chatInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+}
+
+// =============================================
+//   INIT
+// =============================================
+(function init() {
+  const profile = loadProfile();
+  if (profile && isLoggedIn()) {
+    enterApp(profile);
+  } else {
+    showAuth('welcome');
+  }
+  setInterval(updateTime, 30000);
+})();
+</script>
+</body>
+</html>
