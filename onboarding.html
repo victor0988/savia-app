@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; }
@@ -1935,8 +1936,15 @@ const state = {
   entryIntent: null,
 };
 
+// ============================================
+// Supabase client (backend real, reemplaza localStorage)
+// ============================================
+const SUPABASE_URL = 'https://vlzzgttjrpyywmahwooi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsenpndHRqcnB5eXdtYWh3b29pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTA0OTIsImV4cCI6MjA5NTY2NjQ5Mn0.wH4oohfDEcS5j5N0FAtw_sZzDovixmbvSBpDNZy-3yk';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Solo biometría persiste en localStorage (device-specific)
 const STORAGE = {
-  account: 'savia_account',          // serialized user account
   enabled: 'savia_faceid_enabled',
   credentialId: 'savia_credential_id',
 };
@@ -1958,20 +1966,25 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
 }
 
-function accountExists(email) {
-  try {
-    const stored = localStorage.getItem(STORAGE.account);
-    if (!stored) return false;
-    const acc = JSON.parse(stored);
-    return acc.email && acc.email.toLowerCase() === email.toLowerCase();
-  } catch { return false; }
-}
-
-function getStoredAccount() {
-  try {
-    const stored = localStorage.getItem(STORAGE.account);
-    return stored ? JSON.parse(stored) : null;
-  } catch { return null; }
+// Cache local de la cuenta actual (rellenada al login / session restore)
+let cachedAccount = null;
+function getStoredAccount() { return cachedAccount; }
+async function loadCurrentProfile() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) { cachedAccount = null; return null; }
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  cachedAccount = profile ? {
+    email: user.email,
+    name: profile.name || '',
+    sex: profile.sex,
+    age: profile.age,
+    goals: profile.goals || [],
+    level: profile.level,
+    wearables: profile.wearables || [],
+    photo: profile.photo_url || null,
+    isOnboarded: profile.is_onboarded,
+  } : { email: user.email };
+  return cachedAccount;
 }
 
 // =============================================
@@ -1985,50 +1998,61 @@ function validateSignup() {
   const dupEl = document.getElementById('duplicate-warning');
   const btn = document.getElementById('signup-btn');
 
-  let validEmail = false;
-  let isDuplicate = false;
   errorEl.textContent = '';
   emailEl.classList.remove('error');
   dupEl.classList.add('hidden');
 
+  let validEmail = false;
   if (email.length > 0) {
     if (!isValidEmail(email)) {
       errorEl.textContent = 'Email inválido. Formato: tu@email.com';
       emailEl.classList.add('error');
-    } else if (accountExists(email)) {
-      isDuplicate = true;
-      dupEl.classList.remove('hidden');
     } else {
       validEmail = true;
     }
   }
 
   const validPassword = password.length >= 8;
-  btn.disabled = !(validEmail && validPassword && !isDuplicate);
+  btn.disabled = !(validEmail && validPassword);
 }
 
-function doSignup() {
-  state.email = document.getElementById('signup-email').value.trim();
-  state.password = document.getElementById('signup-password').value;
+async function doSignup() {
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const errEl = document.getElementById('signup-email-error');
+  const dupEl = document.getElementById('duplicate-warning');
+  const btn = document.getElementById('signup-btn');
 
-  // Save the account NOW so login works even if user doesn't finish onboarding
-  try {
-    const existing = getStoredAccount() || {};
-    localStorage.setItem(STORAGE.account, JSON.stringify({
-      ...existing,
-      email: state.email,
-      password: state.password, // NOTE: en producción real esto se hashea + se valida en backend
-      createdAt: existing.createdAt || new Date().toISOString(),
-      isOnboarded: false,
-    }));
-  } catch (e) {
-    console.warn('Storage error en signup:', e);
-    const errEl = document.getElementById('signup-email-error');
-    if (errEl) errEl.textContent = 'Tu navegador no permite guardar data localmente. Sal del modo privado o usa otro navegador.';
-    document.getElementById('signup-email').classList.add('error');
+  errEl.textContent = '';
+  dupEl.classList.add('hidden');
+  btn.disabled = true;
+  btn.textContent = 'Creando cuenta...';
+
+  const { data, error } = await sb.auth.signUp({
+    email,
+    password,
+    options: {
+      emailRedirectTo: `${window.location.origin}/onboarding.html`,
+    },
+  });
+
+  btn.disabled = false;
+  btn.textContent = 'Continuar';
+
+  if (error) {
+    const msg = (error.message || '').toLowerCase();
+    if (msg.includes('already') || msg.includes('registered') || msg.includes('exists')) {
+      dupEl.classList.remove('hidden');
+    } else {
+      errEl.textContent = error.message;
+      document.getElementById('signup-email').classList.add('error');
+    }
     return;
   }
 
+  // Cuenta creada — Supabase envió email de confirmación automáticamente
+  state.email = email;
+  state.password = password;
   goStep(1);
 }
 
@@ -2054,24 +2078,46 @@ function validateLogin() {
   btn.disabled = !canSubmit;
 }
 
-function doLogin() {
+async function doLogin() {
   const email = document.getElementById('login-email').value.trim();
-  const acc = getStoredAccount();
-  if (!acc) {
-    document.getElementById('login-email-error').textContent =
-      'No encontramos cuenta en este dispositivo. Crea una nueva.';
+  const password = document.getElementById('login-password').value;
+  const btn = document.getElementById('login-btn');
+  const errEl = document.getElementById('login-email-error');
+  const passErr = document.getElementById('login-password-error');
+
+  errEl.textContent = '';
+  passErr.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Iniciando sesión...';
+
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+
+  btn.disabled = false;
+  btn.textContent = 'Iniciar sesión';
+
+  if (error) {
+    const msg = (error.message || '').toLowerCase();
+    if (msg.includes('not confirmed') || msg.includes('not verified')) {
+      errEl.textContent = 'Confirma tu email primero. Revisa tu bandeja (también spam).';
+    } else if (msg.includes('invalid login') || msg.includes('invalid_credentials')) {
+      passErr.textContent = 'Email o contraseña incorrectos.';
+    } else {
+      errEl.textContent = error.message;
+    }
     return;
   }
-  if (acc.email.toLowerCase() !== email.toLowerCase()) {
-    document.getElementById('login-email-error').textContent =
-      'Email no coincide con la cuenta registrada en este dispositivo.';
-    return;
-  }
-  // Login OK — entrar al app simulado
-  state.email = acc.email;
-  state.name = acc.name || '';
-  state.photo = acc.photo || null;
-  state.wearables = acc.wearables || [];
+
+  // Cargar perfil
+  const profile = await loadCurrentProfile();
+  state.email = data.user.email;
+  state.name = profile?.name || '';
+  state.photo = profile?.photo || null;
+  state.wearables = profile?.wearables || [];
+  state.sex = profile?.sex || '';
+  state.age = profile?.age || '';
+  state.goals = profile?.goals || [];
+  state.level = profile?.level || '';
+
   enterAppSimulation('login');
 }
 
@@ -2097,28 +2143,23 @@ function validateForgot() {
   btn.disabled = !isValidEmail(email);
 }
 
-function doForgotPassword() {
+async function doForgotPassword() {
   const email = document.getElementById('forgot-email').value.trim();
-  // Mensaje genérico — no revelar si el email existe (security best practice)
-  // En producción con Supabase: await supabase.auth.resetPasswordForEmail(email, {...})
   const successEl = document.getElementById('forgot-success');
-  successEl.textContent = ''; // limpia children
+  const btn = document.getElementById('forgot-btn');
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  // Supabase envía email real. Por seguridad, no revelamos si el email existe.
+  await sb.auth.resetPasswordForEmail(email, {
+    redirectTo: `${window.location.origin}/onboarding.html?action=reset`,
+  });
+
   successEl.innerHTML = '<strong>Si esta cuenta existe, recibirás un email en 1-2 minutos.</strong> Revisa también tu spam. El link expira en 1 hora.';
   successEl.classList.add('show');
-
-  // Oculta el form y deja solo el mensaje
   document.getElementById('forgot-email').disabled = true;
-  document.getElementById('forgot-btn').disabled = true;
-  document.getElementById('forgot-btn').textContent = '✓ Email enviado';
-
-  // (Solo demo) — Simula que el usuario hizo click en el link del email
-  // y entró a la pantalla de cambiar contraseña
-  setTimeout(() => {
-    document.getElementById('forgot-email').disabled = false;
-    document.getElementById('forgot-btn').disabled = false;
-    document.getElementById('forgot-btn').textContent = 'Enviar link de recuperación';
-    successEl.classList.remove('show');
-  }, 6000);
+  btn.textContent = '✓ Email enviado';
 }
 
 function validateChangePassword() {
@@ -2139,16 +2180,32 @@ function validateChangePassword() {
   btn.disabled = !(pwd.length >= 8 && pwd === confirm);
 }
 
-function doChangePassword() {
-  // En producción con Supabase: await supabase.auth.updateUser({ password: newPwd })
-  // Y Supabase envía email de confirmación automáticamente
+async function doChangePassword() {
+  const newPwd = document.getElementById('new-password').value;
+  const btn = document.getElementById('change-btn');
+  const errEl = document.getElementById('confirm-password-error');
+
+  btn.disabled = true;
+  btn.textContent = 'Actualizando...';
+
+  const { error } = await sb.auth.updateUser({ password: newPwd });
+
+  if (error) {
+    errEl.textContent = error.message;
+    btn.disabled = false;
+    btn.textContent = 'Actualizar contraseña';
+    return;
+  }
+
   const successEl = document.getElementById('change-success');
   successEl.classList.add('show');
   document.getElementById('new-password').disabled = true;
   document.getElementById('confirm-password').disabled = true;
-  document.getElementById('change-btn').disabled = true;
-  document.getElementById('change-btn').textContent = '✓ Contraseña actualizada';
-  setTimeout(() => goStep('login'), 2500);
+  btn.textContent = '✓ Contraseña actualizada';
+  setTimeout(async () => {
+    await sb.auth.signOut();
+    goStep('login');
+  }, 2500);
 }
 
 // =============================================
@@ -2317,26 +2374,28 @@ function validateNameStep() {
 // =============================================
 //  Calibrating
 // =============================================
-function startCalculation() {
-  // Merge final onboarding data with the partial account saved at signup
-  try {
-    const existing = getStoredAccount() || {};
-    localStorage.setItem(STORAGE.account, JSON.stringify({
-      ...existing,
+async function startCalculation() {
+  // Upsert profile en Supabase con toda la data del onboarding
+  const { data: { user } } = await sb.auth.getUser();
+  if (user) {
+    const { error } = await sb.from('profiles').upsert({
+      id: user.id,
       email: state.email,
       name: state.name,
       sex: state.sex,
-      age: state.age,
+      age: state.age ? parseInt(state.age, 10) : null,
       goals: state.goals,
       level: state.level,
       wearables: state.wearables,
-      photo: state.photo,
-      maintenanceMode: state.maintenanceMode,
+      photo_url: state.photo, // Para prototype guardamos base64; en prod usaríamos Storage
+      maintenance_mode: state.maintenanceMode,
       resolution: state.resolution,
-      isOnboarded: true,
-      updatedAt: new Date().toISOString(),
-    }));
-  } catch (e) { console.warn('Storage error:', e); }
+      is_onboarded: true,
+    });
+    if (error) console.warn('Profile upsert error:', error);
+    // Refresh cache
+    await loadCurrentProfile();
+  }
 
   goStep(6);
   setTimeout(revealCalibrating, 2400);
@@ -2532,11 +2591,14 @@ function enterAppSimulation(source) {
   goStep('app');
 }
 
-function logout() {
-  // Reset sesión but keep account + biometric (so login is fast)
+async function logout() {
+  await sb.auth.signOut();
+  cachedAccount = null;
   state.email = '';
   state.name = '';
   state.photo = null;
+  state.wearables = [];
+  state.goals = [];
   goStep(0);
   // Reset Face ID screen state for next time
   const fid = document.getElementById('faceid-icon');
@@ -2634,24 +2696,64 @@ function cancelReset() {
   document.getElementById('btn-login').style.display = '';
   document.getElementById('btn-reset').style.display = '';
 }
-function confirmReset() {
+async function confirmReset() {
+  await sb.auth.signOut();
   try {
-    localStorage.removeItem(STORAGE.account);
     localStorage.removeItem(STORAGE.enabled);
     localStorage.removeItem(STORAGE.credentialId);
   } catch (e) { console.warn(e); }
+  cachedAccount = null;
   location.reload();
 }
 
-// On load: if Face ID was enabled, prefill login email
-(function init() {
-  const acc = getStoredAccount();
-  if (acc && acc.email) {
-    const loginEmail = document.getElementById('login-email');
-    if (loginEmail) loginEmail.value = acc.email;
-    // En signup, NO prefillamos — si hay cuenta, debería ir al login
+// On load:
+// 1. Check if URL es link de password reset → ir a change-password
+// 2. Check si hay sesión activa → restaurar y entrar al app
+// 3. Si no, mostrar splash y ocultar Face ID si no se ha activado
+(async function init() {
+  // Manejo del link de password reset (Supabase pone el access_token en el hash)
+  const urlParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams(window.location.hash.substring(1));
+  const isPasswordReset = urlParams.get('action') === 'reset' ||
+                          hashParams.get('type') === 'recovery';
+
+  // Listen for PASSWORD_RECOVERY auth event (cuando user llega del email link)
+  sb.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') {
+      goStep('change-password');
+    }
+  });
+
+  if (isPasswordReset) {
+    goStep('change-password');
+    return;
   }
-  // If FaceID was not previously enabled, hide the Face ID button on login screen
+
+  // Restore session si existe
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    const profile = await loadCurrentProfile();
+    if (profile) {
+      state.email = profile.email;
+      state.name = profile.name || '';
+      state.photo = profile.photo || null;
+      state.wearables = profile.wearables || [];
+      state.sex = profile.sex || '';
+      state.age = profile.age || '';
+      state.goals = profile.goals || [];
+      state.level = profile.level || '';
+
+      if (profile.isOnboarded) {
+        enterAppSimulation('login');
+      } else {
+        // Mitad de onboarding — continúa desde donde quedó
+        goStep(1);
+      }
+      return;
+    }
+  }
+
+  // Prefill login email si hay biometría activa (Face ID guarda email cached)
   const enabled = localStorage.getItem(STORAGE.enabled);
   const faceBtn = document.getElementById('faceid-login-btn');
   if (faceBtn && enabled !== 'true') {
