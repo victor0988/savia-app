@@ -2123,11 +2123,37 @@ const SUPABASE_URL = 'https://vlzzgttjrpyywmahwooi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsenpndHRqcnB5eXdtYWh3b29pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTA0OTIsImV4cCI6MjA5NTY2NjQ5Mn0.wH4oohfDEcS5j5N0FAtw_sZzDovixmbvSBpDNZy-3yk';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Solo biometría persiste en localStorage (device-specific)
+// Solo biometría + credenciales remember persisten en localStorage (device-specific)
 const STORAGE = {
   enabled: 'savia_faceid_enabled',
   credentialId: 'savia_credential_id',
+  rememberedEmail: 'savia_remembered_email',
+  rememberedToken: 'savia_remembered_token', // base64 del password — solo prototype
 };
+
+// Helpers para recordar credenciales para Face ID auto-login
+function rememberCredentials(email, password) {
+  try {
+    if (email) localStorage.setItem(STORAGE.rememberedEmail, email);
+    if (password) localStorage.setItem(STORAGE.rememberedToken, btoa(unescape(encodeURIComponent(password))));
+  } catch (e) { console.warn(e); }
+}
+function getRememberedEmail() {
+  try { return localStorage.getItem(STORAGE.rememberedEmail) || ''; }
+  catch { return ''; }
+}
+function getRememberedPassword() {
+  try {
+    const token = localStorage.getItem(STORAGE.rememberedToken);
+    return token ? decodeURIComponent(escape(atob(token))) : '';
+  } catch { return ''; }
+}
+function clearRememberedCredentials() {
+  try {
+    localStorage.removeItem(STORAGE.rememberedEmail);
+    localStorage.removeItem(STORAGE.rememberedToken);
+  } catch {}
+}
 
 function goStep(n) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -2137,6 +2163,25 @@ function goStep(n) {
     target.scrollTop = 0;
   }
   state.step = n;
+  // Re-check Face ID button visibility cada vez que llegamos a login
+  if (n === 'login') updateFaceIDButtonVisibility();
+}
+
+function updateFaceIDButtonVisibility() {
+  const enabled = localStorage.getItem(STORAGE.enabled);
+  const credentialId = localStorage.getItem(STORAGE.credentialId);
+  const faceBtn = document.getElementById('faceid-login-btn');
+  if (faceBtn) {
+    const show = enabled === 'true' && credentialId;
+    faceBtn.style.display = show ? '' : 'none';
+  }
+  // Pre-fill email del último login (siempre)
+  const rememberedEmail = getRememberedEmail();
+  const loginEmailInput = document.getElementById('login-email');
+  if (loginEmailInput && rememberedEmail && !loginEmailInput.value) {
+    loginEmailInput.value = rememberedEmail;
+    validateLogin();
+  }
 }
 
 // =============================================
@@ -2233,6 +2278,7 @@ async function doSignup() {
   // Cuenta creada — Supabase envió email de confirmación automáticamente
   state.email = email;
   state.password = password;
+  rememberCredentials(email, password);
   goStep(1);
 }
 
@@ -2287,7 +2333,7 @@ async function doLogin() {
     return;
   }
 
-  // Cargar perfil
+  // Cargar perfil + recordar credenciales para próximos Face ID logins
   const profile = await loadCurrentProfile();
   state.email = data.user.email;
   state.name = profile?.name || '';
@@ -2297,6 +2343,7 @@ async function doLogin() {
   state.age = profile?.age || '';
   state.goals = profile?.goals || [];
   state.level = profile?.level || '';
+  rememberCredentials(email, password);
 
   enterAppSimulation('login');
 }
@@ -2749,10 +2796,11 @@ async function resendVerificationEmail() {
 }
 
 async function changeVerifyEmail() {
-  // Cancelar polling + signout + volver al splash
+  // Cancelar polling + signout + volver al splash + limpiar credenciales viejas
   stopVerifyPolling();
   if (resendCooldownInterval) clearInterval(resendCooldownInterval);
   await sb.auth.signOut();
+  clearRememberedCredentials();
   cachedAccount = null;
   state.email = '';
   state.name = '';
@@ -2955,10 +3003,15 @@ function setLoginError(text) {
 async function tryFaceIDLogin() {
   const enabled = localStorage.getItem(STORAGE.enabled);
   const credentialId = localStorage.getItem(STORAGE.credentialId);
-  const acc = getStoredAccount();
+  const rememberedEmail = getRememberedEmail();
+  const rememberedPassword = getRememberedPassword();
 
-  if (enabled !== 'true' || !credentialId || !acc) {
+  if (enabled !== 'true' || !credentialId) {
     setLoginError('No hay biometría activa en este dispositivo. Inicia sesión con email.');
+    return;
+  }
+  if (!rememberedEmail || !rememberedPassword) {
+    setLoginError('No encontré credenciales guardadas. Inicia con email una vez para activar Face ID en próximos logins.');
     return;
   }
   if (!window.PublicKeyCredential || !navigator.credentials) {
@@ -2966,10 +3019,15 @@ async function tryFaceIDLogin() {
     return;
   }
 
+  setLoginError('');
+  const btn = document.getElementById('faceid-login-btn');
+  if (btn) btn.disabled = true;
+
   try {
     const challenge = crypto.getRandomValues(new Uint8Array(32));
     const rawId = base64UrlDecode(credentialId);
 
+    // Step 1: verificar biometría
     await navigator.credentials.get({
       publicKey: {
         challenge: challenge,
@@ -2979,14 +3037,35 @@ async function tryFaceIDLogin() {
       }
     });
 
-    // Success — load account into state and enter app
-    state.email = acc.email;
-    state.name = acc.name || '';
-    state.photo = acc.photo || null;
-    state.wearables = acc.wearables || [];
-    setLoginError('');
+    // Step 2: biometría OK → sign in silencioso a Supabase con credenciales recordadas
+    const { data, error } = await sb.auth.signInWithPassword({
+      email: rememberedEmail,
+      password: rememberedPassword,
+    });
+
+    if (error) {
+      if (btn) btn.disabled = false;
+      // Probablemente cambió el password — pedir login manual
+      setLoginError('Tu contraseña cambió. Inicia sesión manualmente para reactivar Face ID.');
+      clearRememberedCredentials();
+      updateFaceIDButtonVisibility();
+      return;
+    }
+
+    // Step 3: cargar perfil y entrar al app
+    const profile = await loadCurrentProfile();
+    state.email = data.user.email;
+    state.name = profile?.name || '';
+    state.photo = profile?.photo || null;
+    state.wearables = profile?.wearables || [];
+    state.sex = profile?.sex || '';
+    state.age = profile?.age || '';
+    state.goals = profile?.goals || [];
+    state.level = profile?.level || '';
     enterAppSimulation('login');
+
   } catch (err) {
+    if (btn) btn.disabled = false;
     console.warn('Face ID login error:', err.name, err.message);
     if (err.name === 'NotAllowedError') {
       setLoginError('Autenticación cancelada. Intenta de nuevo o usa email.');
@@ -3041,6 +3120,7 @@ async function confirmReset() {
     localStorage.removeItem(STORAGE.enabled);
     localStorage.removeItem(STORAGE.credentialId);
   } catch (e) { console.warn(e); }
+  clearRememberedCredentials();
   cachedAccount = null;
   location.reload();
 }
@@ -3108,12 +3188,8 @@ async function confirmReset() {
     }
   }
 
-  // Prefill login email si hay biometría activa (Face ID guarda email cached)
-  const enabled = localStorage.getItem(STORAGE.enabled);
-  const faceBtn = document.getElementById('faceid-login-btn');
-  if (faceBtn && enabled !== 'true') {
-    faceBtn.style.display = 'none';
-  }
+  // Estado inicial del botón Face ID
+  updateFaceIDButtonVisibility();
 })();
 </script>
 </body>
