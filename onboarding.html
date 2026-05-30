@@ -511,6 +511,87 @@
     color: #475569;
   }
 
+  /* Email verification screen */
+  .verify-screen {
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 50px;
+    padding-bottom: 30px;
+    text-align: center;
+  }
+  .verify-content {
+    flex: 1;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    width: 100%;
+  }
+  .verify-icon-circle {
+    width: 96px; height: 96px;
+    border-radius: 24px;
+    background: linear-gradient(135deg, rgba(96,165,250,0.16), rgba(96,165,250,0.04));
+    border: 1px solid rgba(96,165,250,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 28px;
+    color: #60A5FA;
+    box-shadow: 0 0 48px rgba(96,165,250,0.18);
+  }
+  .verify-icon-circle.success {
+    background: linear-gradient(135deg, #10B981, #064E3B);
+    color: white;
+    border-color: #10B981;
+    animation: pop 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .verify-title {
+    font-size: 26px; font-weight: 800;
+    letter-spacing: -0.6px; margin-bottom: 12px;
+    color: #F8FAFC;
+    max-width: 320px;
+    line-height: 1.2;
+  }
+  .verify-subtitle {
+    font-size: 14px; color: #94A3B8;
+    line-height: 1.5; max-width: 300px;
+    margin-bottom: 28px;
+  }
+  .verify-subtitle strong {
+    color: #F1F5F9;
+    font-weight: 700;
+  }
+  .verify-spinner-row {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 18px;
+    background: rgba(96,165,250,0.08);
+    border: 1px solid rgba(96,165,250,0.2);
+    border-radius: 999px;
+    color: #93C5FD;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 32px;
+  }
+  .verify-spinner {
+    width: 14px; height: 14px;
+    border: 2px solid rgba(96,165,250,0.3);
+    border-top-color: #60A5FA;
+    border-radius: 50%;
+    animation: spin 0.9s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .verify-actions {
+    width: 100%;
+    display: flex; flex-direction: column;
+    gap: 10px;
+  }
+  .verify-resend-cooldown {
+    font-size: 11.5px;
+    color: #64748B;
+    margin-top: 8px;
+    text-align: center;
+  }
+
   /* Computed age display */
   .age-pill {
     display: inline-flex;
@@ -1129,6 +1210,16 @@
       <polyline points="8 7 4 12 8 17"/>
       <polyline points="16 7 20 12 16 17"/>
     </symbol>
+    <symbol id="i-recomp" viewBox="0 0 24 24">
+      <line x1="8" y1="4" x2="8" y2="20"/>
+      <polyline points="4 8 8 4 12 8"/>
+      <line x1="16" y1="20" x2="16" y2="4"/>
+      <polyline points="20 16 16 20 12 16"/>
+    </symbol>
+    <symbol id="i-mail" viewBox="0 0 24 24">
+      <rect x="3" y="5" width="18" height="14" rx="2"/>
+      <polyline points="3 7 12 13 21 7"/>
+    </symbol>
 
     <!-- Bienestar diario -->
     <symbol id="i-energy" viewBox="0 0 24 24">
@@ -1463,7 +1554,11 @@
       </div>
       <div class="feel-chip" data-goal="muscle-gain" onclick="toggleGoal(this, 'muscle-gain')">
         <svg class="icon"><use href="#i-muscle"/></svg>
-        <div class="label">Aumentar músculo</div>
+        <div class="label">Aumentar masa</div>
+      </div>
+      <div class="feel-chip" data-goal="recomp" onclick="toggleGoal(this, 'recomp')">
+        <svg class="icon"><use href="#i-recomp"/></svg>
+        <div class="label">Recomposición corporal</div>
       </div>
       <div class="feel-chip" data-goal="performance" onclick="toggleGoal(this, 'performance')">
         <svg class="icon"><use href="#i-performance"/></svg>
@@ -1870,6 +1965,28 @@
           <button class="btn-secondary" onclick="proceedToFaceID('explore')">Solo explorar por ahora</button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- ============== Email verification gate ============== -->
+  <div class="screen verify-screen" data-step="verify">
+    <div class="verify-content">
+      <div class="verify-icon-circle" id="verify-icon">
+        <svg class="icon" style="width:44px; height:44px; stroke-width:1.4;"><use href="#i-mail"/></svg>
+      </div>
+      <div class="verify-title" id="verify-title">Confirma tu email</div>
+      <div class="verify-subtitle" id="verify-subtitle">
+        Te enviamos un link a <strong id="verify-email-text">tu email</strong>. Ábrelo en tu inbox para activar tu cuenta y entrar a SAVIA.
+      </div>
+      <div class="verify-spinner-row" id="verify-status-row">
+        <div class="verify-spinner"></div>
+        <span>Esperando confirmación...</span>
+      </div>
+    </div>
+    <div class="verify-actions">
+      <button class="btn-secondary" id="verify-resend-btn" onclick="resendVerificationEmail()">Reenviar email</button>
+      <div class="verify-resend-cooldown" id="verify-resend-cd" style="display:none;"></div>
+      <button class="btn-ghost" onclick="changeVerifyEmail()">Cambiar email o cancelar</button>
     </div>
   </div>
 
@@ -2340,9 +2457,11 @@ function toggleGoal(chip, value) {
 
 function hasMaintenanceConflict() {
   return state.goals.includes('maintenance') &&
-         (state.goals.includes('fat-loss') || state.goals.includes('muscle-gain'));
+         (state.goals.includes('fat-loss') || state.goals.includes('muscle-gain') || state.goals.includes('recomp'));
 }
 function hasRecompConflict() {
+  // Si el usuario ya escogió Recomp explícitamente, no hay conflicto que resolver
+  if (state.goals.includes('recomp')) return false;
   return state.goals.includes('fat-loss') && state.goals.includes('muscle-gain');
 }
 
@@ -2371,10 +2490,13 @@ function selectMaintenanceMode(card, mode) {
 
 function afterMaintenanceResolution() {
   if (state.maintenanceMode === 'maintain') {
-    state.goals = state.goals.filter(g => g !== 'fat-loss' && g !== 'muscle-gain');
+    // Mantenimiento gana — quita los objetivos de cambio
+    state.goals = state.goals.filter(g => g !== 'fat-loss' && g !== 'muscle-gain' && g !== 'recomp');
     goStep(3);
   } else {
+    // Cambio gana — quita mantenimiento
     state.goals = state.goals.filter(g => g !== 'maintenance');
+    // Si todavía tiene conflict fat+muscle sin recomp explícito, resolver
     if (hasRecompConflict()) {
       state.resolution = null;
       document.querySelectorAll('[data-step="2.5"] .resolve-card').forEach(c => c.classList.remove('selected'));
@@ -2520,11 +2642,109 @@ function showWQExplain() {
 }
 
 // =============================================
-//  Welcome → Face ID
+//  Welcome → check email verification first
 // =============================================
-function proceedToFaceID(intent) {
+let verifyPollInterval = null;
+let resendCooldown = 0;
+let resendCooldownInterval = null;
+
+async function proceedToFaceID(intent) {
   state.entryIntent = intent;
-  goStep(8);
+  // Verificar si email está confirmado antes de avanzar
+  const { data: { user } } = await sb.auth.getUser();
+  if (user && user.email_confirmed_at) {
+    // Verificado, continúa a Face ID
+    goStep(8);
+  } else {
+    // Bloquea hasta confirmar
+    showVerifyScreen();
+  }
+}
+
+function showVerifyScreen() {
+  const emailText = document.getElementById('verify-email-text');
+  if (emailText) emailText.textContent = state.email || 'tu email';
+  goStep('verify');
+  startVerifyPolling();
+}
+
+function startVerifyPolling() {
+  stopVerifyPolling();
+  // Auto-check cada 3 seg si el email fue confirmado
+  verifyPollInterval = setInterval(async () => {
+    try {
+      const { data, error } = await sb.auth.refreshSession();
+      if (error) return;
+      const user = data?.user;
+      if (user && user.email_confirmed_at) {
+        stopVerifyPolling();
+        showVerifySuccess();
+      }
+    } catch (e) { console.warn('Poll error:', e); }
+  }, 3000);
+}
+
+function stopVerifyPolling() {
+  if (verifyPollInterval) {
+    clearInterval(verifyPollInterval);
+    verifyPollInterval = null;
+  }
+}
+
+function showVerifySuccess() {
+  const iconEl = document.getElementById('verify-icon');
+  const titleEl = document.getElementById('verify-title');
+  const subEl = document.getElementById('verify-subtitle');
+  const statusEl = document.getElementById('verify-status-row');
+  iconEl.classList.add('success');
+  iconEl.innerHTML = '<svg class="icon" style="width:44px; height:44px; stroke-width:2;"><use href="#i-check"/></svg>';
+  titleEl.textContent = '¡Confirmado!';
+  subEl.innerHTML = 'Tu email está activo. Te llevamos donde estabas.';
+  statusEl.style.display = 'none';
+  setTimeout(() => goStep(8), 1600);
+}
+
+async function resendVerificationEmail() {
+  if (resendCooldown > 0) return;
+  const btn = document.getElementById('verify-resend-btn');
+  const cdEl = document.getElementById('verify-resend-cd');
+  btn.disabled = true;
+  btn.textContent = 'Enviando...';
+
+  try {
+    await sb.auth.resend({ type: 'signup', email: state.email });
+    btn.textContent = '✓ Email reenviado';
+    // Cooldown de 30 seg para evitar abuse
+    resendCooldown = 30;
+    cdEl.style.display = 'block';
+    cdEl.textContent = `Puedes reenviar en ${resendCooldown}s`;
+    resendCooldownInterval = setInterval(() => {
+      resendCooldown--;
+      if (resendCooldown <= 0) {
+        clearInterval(resendCooldownInterval);
+        cdEl.style.display = 'none';
+        btn.disabled = false;
+        btn.textContent = 'Reenviar email';
+      } else {
+        cdEl.textContent = `Puedes reenviar en ${resendCooldown}s`;
+      }
+    }, 1000);
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Reenviar email';
+    console.warn('Resend error:', err);
+  }
+}
+
+async function changeVerifyEmail() {
+  // Cancelar polling + signout + volver al splash
+  stopVerifyPolling();
+  if (resendCooldownInterval) clearInterval(resendCooldownInterval);
+  await sb.auth.signOut();
+  cachedAccount = null;
+  state.email = '';
+  state.name = '';
+  goStep(0);
 }
 
 // =============================================
@@ -2824,10 +3044,16 @@ async function confirmReset() {
   const isPasswordReset = urlParams.get('action') === 'reset' ||
                           hashParams.get('type') === 'recovery';
 
-  // Listen for PASSWORD_RECOVERY auth event (cuando user llega del email link)
-  sb.auth.onAuthStateChange((event) => {
+  // Listen para PASSWORD_RECOVERY y USER_UPDATED (email confirmation desde otro tab)
+  sb.auth.onAuthStateChange(async (event, session) => {
     if (event === 'PASSWORD_RECOVERY') {
       goStep('change-password');
+    } else if (event === 'USER_UPDATED' || event === 'SIGNED_IN') {
+      // Si estamos en verify screen y el email se confirmó, mostrar success
+      if (state.step === 'verify' && session?.user?.email_confirmed_at) {
+        stopVerifyPolling();
+        showVerifySuccess();
+      }
     }
   });
 
@@ -2850,8 +3076,18 @@ async function confirmReset() {
       state.goals = profile.goals || [];
       state.level = profile.level || '';
 
+      // Check si email está verificado
+      const emailConfirmed = !!session.user.email_confirmed_at;
+
       if (profile.isOnboarded) {
-        enterAppSimulation('login');
+        // Completó onboarding
+        if (emailConfirmed) {
+          enterAppSimulation('login');
+        } else {
+          // Onboarding hecho pero email no confirmado → vuelve a la pantalla verify
+          state.entryIntent = state.entryIntent || 'checkin';
+          showVerifyScreen();
+        }
       } else {
         // Mitad de onboarding — continúa desde donde quedó
         goStep(1);
