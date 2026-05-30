@@ -485,6 +485,55 @@
   .field-input::placeholder { color: #475569; }
   .field-input.error { border-color: #F87171; }
 
+  /* Date input dark theme */
+  .field-input[type="date"] {
+    color-scheme: dark;
+    font-family: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
+  }
+  .field-input[type="date"]::-webkit-calendar-picker-indicator {
+    filter: invert(0.5);
+    cursor: pointer;
+    opacity: 0.8;
+  }
+  .field-input[type="date"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+  .field-input[type="date"]::-webkit-datetime-edit-text,
+  .field-input[type="date"]::-webkit-datetime-edit-month-field,
+  .field-input[type="date"]::-webkit-datetime-edit-day-field,
+  .field-input[type="date"]::-webkit-datetime-edit-year-field {
+    color: #F1F5F9;
+  }
+  .field-input[type="date"]:invalid::-webkit-datetime-edit {
+    color: #475569;
+  }
+
+  /* Computed age display */
+  .age-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(16, 185, 129, 0.08);
+    border: 1px solid rgba(16, 185, 129, 0.25);
+    color: #34D399;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-top: -2px;
+    margin-bottom: 14px;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: all 0.3s ease;
+  }
+  .age-pill.show {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
   .field-error {
     font-size: 12px;
     color: #F87171;
@@ -1383,9 +1432,10 @@
       </div>
     </div>
 
-    <label class="field-label">Edad</label>
-    <input type="number" id="age-input" class="field-input" placeholder="34" min="16" max="100" oninput="validateSexAge()"/>
-    <div class="field-hint">Necesaria para calcular tu BMR, recovery y zonas de entrenamiento.</div>
+    <label class="field-label">Fecha de nacimiento</label>
+    <input type="date" id="birthdate-input" class="field-input" oninput="validateSexAge()"/>
+    <div class="age-pill" id="age-pill"><span id="age-pill-text"></span></div>
+    <div class="field-hint">Calculamos tu edad, BMR, recovery y zonas de entrenamiento.</div>
 
     <button class="continue-btn" id="continue-1" onclick="goStep(2)">Continuar</button>
   </div>
@@ -1926,6 +1976,7 @@ const state = {
   password: '',
   sex: '',
   age: '',
+  birthdate: '',
   goals: [],
   resolution: null,
   maintenanceMode: null,
@@ -2220,12 +2271,57 @@ function selectSex(value) {
   validateSexAge();
 }
 
+function calculateAge(birthdateStr) {
+  if (!birthdateStr) return 0;
+  const today = new Date();
+  const birth = new Date(birthdateStr + 'T00:00:00');
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
 function validateSexAge() {
-  const age = parseInt(document.getElementById('age-input').value, 10);
-  const validAge = age >= 16 && age <= 100;
+  const birthdate = document.getElementById('birthdate-input').value;
+  const pill = document.getElementById('age-pill');
+  const pillText = document.getElementById('age-pill-text');
+
+  let age = 0;
+  let validAge = false;
+  if (birthdate) {
+    age = calculateAge(birthdate);
+    validAge = age >= 16 && age <= 100;
+    if (age >= 1 && age < 16) {
+      pillText.textContent = `Tienes ${age} años — la app es para 16 años en adelante`;
+      pill.style.color = '#FBBF24';
+      pill.style.background = 'rgba(251,191,36,0.08)';
+      pill.style.borderColor = 'rgba(251,191,36,0.25)';
+      pill.classList.add('show');
+    } else if (age > 100) {
+      pillText.textContent = `Verifica la fecha — calculaste ${age} años`;
+      pill.style.color = '#F87171';
+      pill.style.background = 'rgba(248,113,113,0.08)';
+      pill.style.borderColor = 'rgba(248,113,113,0.25)';
+      pill.classList.add('show');
+    } else if (validAge) {
+      pillText.textContent = `${age} años`;
+      pill.style.color = '#34D399';
+      pill.style.background = 'rgba(16,185,129,0.08)';
+      pill.style.borderColor = 'rgba(16,185,129,0.25)';
+      pill.classList.add('show');
+    } else {
+      pill.classList.remove('show');
+    }
+  } else {
+    pill.classList.remove('show');
+  }
+
   const valid = state.sex && validAge;
   document.getElementById('continue-1').classList.toggle('show', valid);
-  if (validAge) state.age = age;
+  if (validAge) {
+    state.age = age;
+    state.birthdate = birthdate;
+  }
 }
 
 // =============================================
@@ -2673,6 +2769,17 @@ async function tryFaceIDLogin() {
 // =============================================
 //  Time
 // =============================================
+// Set sensible min/max for the birthdate picker
+(function setupBirthdateLimits() {
+  const input = document.getElementById('birthdate-input');
+  if (!input) return;
+  const today = new Date();
+  const maxDate = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+  const minDate = new Date(today.getFullYear() - 100, today.getMonth(), today.getDate());
+  input.max = maxDate.toISOString().split('T')[0];
+  input.min = minDate.toISOString().split('T')[0];
+})();
+
 function updateTime() {
   const now = new Date();
   const hh = now.getHours();
