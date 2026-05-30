@@ -1548,25 +1548,33 @@
 
     <div class="section-label">Composición y rendimiento</div>
     <div class="feel-grid">
-      <div class="feel-chip" data-goal="fat-loss" onclick="toggleGoal(this, 'fat-loss')">
+      <div class="feel-chip full-width" data-goal="fat-loss" onclick="toggleGoal(this, 'fat-loss')">
         <svg class="icon"><use href="#i-fatloss"/></svg>
-        <div class="label">Perder grasa</div>
+        <div class="label-stack">
+          <div class="label">Perder grasa</div>
+          <div class="sublabel">Bajar tu % de grasa con déficit calórico</div>
+        </div>
       </div>
-      <div class="feel-chip" data-goal="muscle-gain" onclick="toggleGoal(this, 'muscle-gain')">
+      <div class="feel-chip full-width" data-goal="muscle-gain" onclick="toggleGoal(this, 'muscle-gain')">
         <svg class="icon"><use href="#i-muscle"/></svg>
-        <div class="label">Aumentar masa</div>
+        <div class="label-stack">
+          <div class="label">Aumentar masa</div>
+          <div class="sublabel">Construir músculo con superávit calórico</div>
+        </div>
       </div>
-      <div class="feel-chip" data-goal="recomp" onclick="toggleGoal(this, 'recomp')">
+      <div class="feel-chip full-width" data-goal="recomp" onclick="toggleGoal(this, 'recomp')">
         <svg class="icon"><use href="#i-recomp"/></svg>
-        <div class="label">Recomposición corporal</div>
+        <div class="label-stack">
+          <div class="label">Recomposición corporal</div>
+          <div class="sublabel">Bajar grasa y ganar músculo a la vez (más lento)</div>
+        </div>
       </div>
-      <div class="feel-chip" data-goal="performance" onclick="toggleGoal(this, 'performance')">
+      <div class="feel-chip full-width" data-goal="performance" onclick="toggleGoal(this, 'performance')">
         <svg class="icon"><use href="#i-performance"/></svg>
-        <div class="label">Rendimiento atlético</div>
-      </div>
-      <div class="feel-chip" data-goal="recovery" onclick="toggleGoal(this, 'recovery')">
-        <svg class="icon"><use href="#i-recovery"/></svg>
-        <div class="label">Recuperación</div>
+        <div class="label-stack">
+          <div class="label">Rendimiento atlético</div>
+          <div class="sublabel">Mejorar fuerza, velocidad o resistencia</div>
+        </div>
       </div>
       <div class="feel-chip full-width" data-goal="maintenance" onclick="toggleGoal(this, 'maintenance')">
         <svg class="icon"><use href="#i-maintenance"/></svg>
@@ -1594,6 +1602,10 @@
       <div class="feel-chip" data-goal="focus" onclick="toggleGoal(this, 'focus')">
         <svg class="icon"><use href="#i-focus"/></svg>
         <div class="label">Foco mental</div>
+      </div>
+      <div class="feel-chip" data-goal="recovery" onclick="toggleGoal(this, 'recovery')">
+        <svg class="icon"><use href="#i-recovery"/></svg>
+        <div class="label">Recuperación</div>
       </div>
     </div>
 
@@ -2528,8 +2540,8 @@ function selectLevel(card, value) {
   document.querySelectorAll('[data-step="3"] .list-card').forEach(c => c.classList.remove('selected'));
   card.classList.add('selected');
   state.level = value;
+  // Manual continue — usuario decide cuándo avanzar
   document.getElementById('continue-3').classList.add('show');
-  setTimeout(() => goStep(4), 420);
 }
 
 // =============================================
