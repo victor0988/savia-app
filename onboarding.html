@@ -2912,7 +2912,7 @@ function goStep(n) {
   state.step = n;
   // Persist onboarding progress (sobrevive a confirmar email en otra pestaña)
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
-  const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 0];
+  const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -4764,7 +4764,9 @@ async function _doRouteAuthenticatedUser() {
       goStep(8);
       return;
     }
-    if (saved.step) {
+    // Ignorar saved steps que son screens de auth (no son progreso real de onboarding)
+    const authSteps = ['auth', 'login', 'signup', 'forgot', 'change-password', 'otp-email', 'otp-verify', 'app', 'profile', 0];
+    if (saved.step && !authSteps.includes(saved.step)) {
       goStep(saved.step);
       applyStateToUI();
       return;
