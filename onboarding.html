@@ -9,6 +9,40 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // VERY early: si venimos de OAuth callback (hash con access_token), oculta splash inmediatamente
+  // para evitar el flash visual antes de que init() routee.
+  if (window.location.hash.includes('access_token=')) {
+    document.documentElement.classList.add('oauth-loading');
+  }
+</script>
+<style>
+  /* Pantalla negra premium mientras procesamos OAuth callback */
+  html.oauth-loading body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 50%, #0F2A1E 0%, #050810 70%);
+    z-index: 9998;
+  }
+  html.oauth-loading body::after {
+    content: '';
+    position: fixed;
+    top: 50%; left: 50%;
+    width: 60px; height: 60px;
+    margin: -30px 0 0 -30px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #34D399, #064E3B);
+    box-shadow: 0 0 48px rgba(16,185,129,0.5);
+    z-index: 9999;
+    animation: pulseLoading 1.6s ease-in-out infinite;
+  }
+  @keyframes pulseLoading {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.12); opacity: 1; }
+  }
+  /* Cuando init termina y limpia oauth-loading, todo vuelve a normal */
+</style>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; overflow: hidden; }
@@ -4797,6 +4831,12 @@ function showDebugBanner(text, color) {
   const hashHasTokensDebug = window.location.hash.includes('access_token=');
   showDebugBanner(`DBG init: hash=${hashHasTokensDebug ? 'YES tokens' : 'no'} | reset=${isPasswordReset}`, '#3B82F6');
 
+  // Safety net: si después de 6 seg seguimos con oauth-loading, removerlo para no
+  // dejar al usuario en pantalla negra para siempre
+  setTimeout(() => {
+    document.documentElement.classList.remove('oauth-loading');
+  }, 6000);
+
   // Listener para password recovery + auto-route en login OAuth (Google)
   sb.auth.onAuthStateChange(async (event, session) => {
     console.log('[SAVIA] Auth event:', event, 'step:', state.step);
@@ -4930,6 +4970,7 @@ function showDebugBanner(text, color) {
         showDebugBanner('DBG setSession OK, routing...', '#10B981');
         try { window.history.replaceState(null, '', window.location.pathname); } catch {}
         await routeAuthenticatedUser();
+        document.documentElement.classList.remove('oauth-loading');
         return;
       } else {
         showDebugBanner('DBG setSession sin error pero sin session', '#EF4444');
