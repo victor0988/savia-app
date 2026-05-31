@@ -1495,8 +1495,7 @@
       <div class="q-hint">Tu data te espera.</div>
     </div>
 
-    <!-- Face ID button removido en Opción C: sesión persistente -->
-    <button class="btn-secondary" id="faceid-login-btn" onclick="tryFaceIDLogin()" style="display:none;">
+    <button class="btn-secondary" id="faceid-login-btn" onclick="tryFaceIDLogin()" style="margin-bottom: 12px;">
       <span style="display:inline-flex; align-items:center; gap:10px; justify-content:center;">
         <svg class="icon icon-sm" style="stroke-width: 1.8;"><use href="#i-faceid"/></svg>
         Usar Face ID o Touch ID
@@ -1505,11 +1504,11 @@
     <div id="faceid-diag" style="display:none; font-size:12px; color:#94A3B8; text-align:center; margin-bottom:18px; line-height:1.4; padding: 0 8px;"></div>
 
     <label class="field-label">Email</label>
-    <input type="email" id="login-email" class="field-input" placeholder="tu@email.com" oninput="validateLogin()" autocomplete="email"/>
+    <input type="email" id="login-email" class="field-input" placeholder="tu@email.com" oninput="validateLogin()" autocomplete="email" autocorrect="off" autocapitalize="off" spellcheck="false"/>
     <div class="field-error" id="login-email-error"></div>
 
     <label class="field-label">Contraseña</label>
-    <input type="password" id="login-password" class="field-input" placeholder="••••••••" oninput="validateLogin()" autocomplete="current-password"/>
+    <input type="password" id="login-password" class="field-input" placeholder="••••••••" oninput="validateLogin()" autocomplete="off" data-lpignore="true"/>
     <div class="field-error" id="login-password-error"></div>
 
     <button class="btn-primary" id="login-btn" disabled onclick="doLogin()" style="margin-top: 14px;">Iniciar sesión</button>
@@ -2372,12 +2371,32 @@ function hideLoading() {
 }
 
 function updateFaceIDButtonVisibility() {
-  // Opción C: Face ID button siempre oculto (sesión persistente)
+  const enabled = localStorage.getItem(STORAGE.enabled);
+  const credentialId = localStorage.getItem(STORAGE.credentialId);
+  const rememberedPwd = getRememberedPassword();
   const faceBtn = document.getElementById('faceid-login-btn');
-  if (faceBtn) faceBtn.style.display = 'none';
+  console.log('[SAVIA] Face ID visibility check:', {
+    enabled: enabled,
+    hasCredential: !!credentialId,
+    hasRememberedPassword: !!rememberedPwd,
+  });
+  if (faceBtn) {
+    const show = enabled === 'true' && !!credentialId && !!rememberedPwd;
+    faceBtn.style.display = show ? '' : 'none';
+  }
+  // Diagnóstico visible si la biometría no está lista
   const diagEl = document.getElementById('faceid-diag');
-  if (diagEl) diagEl.style.display = 'none';
-  // Pre-fill email del último login
+  if (diagEl) {
+    if (enabled !== 'true') {
+      diagEl.style.display = 'none';
+    } else if (!credentialId || !rememberedPwd) {
+      diagEl.textContent = 'Iniciá sesión con email una vez para reactivar Face ID.';
+      diagEl.style.display = '';
+    } else {
+      diagEl.style.display = 'none';
+    }
+  }
+  // Pre-fill email del último login (siempre — Face ID lo necesita)
   const rememberedEmail = getRememberedEmail();
   const loginEmailInput = document.getElementById('login-email');
   if (loginEmailInput && rememberedEmail && !loginEmailInput.value) {
@@ -2948,9 +2967,8 @@ let resendCooldownInterval = null;
 
 async function proceedToFaceID(intent) {
   state.entryIntent = intent;
-  // Opción C: sesión persistente. Sin Face ID extra — el OS del dispositivo
-  // protege el acceso. Entra directo al app.
-  enterAppSimulation(intent);
+  // Va a Face ID setup (paso 8) para que el user pueda activar biometría
+  goStep(8);
 }
 
 function showVerifyScreen() {
