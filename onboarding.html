@@ -2842,25 +2842,35 @@ async function startCalculation() {
   // Upsert profile en Supabase con toda la data del onboarding
   const { data: { user } } = await sb.auth.getUser();
   if (user) {
-    const { error } = await sb.from('profiles').upsert({
+    const payload = {
       id: user.id,
       email: state.email,
-      name: state.name,
-      sex: state.sex,
+      name: state.name || null,
+      sex: state.sex || null,
       age: state.age ? parseInt(state.age, 10) : null,
       goals: state.goals,
-      level: state.level,
+      level: state.level || null,
       wearables: state.wearables,
-      photo_url: state.photo, // Para prototype guardamos base64; en prod usaríamos Storage
-      maintenance_mode: state.maintenanceMode,
-      resolution: state.resolution,
+      photo_url: state.photo,
+      maintenance_mode: state.maintenanceMode || null,
+      resolution: state.resolution || null,
       is_onboarded: true,
-    });
-    if (error) console.warn('Profile upsert error:', error);
+    };
+    console.log('[SAVIA] Guardando perfil en Supabase:', payload);
+    const { data, error } = await sb.from('profiles').upsert(payload).select();
+    if (error) {
+      console.error('[SAVIA] ❌ Error guardando perfil:', error.message, error);
+      // No silenciamos — mostramos al user para que sepa
+      alert('No pudimos guardar tu perfil:\n\n' + error.message + '\n\nReporta esto y reintenta. Por ahora continuamos al app.');
+    } else {
+      console.log('[SAVIA] ✓ Perfil guardado:', data);
+    }
     // Refresh cache
     await loadCurrentProfile();
     // Onboarding completo — el progreso ya está persistido en Supabase
     clearOnboardingState();
+  } else {
+    console.error('[SAVIA] ❌ No hay user de Supabase al guardar perfil');
   }
 
   goStep(6);
@@ -3398,20 +3408,9 @@ async function confirmReset() {
     state.level = profile.level || '';
 
     const emailConfirmed = !!session.user.email_confirmed_at;
-
-    if (profile.isOnboarded) {
-      if (emailConfirmed) {
-        clearOnboardingState();
-        enterAppSimulation('login');
-      } else {
-        state.entryIntent = state.entryIntent || 'checkin';
-        showVerifyScreen();
-      }
-      return;
-    }
-
-    // Onboarding incompleto — intentar restaurar progreso desde localStorage
     const saved = loadOnboardingState();
+
+    // Mezclar datos: si profile tiene algo, gana; si no, usar saved state
     if (saved) {
       state.sex = state.sex || saved.sex || '';
       state.age = state.age || saved.age || '';
@@ -3422,14 +3421,68 @@ async function confirmReset() {
       state.level = state.level || saved.level || '';
       state.wearables = (state.wearables && state.wearables.length) ? state.wearables : (saved.wearables || []);
       state.entryIntent = saved.entryIntent || state.entryIntent;
+      state.name = state.name || saved.name || '';
+      state.photo = state.photo || saved.photo || null;
+    }
 
-      // Caso especial: estaban en gate de verify y ya confirmaron → saltar a Face ID
+    // SELF-HEALING: si profile.isOnboarded=false PERO ya hay datos completos del
+    // onboarding (sex + goals + level + wearables), curar la inconsistencia y entrar al app.
+    // Cubre casos donde el upsert de startCalculation falló silenciosamente.
+    const hasOnboardingData =
+      state.sex &&
+      state.goals && state.goals.length > 0 &&
+      state.level &&
+      state.wearables && state.wearables.length > 0;
+
+    const effectivelyOnboarded = profile.isOnboarded || hasOnboardingData;
+
+    console.log('[SAVIA] Route decision:', {
+      isOnboardedDB: profile.isOnboarded,
+      hasOnboardingData,
+      effectivelyOnboarded,
+      emailConfirmed,
+      savedStep: saved?.step,
+    });
+
+    if (effectivelyOnboarded) {
+      if (!profile.isOnboarded && hasOnboardingData) {
+        // Curar la inconsistencia: marcar como onboarded en DB
+        console.log('[SAVIA] Curando is_onboarded=true en DB');
+        try {
+          await sb.from('profiles').upsert({
+            id: session.user.id,
+            email: state.email,
+            name: state.name || null,
+            sex: state.sex || null,
+            age: state.age ? parseInt(state.age, 10) : null,
+            goals: state.goals,
+            level: state.level || null,
+            wearables: state.wearables,
+            photo_url: state.photo,
+            maintenance_mode: state.maintenanceMode || null,
+            resolution: state.resolution || null,
+            is_onboarded: true,
+          });
+        } catch (e) { console.warn('Cura falló:', e); }
+      }
+
+      if (emailConfirmed) {
+        clearOnboardingState();
+        enterAppSimulation('login');
+      } else {
+        state.entryIntent = state.entryIntent || 'checkin';
+        showVerifyScreen();
+      }
+      return;
+    }
+
+    // Onboarding genuinamente incompleto — reanudar desde saved state
+    if (saved) {
       if (saved.step === 'verify' && emailConfirmed) {
         clearOnboardingState();
         goStep(8);
         return;
       }
-
       if (saved.step) {
         goStep(saved.step);
         applyStateToUI();
