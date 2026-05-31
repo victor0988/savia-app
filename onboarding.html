@@ -1495,7 +1495,8 @@
       <div class="q-hint">Tu data te espera.</div>
     </div>
 
-    <button class="btn-secondary" id="faceid-login-btn" onclick="tryFaceIDLogin()" style="margin-bottom: 12px;">
+    <!-- Face ID button removido en Opción C: sesión persistente -->
+    <button class="btn-secondary" id="faceid-login-btn" onclick="tryFaceIDLogin()" style="display:none;">
       <span style="display:inline-flex; align-items:center; gap:10px; justify-content:center;">
         <svg class="icon icon-sm" style="stroke-width: 1.8;"><use href="#i-faceid"/></svg>
         Usar Face ID o Touch ID
@@ -2371,37 +2372,12 @@ function hideLoading() {
 }
 
 function updateFaceIDButtonVisibility() {
-  const enabled = localStorage.getItem(STORAGE.enabled);
-  const credentialId = localStorage.getItem(STORAGE.credentialId);
-  const rememberedPwd = getRememberedPassword();
+  // Opción C: Face ID button siempre oculto (sesión persistente)
   const faceBtn = document.getElementById('faceid-login-btn');
-  // Debug ayuda mucho cuando se reporta "no veo el botón"
-  console.log('[SAVIA] Face ID visibility check:', {
-    enabled: enabled,
-    hasCredential: !!credentialId,
-    hasRememberedPassword: !!rememberedPwd,
-  });
-  if (faceBtn) {
-    const show = enabled === 'true' && !!credentialId && !!rememberedPwd;
-    faceBtn.style.display = show ? '' : 'none';
-  }
-  // Diagnóstico visible en pantalla (banner pequeño bajo el botón)
+  if (faceBtn) faceBtn.style.display = 'none';
   const diagEl = document.getElementById('faceid-diag');
-  if (diagEl) {
-    if (enabled !== 'true') {
-      diagEl.textContent = 'Biometría no activada en este dispositivo. Actívala desde tu perfil después de iniciar sesión.';
-      diagEl.style.display = '';
-    } else if (!credentialId) {
-      diagEl.textContent = 'Activación de biometría incompleta. Inicia sesión y vuelve a activarla.';
-      diagEl.style.display = '';
-    } else if (!rememberedPwd) {
-      diagEl.textContent = 'Inicia sesión con email una vez para reactivar el acceso con Face ID.';
-      diagEl.style.display = '';
-    } else {
-      diagEl.style.display = 'none';
-    }
-  }
-  // Pre-fill email del último login (siempre)
+  if (diagEl) diagEl.style.display = 'none';
+  // Pre-fill email del último login
   const rememberedEmail = getRememberedEmail();
   const loginEmailInput = document.getElementById('login-email');
   if (loginEmailInput && rememberedEmail && !loginEmailInput.value) {
@@ -2962,9 +2938,9 @@ let resendCooldownInterval = null;
 
 async function proceedToFaceID(intent) {
   state.entryIntent = intent;
-  // Sin gate de email — password + biometría = doble factor.
-  // Va directo a Face ID setup.
-  goStep(8);
+  // Opción C: sesión persistente. Sin Face ID extra — el OS del dispositivo
+  // protege el acceso. Entra directo al app.
+  enterAppSimulation(intent);
 }
 
 function showVerifyScreen() {
