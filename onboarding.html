@@ -4905,37 +4905,29 @@ function showDebugBanner(text, color) {
   }
 
   // Si venimos de OAuth callback (Google) — hash tiene access_token
+  // Parseamos manualmente y llamamos setSession (no esperamos al SDK)
   const hashHasTokens = window.location.hash.includes('access_token=');
   if (hashHasTokens) {
-    showDebugBanner('DBG: detected OAuth callback, waiting for SDK...', '#F59E0B');
-    const sessionFromHash = await new Promise((resolve) => {
-      let resolved = false;
-      const sub = sb.auth.onAuthStateChange((event, session) => {
-        showDebugBanner(`DBG event=${event} session=${!!session}`, '#8B5CF6');
-        if (event === 'SIGNED_IN' && session && !resolved) {
-          resolved = true;
-          sub.data.subscription.unsubscribe();
-          resolve(session);
-        }
-      });
-      setTimeout(async () => {
-        if (resolved) return;
-        resolved = true;
-        sub.data.subscription.unsubscribe();
-        const { data } = await sb.auth.getSession();
-        showDebugBanner(`DBG timeout: session=${!!data.session}`, '#EF4444');
-        resolve(data.session || null);
-      }, 3000);
-    });
-
-    try { window.history.replaceState(null, '', window.location.pathname); } catch {}
-
-    if (sessionFromHash) {
-      showDebugBanner('DBG: routing...', '#10B981');
-      await routeAuthenticatedUser();
-      return;
+    showDebugBanner('DBG: parseando tokens del hash...', '#F59E0B');
+    const params = new URLSearchParams(window.location.hash.substring(1));
+    const access_token = params.get('access_token');
+    const refresh_token = params.get('refresh_token');
+    if (access_token && refresh_token) {
+      showDebugBanner('DBG: setSession()...', '#8B5CF6');
+      const { data, error } = await sb.auth.setSession({ access_token, refresh_token });
+      if (error) {
+        showDebugBanner('DBG setSession ERROR: ' + error.message, '#EF4444');
+      } else if (data.session) {
+        showDebugBanner('DBG setSession OK, routing...', '#10B981');
+        try { window.history.replaceState(null, '', window.location.pathname); } catch {}
+        await routeAuthenticatedUser();
+        return;
+      } else {
+        showDebugBanner('DBG setSession sin error pero sin session', '#EF4444');
+      }
+    } else {
+      showDebugBanner('DBG hash incompleto: at=' + !!access_token + ' rt=' + !!refresh_token, '#EF4444');
     }
-    showDebugBanner('DBG: no session after OAuth — algo falló', '#EF4444');
   }
 
   // Restaurar sesión normal si existe
