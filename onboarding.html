@@ -2955,15 +2955,9 @@ let resendCooldownInterval = null;
 
 async function proceedToFaceID(intent) {
   state.entryIntent = intent;
-  // Verificar si email está confirmado antes de avanzar
-  const { data: { user } } = await sb.auth.getUser();
-  if (user && user.email_confirmed_at) {
-    // Verificado, continúa a Face ID
-    goStep(8);
-  } else {
-    // Bloquea hasta confirmar
-    showVerifyScreen();
-  }
+  // Sin gate de email — password + biometría = doble factor.
+  // Va directo a Face ID setup.
+  goStep(8);
 }
 
 function showVerifyScreen() {
@@ -3530,36 +3524,11 @@ async function confirmReset() {
   const isPasswordReset = urlParams.get('action') === 'reset' ||
                           hashParams.get('type') === 'recovery';
 
-  // Detectar si vinimos de un link de email (signup confirmation) — el SDK procesa el hash
-  // async, así que necesitamos esperarlo via onAuthStateChange en lugar de getSession() directo
-  const isEmailConfirmation = hashParams.get('type') === 'signup' ||
-                              urlParams.get('type') === 'signup' ||
-                              hashParams.has('access_token');
-
-  // Listener robusto para todos los eventos de auth (incluido cuando SDK procesa tokens del URL)
+  // Listener para password recovery (único caso con magic link que queda)
   sb.auth.onAuthStateChange(async (event, session) => {
-    console.log('[SAVIA] Auth event:', event, 'confirmed:', !!session?.user?.email_confirmed_at, 'currentStep:', state.step);
-
+    console.log('[SAVIA] Auth event:', event);
     if (event === 'PASSWORD_RECOVERY') {
       goStep('change-password');
-      return;
-    }
-
-    if (event !== 'SIGNED_IN' && event !== 'USER_UPDATED' && event !== 'TOKEN_REFRESHED') return;
-
-    const emailConfirmed = !!session?.user?.email_confirmed_at;
-
-    // Caso 1: estamos en verify gate (mismo tab, polling detectó confirmación)
-    if (state.step === 'verify' && emailConfirmed) {
-      stopVerifyPolling();
-      showVerifySuccess();
-      return;
-    }
-
-    // Caso 2: estamos en splash (step 0) y un email link nos trajo aquí con tokens en URL
-    // O simplemente abrimos la app y tenemos sesión válida — routear apropiadamente
-    if ((state.step === 0 || state.step === undefined) && emailConfirmed) {
-      await routeAuthenticatedUser();
     }
   });
 
@@ -3638,20 +3607,15 @@ async function confirmReset() {
           });
         } catch (e) { console.warn('Cura falló:', e); }
       }
-
-      if (emailConfirmed) {
-        clearOnboardingState();
-        enterAppSimulation('login');
-      } else {
-        state.entryIntent = state.entryIntent || 'checkin';
-        showVerifyScreen();
-      }
+      clearOnboardingState();
+      enterAppSimulation('login');
       return;
     }
 
     // Onboarding genuinamente incompleto — reanudar desde saved state
     if (saved) {
-      if (saved.step === 'verify' && emailConfirmed) {
+      // Si quedaron en 'verify' (legacy), ahora saltamos a Face ID
+      if (saved.step === 'verify') {
         clearOnboardingState();
         goStep(8);
         return;
@@ -3671,22 +3635,7 @@ async function confirmReset() {
     return;
   }
 
-  // Si venimos de email link, dejamos que onAuthStateChange maneje el routing
-  // (el SDK necesita ~100-500ms para procesar los tokens del hash)
-  if (isEmailConfirmation) {
-    showLoading('Verificando tu cuenta');
-    // Safety net: si en 5 seg no llegó SIGNED_IN, intentar routear manualmente
-    setTimeout(async () => {
-      hideLoading();
-      const { data: { session } } = await sb.auth.getSession();
-      if (session && state.step === 0) {
-        await routeAuthenticatedUser();
-      }
-    }, 5000);
-    return;
-  }
-
-  // No venimos de un email link — restaurar sesión normal si existe
+  // Restaurar sesión si existe
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await routeAuthenticatedUser();
