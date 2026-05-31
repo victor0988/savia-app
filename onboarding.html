@@ -2839,9 +2839,17 @@ function validateNameStep() {
 //  Calibrating
 // =============================================
 async function startCalculation() {
-  // Upsert profile en Supabase con toda la data del onboarding
-  const { data: { user } } = await sb.auth.getUser();
-  if (user) {
+  // Avanzamos PRIMERO para que la UI no se quede colgada — el upsert corre en background
+  goStep(6);
+  setTimeout(revealCalibrating, 2400);
+
+  // Upsert profile en Supabase en background (no bloquea la UI)
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      console.error('[SAVIA] ❌ No hay user al guardar perfil');
+      return;
+    }
     const payload = {
       id: user.id,
       email: state.email,
@@ -2856,25 +2864,21 @@ async function startCalculation() {
       resolution: state.resolution || null,
       is_onboarded: true,
     };
-    console.log('[SAVIA] Guardando perfil en Supabase:', payload);
-    const { data, error } = await sb.from('profiles').upsert(payload).select();
+    console.log('[SAVIA] Guardando perfil en background:', payload);
+    const { error } = await sb.from('profiles').upsert(payload);
     if (error) {
-      console.error('[SAVIA] ❌ Error guardando perfil:', error.message, error);
-      // No silenciamos — mostramos al user para que sepa
-      alert('No pudimos guardar tu perfil:\n\n' + error.message + '\n\nReporta esto y reintenta. Por ahora continuamos al app.');
+      console.error('[SAVIA] ❌ Upsert falló:', error.message, error);
+      // Guardar el error en localStorage para diagnóstico (visible vía DevTools)
+      try { localStorage.setItem('savia_last_upsert_error', JSON.stringify({ message: error.message, code: error.code, time: Date.now() })); } catch {}
     } else {
-      console.log('[SAVIA] ✓ Perfil guardado:', data);
+      console.log('[SAVIA] ✓ Perfil guardado');
+      try { localStorage.removeItem('savia_last_upsert_error'); } catch {}
     }
-    // Refresh cache
     await loadCurrentProfile();
-    // Onboarding completo — el progreso ya está persistido en Supabase
     clearOnboardingState();
-  } else {
-    console.error('[SAVIA] ❌ No hay user de Supabase al guardar perfil');
+  } catch (e) {
+    console.error('[SAVIA] ❌ Excepción al guardar perfil:', e);
   }
-
-  goStep(6);
-  setTimeout(revealCalibrating, 2400);
 }
 
 function revealCalibrating() {
