@@ -4730,14 +4730,27 @@ async function _doRouteAuthenticatedUser() {
   const profile = await loadCurrentProfile();
   if (!profile) return;
 
+  // Si profile.name está vacío pero el provider (Google/Apple) nos dio un nombre, lo usamos.
+  const userMeta = session.user.user_metadata || {};
+  const nameFromProvider = userMeta.full_name || userMeta.name || '';
+  const photoFromProvider = userMeta.avatar_url || userMeta.picture || null;
+
   state.email = profile.email;
-  state.name = profile.name || '';
-  state.photo = profile.photo || null;
+  state.name = profile.name || nameFromProvider || '';
+  state.photo = profile.photo || photoFromProvider || null;
   state.wearables = profile.wearables || [];
   state.sex = profile.sex || '';
   state.age = profile.age || '';
   state.goals = profile.goals || [];
   state.level = profile.level || '';
+
+  // Si el nombre vino del provider y no está en el profile, persistirlo
+  if (!profile.name && nameFromProvider) {
+    try {
+      await sb.from('profiles').update({ name: nameFromProvider, photo_url: state.photo }).eq('id', session.user.id);
+      console.log('[SAVIA] ✓ Nombre + foto de Google guardados en profile');
+    } catch (e) { console.warn('Sync name from provider failed:', e); }
+  }
 
   const saved = loadOnboardingState();
   if (saved) {
@@ -4809,16 +4822,8 @@ async function _doRouteAuthenticatedUser() {
   goStep(1);
 }
 
-function showDebugBanner(text, color) {
-  const old = document.getElementById('savia-debug-banner');
-  if (old) old.remove();
-  const b = document.createElement('div');
-  b.id = 'savia-debug-banner';
-  b.style.cssText = `position:fixed; top:8px; left:8px; right:8px; padding:10px 12px; border-radius:10px; font-size:11px; line-height:1.4; z-index:99999; background:${color}; color:white; font-family:monospace; word-break:break-all; box-shadow:0 4px 16px rgba(0,0,0,0.5);`;
-  b.textContent = text;
-  b.onclick = () => b.remove();
-  document.body.appendChild(b);
-}
+// Debug banner removido — usamos console.log + Safari Web Inspector
+function showDebugBanner() { /* no-op */ }
 
 (async function init() {
   // Manejo del link de password reset (Supabase pone el access_token en el hash)
