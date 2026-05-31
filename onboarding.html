@@ -2919,17 +2919,28 @@ function showVerifyScreen() {
 function startVerifyPolling() {
   stopVerifyPolling();
   // Auto-check cada 3 seg si el email fue confirmado
-  verifyPollInterval = setInterval(async () => {
-    try {
-      const { data, error } = await sb.auth.refreshSession();
-      if (error) return;
-      const user = data?.user;
-      if (user && user.email_confirmed_at) {
-        stopVerifyPolling();
-        showVerifySuccess();
-      }
-    } catch (e) { console.warn('Poll error:', e); }
-  }, 3000);
+  verifyPollInterval = setInterval(checkEmailConfirmation, 3000);
+  // También chequear inmediatamente cuando el usuario vuelve a la pestaña
+  // (común: confirmó en otro tab/dispositivo y vuelve aquí)
+  document.addEventListener('visibilitychange', onVisibilityCheckEmail);
+}
+
+async function checkEmailConfirmation() {
+  try {
+    const { data, error } = await sb.auth.refreshSession();
+    if (error) return;
+    const user = data?.user;
+    if (user && user.email_confirmed_at) {
+      stopVerifyPolling();
+      showVerifySuccess();
+    }
+  } catch (e) { console.warn('Poll error:', e); }
+}
+
+function onVisibilityCheckEmail() {
+  if (!document.hidden && state.step === 'verify') {
+    checkEmailConfirmation();
+  }
 }
 
 function stopVerifyPolling() {
@@ -2937,6 +2948,7 @@ function stopVerifyPolling() {
     clearInterval(verifyPollInterval);
     verifyPollInterval = null;
   }
+  document.removeEventListener('visibilitychange', onVisibilityCheckEmail);
 }
 
 function showVerifySuccess() {
@@ -3335,85 +3347,124 @@ async function confirmReset() {
   const isPasswordReset = urlParams.get('action') === 'reset' ||
                           hashParams.get('type') === 'recovery';
 
-  // Listen para PASSWORD_RECOVERY y USER_UPDATED (email confirmation desde otro tab)
+  // Detectar si vinimos de un link de email (signup confirmation) — el SDK procesa el hash
+  // async, así que necesitamos esperarlo via onAuthStateChange en lugar de getSession() directo
+  const isEmailConfirmation = hashParams.get('type') === 'signup' ||
+                              urlParams.get('type') === 'signup' ||
+                              hashParams.has('access_token');
+
+  // Listener robusto para todos los eventos de auth (incluido cuando SDK procesa tokens del URL)
   sb.auth.onAuthStateChange(async (event, session) => {
+    console.log('[SAVIA] Auth event:', event, 'confirmed:', !!session?.user?.email_confirmed_at, 'currentStep:', state.step);
+
     if (event === 'PASSWORD_RECOVERY') {
       goStep('change-password');
-    } else if (event === 'USER_UPDATED' || event === 'SIGNED_IN') {
-      // Si estamos en verify screen y el email se confirmó, mostrar success
-      if (state.step === 'verify' && session?.user?.email_confirmed_at) {
-        stopVerifyPolling();
-        showVerifySuccess();
-      }
+      return;
+    }
+
+    if (event !== 'SIGNED_IN' && event !== 'USER_UPDATED' && event !== 'TOKEN_REFRESHED') return;
+
+    const emailConfirmed = !!session?.user?.email_confirmed_at;
+
+    // Caso 1: estamos en verify gate (mismo tab, polling detectó confirmación)
+    if (state.step === 'verify' && emailConfirmed) {
+      stopVerifyPolling();
+      showVerifySuccess();
+      return;
+    }
+
+    // Caso 2: estamos en splash (step 0) y un email link nos trajo aquí con tokens en URL
+    // O simplemente abrimos la app y tenemos sesión válida — routear apropiadamente
+    if ((state.step === 0 || state.step === undefined) && emailConfirmed) {
+      await routeAuthenticatedUser();
     }
   });
+
+  // Función central: dado un usuario autenticado, decidir adónde llevarlo
+  async function routeAuthenticatedUser() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+
+    const profile = await loadCurrentProfile();
+    if (!profile) return;
+
+    state.email = profile.email;
+    state.name = profile.name || '';
+    state.photo = profile.photo || null;
+    state.wearables = profile.wearables || [];
+    state.sex = profile.sex || '';
+    state.age = profile.age || '';
+    state.goals = profile.goals || [];
+    state.level = profile.level || '';
+
+    const emailConfirmed = !!session.user.email_confirmed_at;
+
+    if (profile.isOnboarded) {
+      if (emailConfirmed) {
+        clearOnboardingState();
+        enterAppSimulation('login');
+      } else {
+        state.entryIntent = state.entryIntent || 'checkin';
+        showVerifyScreen();
+      }
+      return;
+    }
+
+    // Onboarding incompleto — intentar restaurar progreso desde localStorage
+    const saved = loadOnboardingState();
+    if (saved) {
+      state.sex = state.sex || saved.sex || '';
+      state.age = state.age || saved.age || '';
+      state.birthdate = saved.birthdate || '';
+      state.goals = (state.goals && state.goals.length) ? state.goals : (saved.goals || []);
+      state.resolution = saved.resolution || null;
+      state.maintenanceMode = saved.maintenanceMode || null;
+      state.level = state.level || saved.level || '';
+      state.wearables = (state.wearables && state.wearables.length) ? state.wearables : (saved.wearables || []);
+      state.entryIntent = saved.entryIntent || state.entryIntent;
+
+      // Caso especial: estaban en gate de verify y ya confirmaron → saltar a Face ID
+      if (saved.step === 'verify' && emailConfirmed) {
+        clearOnboardingState();
+        goStep(8);
+        return;
+      }
+
+      if (saved.step) {
+        goStep(saved.step);
+        applyStateToUI();
+        return;
+      }
+    }
+    // Sin progreso guardado → empezar desde sexo
+    goStep(1);
+  }
 
   if (isPasswordReset) {
     goStep('change-password');
     return;
   }
 
-  // Restore session si existe
+  // Si venimos de email link, dejamos que onAuthStateChange maneje el routing
+  // (el SDK necesita ~100-500ms para procesar los tokens del hash)
+  if (isEmailConfirmation) {
+    showLoading('Verificando tu cuenta');
+    // Safety net: si en 5 seg no llegó SIGNED_IN, intentar routear manualmente
+    setTimeout(async () => {
+      hideLoading();
+      const { data: { session } } = await sb.auth.getSession();
+      if (session && state.step === 0) {
+        await routeAuthenticatedUser();
+      }
+    }, 5000);
+    return;
+  }
+
+  // No venimos de un email link — restaurar sesión normal si existe
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
-    const profile = await loadCurrentProfile();
-    if (profile) {
-      state.email = profile.email;
-      state.name = profile.name || '';
-      state.photo = profile.photo || null;
-      state.wearables = profile.wearables || [];
-      state.sex = profile.sex || '';
-      state.age = profile.age || '';
-      state.goals = profile.goals || [];
-      state.level = profile.level || '';
-
-      // Check si email está verificado
-      const emailConfirmed = !!session.user.email_confirmed_at;
-
-      if (profile.isOnboarded) {
-        // Completó onboarding
-        if (emailConfirmed) {
-          clearOnboardingState();
-          enterAppSimulation('login');
-        } else {
-          // Onboarding hecho pero email no confirmado → vuelve a la pantalla verify
-          state.entryIntent = state.entryIntent || 'checkin';
-          showVerifyScreen();
-        }
-      } else {
-        // Onboarding incompleto — intentar restaurar progreso desde localStorage
-        const saved = loadOnboardingState();
-        if (saved) {
-          // Merge saved state (sin sobrescribir lo que ya vino del profile)
-          state.sex = state.sex || saved.sex || '';
-          state.age = state.age || saved.age || '';
-          state.birthdate = saved.birthdate || '';
-          state.goals = (state.goals && state.goals.length) ? state.goals : (saved.goals || []);
-          state.resolution = saved.resolution || null;
-          state.maintenanceMode = saved.maintenanceMode || null;
-          state.level = state.level || saved.level || '';
-          state.wearables = (state.wearables && state.wearables.length) ? state.wearables : (saved.wearables || []);
-          state.entryIntent = saved.entryIntent || state.entryIntent;
-
-          // Caso especial: estaban en gate de verify y ya confirmaron → saltar a Face ID
-          if (saved.step === 'verify' && emailConfirmed) {
-            clearOnboardingState();
-            goStep(8);
-            return;
-          }
-
-          // Reanudar exactamente donde quedaron
-          if (saved.step) {
-            goStep(saved.step);
-            applyStateToUI();
-            return;
-          }
-        }
-        // Sin progreso guardado → empezar desde sexo
-        goStep(1);
-      }
-      return;
-    }
+    await routeAuthenticatedUser();
+    return;
   }
 
   // Estado inicial del botón Face ID
