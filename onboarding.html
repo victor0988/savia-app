@@ -2896,12 +2896,22 @@ async function startCalculation() {
     clearOnboardingState();
 
     // Mandar welcome email vía Edge Function (no bloquea — fire & forget)
-    sb.functions.invoke('send-welcome-email', {
-      body: { email: state.email, name: state.name || '' },
-    }).then(({ data, error }) => {
-      if (error) console.warn('[SAVIA] Welcome email error:', error);
-      else console.log('[SAVIA] ✓ Welcome email enviado:', data);
-    }).catch(e => console.warn('[SAVIA] Welcome email exception:', e));
+    console.log('[SAVIA] Disparando welcome email para:', state.email);
+    try {
+      const { data: emailData, error: emailErr } = await sb.functions.invoke('send-welcome-email', {
+        body: { email: state.email, name: state.name || '' },
+      });
+      if (emailErr) {
+        console.error('[SAVIA] ❌ Welcome email error:', emailErr);
+        try { localStorage.setItem('savia_last_welcome_error', JSON.stringify({ message: emailErr.message || String(emailErr), time: Date.now() })); } catch {}
+      } else {
+        console.log('[SAVIA] ✓ Welcome email enviado:', emailData);
+        try { localStorage.setItem('savia_last_welcome_success', JSON.stringify({ data: emailData, time: Date.now() })); } catch {}
+      }
+    } catch (e) {
+      console.error('[SAVIA] ❌ Welcome email exception:', e);
+      try { localStorage.setItem('savia_last_welcome_error', JSON.stringify({ message: String(e), time: Date.now() })); } catch {}
+    }
   } catch (e) {
     console.error('[SAVIA] ❌ Excepción al guardar perfil:', e);
   }
@@ -3329,6 +3339,46 @@ function enterAppSimulation(source) {
   goStep('app');
   // Cerramos el loading una vez la pantalla del app está montada
   hideLoading();
+
+  // Mostrar diagnóstico del welcome email si hubo intento reciente
+  setTimeout(showWelcomeEmailDiagnostic, 1500);
+}
+
+function showWelcomeEmailDiagnostic() {
+  try {
+    const errRaw = localStorage.getItem('savia_last_welcome_error');
+    const okRaw = localStorage.getItem('savia_last_welcome_success');
+    const RECENT_MS = 60_000; // 1 min
+    let msg = null;
+    let kind = 'info';
+    if (errRaw) {
+      const err = JSON.parse(errRaw);
+      if (Date.now() - err.time < RECENT_MS) {
+        msg = '❌ Welcome email error: ' + err.message;
+        kind = 'error';
+      }
+    }
+    if (!msg && okRaw) {
+      const ok = JSON.parse(okRaw);
+      if (Date.now() - ok.time < RECENT_MS) {
+        msg = '✓ Welcome email enviado (revisá Gmail)';
+        kind = 'ok';
+      }
+    }
+    if (!msg) return;
+    const banner = document.createElement('div');
+    banner.style.cssText = `position: fixed; top: 12px; left: 12px; right: 12px; padding: 14px 16px; border-radius: 12px; font-size: 13px; line-height: 1.4; z-index: 9999; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); background: ${kind === 'error' ? 'rgba(220,38,38,0.92)' : 'rgba(16,185,129,0.92)'}; color: white; box-shadow: 0 8px 32px rgba(0,0,0,0.4); animation: slideDown 0.3s ease;`;
+    banner.textContent = msg;
+    banner.onclick = () => banner.remove();
+    document.body.appendChild(banner);
+    // Auto-remove tras 8 seg, o click para cerrar
+    setTimeout(() => { if (banner.parentNode) banner.remove(); }, 8000);
+    // Limpiar para no mostrar el mismo otra vez
+    try {
+      localStorage.removeItem('savia_last_welcome_error');
+      localStorage.removeItem('savia_last_welcome_success');
+    } catch {}
+  } catch (e) { console.warn('Diagnostic display failed:', e); }
 }
 
 async function logout() {
