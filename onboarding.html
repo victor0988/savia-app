@@ -1260,6 +1260,303 @@
     75% { transform: translateX(6px); }
   }
 
+  /* ============== PROFILE SCREEN (Apple-style) ============== */
+  .profile-screen {
+    background: #0a0e1a;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
+  .profile-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px 8px;
+    position: sticky;
+    top: 0;
+    background: linear-gradient(180deg, rgba(10,14,26,0.95), rgba(10,14,26,0.85));
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 10;
+  }
+  .profile-back-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    color: #10B981;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+  .profile-back-btn svg { width: 22px; height: 22px; stroke-width: 2.5; }
+  .profile-edit-btn {
+    background: transparent;
+    border: none;
+    color: #10B981;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+  .profile-hero {
+    text-align: center;
+    padding: 16px 24px 32px;
+  }
+  .profile-avatar-wrap {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    margin: 0 auto 18px;
+    cursor: pointer;
+  }
+  .profile-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94A3B8;
+    font-size: 42px;
+    font-weight: 800;
+    border: 3px solid rgba(255,255,255,0.06);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .profile-avatar-camera {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #10B981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #0a0e1a;
+    box-shadow: 0 2px 8px rgba(16,185,129,0.4);
+  }
+  .profile-avatar-camera svg { width: 16px; height: 16px; color: white; stroke-width: 2; }
+  .profile-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -0.6px;
+    margin: 0 0 4px 0;
+  }
+  .profile-email {
+    font-size: 14px;
+    color: #94A3B8;
+    margin: 0;
+    font-weight: 500;
+  }
+  .profile-section {
+    padding: 0 20px 24px;
+  }
+  .profile-section-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    padding: 0 4px 8px;
+  }
+  .profile-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+  .profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    color: white;
+    font-size: 15px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(16,185,129,0.1);
+    transition: background 0.15s ease;
+  }
+  .profile-row:last-child { border-bottom: none; }
+  .profile-row:active { background: rgba(255,255,255,0.04); }
+  .profile-row-label { color: #CBD5E1; }
+  .profile-row-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94A3B8;
+    font-size: 14px;
+  }
+  .profile-row-value .chev { color: #475569; }
+  .profile-chips-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding: 4px 4px 0;
+  }
+  .profile-chip {
+    padding: 9px 14px;
+    background: rgba(16,185,129,0.08);
+    border: 1px solid rgba(16,185,129,0.2);
+    border-radius: 999px;
+    color: #34D399;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .profile-action-row {
+    padding: 14px 16px;
+    text-align: center;
+    color: #F87171;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(248,113,113,0.1);
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .profile-action-row:last-child { border-bottom: none; }
+  .profile-action-row.subtle { color: #94A3B8; font-weight: 500; font-size: 14px; }
+  .profile-bottom-spacer { height: 60px; }
+  .profile-toggle {
+    width: 50px;
+    height: 30px;
+    border-radius: 15px;
+    background: rgba(255,255,255,0.1);
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .profile-toggle.on { background: #10B981; }
+  .profile-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: left 0.2s ease;
+  }
+  .profile-toggle.on::after { left: 22px; }
+
+  /* ============== PHOTO CROPPER MODAL ============== */
+  .cropper-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5,8,16,0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    z-index: 10000;
+    display: none;
+    flex-direction: column;
+    animation: fadeIn 0.2s ease;
+  }
+  .cropper-overlay.show { display: flex; }
+  .cropper-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 20px;
+  }
+  .cropper-btn {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 8px 4px;
+  }
+  .cropper-btn.primary { color: #10B981; }
+  .cropper-stage {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    overflow: hidden;
+  }
+  .cropper-canvas-wrap {
+    position: relative;
+    width: min(340px, 90vw);
+    height: min(340px, 90vw);
+    border-radius: 16px;
+    overflow: hidden;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+    background: #0a0e1a;
+  }
+  .cropper-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .cropper-mask {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(circle at center, transparent 0, transparent 49.5%, rgba(5,8,16,0.7) 50%);
+  }
+  .cropper-mask::after {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    width: 99%; height: 99%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.5);
+    box-sizing: border-box;
+  }
+  .cropper-controls {
+    padding: 16px 28px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .cropper-hint {
+    color: #94A3B8;
+    font-size: 13px;
+    text-align: center;
+    margin: 0;
+  }
+  .cropper-zoom {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 2px;
+    outline: none;
+  }
+  .cropper-zoom::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+  .cropper-zoom::-moz-range-thumb {
+    width: 22px;
+    height: 22px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -2140,7 +2437,7 @@
   <div class="screen app-screen" data-step="app">
     <div class="app-topbar">
       <div class="app-user-block">
-        <div class="app-avatar" id="app-avatar"></div>
+        <div class="app-avatar" id="app-avatar" onclick="openProfile()" style="cursor:pointer;" title="Ver perfil"></div>
         <div>
           <div class="app-greeting" id="app-greeting">Hola</div>
           <div class="app-subgreeting" id="app-subgreeting">Día 1 de calibración</div>
@@ -2203,6 +2500,108 @@
       <div class="app-prototype-note">
         Prototipo en construcción · esta es la entrada a tu SAVIA real
       </div>
+    </div>
+  </div>
+
+  <!-- ============== PROFILE SCREEN ============== -->
+  <div class="screen profile-screen" data-step="profile">
+    <div class="profile-topbar">
+      <button class="profile-back-btn" onclick="closeProfile()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Hoy
+      </button>
+      <div style="font-size:15px; font-weight:700; color:white;">Perfil</div>
+      <div style="width:56px;"></div>
+    </div>
+
+    <div class="profile-hero">
+      <div class="profile-avatar-wrap" onclick="openPhotoChooser()">
+        <div class="profile-avatar" id="profile-avatar"></div>
+        <div class="profile-avatar-camera">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        </div>
+      </div>
+      <h1 class="profile-name" id="profile-name">—</h1>
+      <p class="profile-email" id="profile-email">—</p>
+    </div>
+
+    <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="onPhotoSelected(event)"/>
+
+    <!-- Mis objetivos -->
+    <div class="profile-section">
+      <div class="profile-section-title">Mis objetivos</div>
+      <div class="profile-card" style="padding:14px 16px;">
+        <div class="profile-chips-row" id="profile-goals-chips">
+          <span class="profile-chip">—</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Información personal -->
+    <div class="profile-section">
+      <div class="profile-section-title">Información personal</div>
+      <div class="profile-card">
+        <div class="profile-row">
+          <div class="profile-row-label">Sexo</div>
+          <div class="profile-row-value"><span id="profile-sex">—</span></div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-row-label">Fecha de nacimiento</div>
+          <div class="profile-row-value"><span id="profile-birthdate">—</span></div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-row-label">Edad</div>
+          <div class="profile-row-value"><span id="profile-age">—</span></div>
+        </div>
+        <div class="profile-row">
+          <div class="profile-row-label">Nivel</div>
+          <div class="profile-row-value"><span id="profile-level">—</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wearables -->
+    <div class="profile-section">
+      <div class="profile-section-title">Wearables conectados</div>
+      <div class="profile-card" id="profile-wearables-card">
+        <div class="profile-row">
+          <div class="profile-row-label">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuenta -->
+    <div class="profile-section">
+      <div class="profile-section-title">Cuenta</div>
+      <div class="profile-card">
+        <div class="profile-row">
+          <div class="profile-row-label">Face ID / Touch ID</div>
+          <div class="profile-toggle" id="profile-faceid-toggle" onclick="toggleProfileFaceID()"></div>
+        </div>
+        <div class="profile-action-row subtle" onclick="goStep('forgot'); closeProfile();">Cambiar contraseña</div>
+        <div class="profile-action-row" onclick="logoutFromProfile()">Cerrar sesión</div>
+      </div>
+    </div>
+
+    <div class="profile-bottom-spacer"></div>
+  </div>
+
+  <!-- ============== PHOTO CROPPER MODAL ============== -->
+  <div class="cropper-overlay" id="cropper-overlay">
+    <div class="cropper-topbar">
+      <button class="cropper-btn" onclick="cancelCropper()">Cancelar</button>
+      <div style="font-size:15px; font-weight:700; color:white;">Mover y ajustar</div>
+      <button class="cropper-btn primary" onclick="applyCropper()">Aplicar</button>
+    </div>
+    <div class="cropper-stage">
+      <div class="cropper-canvas-wrap" id="cropper-canvas-wrap">
+        <canvas class="cropper-canvas" id="cropper-canvas" width="680" height="680"></canvas>
+        <div class="cropper-mask"></div>
+      </div>
+    </div>
+    <div class="cropper-controls">
+      <p class="cropper-hint">Arrastrá la foto para centrarla · Deslizá para zoom</p>
+      <input type="range" class="cropper-zoom" id="cropper-zoom" min="100" max="400" value="100" oninput="onCropperZoom(this.value)"/>
     </div>
   </div>
 
@@ -2351,8 +2750,8 @@ function goStep(n) {
   }
   state.step = n;
   // Persist onboarding progress (sobrevive a confirmar email en otra pestaña)
-  // Solo guardamos durante onboarding real, no en auth/app screens
-  const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 0];
+  // Solo guardamos durante onboarding real, no en auth/app/profile screens
+  const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -3360,6 +3759,368 @@ function enterAppSimulation(source) {
 
   // Mostrar diagnóstico del welcome email si hubo intento reciente
   setTimeout(showWelcomeEmailDiagnostic, 1500);
+}
+
+// =============================================
+//  PROFILE SCREEN
+// =============================================
+const GOAL_LABELS = {
+  fat_loss: 'Pérdida de grasa',
+  muscle_gain: 'Aumento de masa',
+  recomposition: 'Recomposición',
+  performance: 'Performance',
+  cognition: 'Enfoque cognitivo',
+  longevity: 'Longevidad',
+  sleep: 'Sueño',
+  hormonal: 'Salud hormonal',
+  libido: 'Libido',
+  energy: 'Energía',
+  recovery: 'Recuperación',
+  antiaging: 'Anti-aging',
+  biohacking: 'Biohacking',
+  pregnancy: 'Embarazo',
+  cycle: 'Ciclo hormonal',
+};
+const LEVEL_LABELS = {
+  beginner: 'Principiante',
+  intermediate: 'Intermedio',
+  advanced: 'Avanzado',
+};
+const SEX_LABELS = { m: 'Hombre', f: 'Mujer', o: 'Otro' };
+const WEARABLE_LABELS = {
+  whoop: 'Whoop',
+  oura: 'Oura',
+  apple: 'Apple Watch',
+  garmin: 'Garmin',
+  fitbit: 'Fitbit',
+  ninguno: 'Sin wearable',
+};
+
+function calcAgeFromBirthdate(birthdate) {
+  if (!birthdate) return null;
+  const today = new Date();
+  const bd = new Date(birthdate);
+  let age = today.getFullYear() - bd.getFullYear();
+  const m = today.getMonth() - bd.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+  return age;
+}
+
+function formatBirthdate(birthdate) {
+  if (!birthdate) return '—';
+  const d = new Date(birthdate);
+  return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' });
+}
+
+function openProfile() {
+  renderProfile();
+  goStep('profile');
+}
+
+function closeProfile() {
+  goStep('app');
+}
+
+function renderProfile() {
+  const firstName = (state.name || 'usuario').split(' ')[0] || 'usuario';
+  // Avatar
+  const av = document.getElementById('profile-avatar');
+  if (state.photo) {
+    av.style.backgroundImage = `url(${state.photo})`;
+    av.textContent = '';
+  } else {
+    av.style.backgroundImage = '';
+    av.textContent = firstName[0].toUpperCase();
+  }
+  document.getElementById('profile-name').textContent = state.name || firstName;
+  document.getElementById('profile-email').textContent = state.email || '—';
+
+  // Goals as chips
+  const chipsEl = document.getElementById('profile-goals-chips');
+  if (state.goals && state.goals.length > 0) {
+    chipsEl.innerHTML = state.goals.map(g => `<span class="profile-chip">${GOAL_LABELS[g] || g}</span>`).join('');
+  } else {
+    chipsEl.innerHTML = '<span class="profile-chip" style="background:transparent; border-color:rgba(255,255,255,0.08); color:#64748B;">Sin objetivos definidos</span>';
+  }
+
+  // Info personal
+  document.getElementById('profile-sex').textContent = SEX_LABELS[state.sex] || '—';
+  document.getElementById('profile-birthdate').textContent = formatBirthdate(state.birthdate);
+  const age = state.birthdate ? calcAgeFromBirthdate(state.birthdate) : (state.age || null);
+  document.getElementById('profile-age').textContent = age ? `${age} años` : '—';
+  document.getElementById('profile-level').textContent = LEVEL_LABELS[state.level] || '—';
+
+  // Wearables
+  const wearablesEl = document.getElementById('profile-wearables-card');
+  const wearables = (state.wearables || []).filter(w => w !== 'ninguno');
+  if (wearables.length > 0) {
+    wearablesEl.innerHTML = wearables.map(w => `
+      <div class="profile-row">
+        <div class="profile-row-label">${WEARABLE_LABELS[w] || w}</div>
+        <div class="profile-row-value"><span style="color:#34D399; font-size:12px; font-weight:600;">● Conectado</span></div>
+      </div>
+    `).join('');
+  } else {
+    wearablesEl.innerHTML = `
+      <div class="profile-row">
+        <div class="profile-row-label" style="color:#64748B;">Ningún wearable conectado</div>
+      </div>
+    `;
+  }
+
+  // Face ID toggle
+  const faceToggle = document.getElementById('profile-faceid-toggle');
+  const faceEnabled = localStorage.getItem(STORAGE.enabled) === 'true';
+  faceToggle.classList.toggle('on', faceEnabled);
+}
+
+function toggleProfileFaceID() {
+  const enabled = localStorage.getItem(STORAGE.enabled) === 'true';
+  if (enabled) {
+    // Desactivar
+    try {
+      localStorage.removeItem(STORAGE.enabled);
+      localStorage.removeItem(STORAGE.credentialId);
+    } catch {}
+    document.getElementById('profile-faceid-toggle').classList.remove('on');
+  } else {
+    // Activar — necesita ir a la pantalla de Face ID activation
+    closeProfile();
+    setTimeout(() => goStep(8), 200);
+  }
+}
+
+async function logoutFromProfile() {
+  closeProfile();
+  setTimeout(() => logout(), 200);
+}
+
+// =============================================
+//  PHOTO CROPPER
+// =============================================
+const cropperState = {
+  img: null,
+  scale: 1,        // 1.0 = base (image fits in canvas)
+  baseScale: 1,    // scale to fit image to canvas
+  offsetX: 0,
+  offsetY: 0,
+  dragging: false,
+  lastX: 0,
+  lastY: 0,
+  pinchDist: 0,
+};
+
+function openPhotoChooser() {
+  document.getElementById('profile-photo-input').click();
+}
+
+function onPhotoSelected(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) {
+    alert('Por favor elegí una imagen.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const img = new Image();
+    img.onload = () => {
+      cropperState.img = img;
+      openCropper();
+    };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+  // Reset el input para que onChange dispare aunque elija la misma foto
+  e.target.value = '';
+}
+
+function openCropper() {
+  const overlay = document.getElementById('cropper-overlay');
+  overlay.classList.add('show');
+  setupCropper();
+}
+
+function cancelCropper() {
+  document.getElementById('cropper-overlay').classList.remove('show');
+  cropperState.img = null;
+}
+
+function setupCropper() {
+  const canvas = document.getElementById('cropper-canvas');
+  const wrap = document.getElementById('cropper-canvas-wrap');
+  const img = cropperState.img;
+  if (!img) return;
+
+  // Ajustar canvas a su tamaño real visible para crispness
+  const dpr = window.devicePixelRatio || 1;
+  const rect = wrap.getBoundingClientRect();
+  canvas.width = rect.width * dpr;
+  canvas.height = rect.height * dpr;
+  canvas.style.width = rect.width + 'px';
+  canvas.style.height = rect.height + 'px';
+
+  // Calcular baseScale: imagen llena el cuadrado (cover)
+  cropperState.baseScale = Math.max(canvas.width / img.width, canvas.height / img.height);
+  cropperState.scale = 1;
+  cropperState.offsetX = 0;
+  cropperState.offsetY = 0;
+
+  document.getElementById('cropper-zoom').value = 100;
+
+  drawCropper();
+  attachCropperEvents();
+}
+
+function drawCropper() {
+  const canvas = document.getElementById('cropper-canvas');
+  const ctx = canvas.getContext('2d');
+  const img = cropperState.img;
+  if (!img) return;
+  ctx.fillStyle = '#0a0e1a';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const totalScale = cropperState.baseScale * cropperState.scale;
+  const drawW = img.width * totalScale;
+  const drawH = img.height * totalScale;
+  const cx = canvas.width / 2 + cropperState.offsetX;
+  const cy = canvas.height / 2 + cropperState.offsetY;
+  ctx.drawImage(img, cx - drawW / 2, cy - drawH / 2, drawW, drawH);
+}
+
+function clampOffsets() {
+  // Evitar que la imagen se aleje y deje el círculo sin contenido
+  const canvas = document.getElementById('cropper-canvas');
+  const img = cropperState.img;
+  if (!img) return;
+  const totalScale = cropperState.baseScale * cropperState.scale;
+  const drawW = img.width * totalScale;
+  const drawH = img.height * totalScale;
+  const maxX = Math.max(0, (drawW - canvas.width) / 2);
+  const maxY = Math.max(0, (drawH - canvas.height) / 2);
+  if (cropperState.offsetX > maxX) cropperState.offsetX = maxX;
+  if (cropperState.offsetX < -maxX) cropperState.offsetX = -maxX;
+  if (cropperState.offsetY > maxY) cropperState.offsetY = maxY;
+  if (cropperState.offsetY < -maxY) cropperState.offsetY = -maxY;
+}
+
+function onCropperZoom(value) {
+  cropperState.scale = parseFloat(value) / 100;
+  clampOffsets();
+  drawCropper();
+}
+
+let cropperEventsAttached = false;
+function attachCropperEvents() {
+  if (cropperEventsAttached) return;
+  cropperEventsAttached = true;
+  const wrap = document.getElementById('cropper-canvas-wrap');
+
+  function start(x, y) {
+    cropperState.dragging = true;
+    cropperState.lastX = x;
+    cropperState.lastY = y;
+  }
+  function move(x, y) {
+    if (!cropperState.dragging) return;
+    const dpr = window.devicePixelRatio || 1;
+    const dx = (x - cropperState.lastX) * dpr;
+    const dy = (y - cropperState.lastY) * dpr;
+    cropperState.offsetX += dx;
+    cropperState.offsetY += dy;
+    cropperState.lastX = x;
+    cropperState.lastY = y;
+    clampOffsets();
+    drawCropper();
+  }
+  function end() {
+    cropperState.dragging = false;
+    cropperState.pinchDist = 0;
+  }
+
+  // Mouse
+  wrap.addEventListener('mousedown', (e) => { e.preventDefault(); start(e.clientX, e.clientY); });
+  window.addEventListener('mousemove', (e) => move(e.clientX, e.clientY));
+  window.addEventListener('mouseup', end);
+
+  // Touch (pan + pinch zoom)
+  wrap.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1) {
+      start(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      cropperState.pinchDist = Math.hypot(dx, dy);
+    }
+  }, { passive: false });
+  wrap.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (e.touches.length === 1 && cropperState.pinchDist === 0) {
+      move(e.touches[0].clientX, e.touches[0].clientY);
+    } else if (e.touches.length === 2) {
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.hypot(dx, dy);
+      if (cropperState.pinchDist > 0) {
+        const factor = dist / cropperState.pinchDist;
+        cropperState.scale = Math.min(4, Math.max(1, cropperState.scale * factor));
+        document.getElementById('cropper-zoom').value = cropperState.scale * 100;
+        clampOffsets();
+        drawCropper();
+      }
+      cropperState.pinchDist = dist;
+    }
+  }, { passive: false });
+  wrap.addEventListener('touchend', end);
+  wrap.addEventListener('touchcancel', end);
+}
+
+async function applyCropper() {
+  const canvas = document.getElementById('cropper-canvas');
+  // Crear canvas circular de salida
+  const out = document.createElement('canvas');
+  const size = 400; // resolución de salida
+  out.width = size;
+  out.height = size;
+  const ctx = out.getContext('2d');
+  // Clip circular
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+  ctx.closePath();
+  ctx.clip();
+  // Dibujar canvas actual escalado al tamaño de salida
+  ctx.drawImage(canvas, 0, 0, canvas.width, canvas.height, 0, 0, size, size);
+  ctx.restore();
+
+  const dataUrl = out.toDataURL('image/jpeg', 0.88);
+  state.photo = dataUrl;
+
+  // Cerrar cropper
+  cancelCropper();
+
+  // Refrescar UI de profile + del app
+  renderProfile();
+  const appAv = document.getElementById('app-avatar');
+  if (appAv) {
+    appAv.style.backgroundImage = `url(${dataUrl})`;
+    appAv.style.backgroundSize = 'cover';
+    appAv.style.backgroundPosition = 'center';
+    appAv.textContent = '';
+  }
+
+  // Guardar en Supabase en background
+  showLoading('Guardando foto');
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      const { error } = await sb.from('profiles').update({ photo_url: dataUrl }).eq('id', user.id);
+      if (error) console.error('[SAVIA] Error guardando foto:', error);
+      else console.log('[SAVIA] ✓ Foto guardada');
+    }
+  } catch (e) { console.error('[SAVIA] Excepción guardando foto:', e); }
+  hideLoading();
 }
 
 function showWelcomeEmailDiagnostic() {
