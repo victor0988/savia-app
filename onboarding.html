@@ -2196,7 +2196,84 @@ const STORAGE = {
   credentialId: 'savia_credential_id',
   rememberedEmail: 'savia_remembered_email',
   rememberedToken: 'savia_remembered_token', // base64 del password — solo prototype
+  onboardingState: 'savia_onboarding_state', // progreso de onboarding (sobrevive a reload/nuevo tab)
 };
+
+// Persistencia de onboarding state (sobrevive al confirmar email en nueva pestaña)
+function saveOnboardingState() {
+  try {
+    const snapshot = {
+      step: state.step,
+      sex: state.sex,
+      age: state.age,
+      birthdate: state.birthdate,
+      goals: state.goals,
+      resolution: state.resolution,
+      maintenanceMode: state.maintenanceMode,
+      level: state.level,
+      wearables: state.wearables,
+      name: state.name,
+      photo: state.photo,
+      email: state.email,
+      entryIntent: state.entryIntent,
+      savedAt: Date.now(),
+    };
+    localStorage.setItem(STORAGE.onboardingState, JSON.stringify(snapshot));
+  } catch (e) { console.warn('Save onboarding state failed:', e); }
+}
+
+function loadOnboardingState() {
+  try {
+    const raw = localStorage.getItem(STORAGE.onboardingState);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    // Expira tras 7 días
+    if (data.savedAt && (Date.now() - data.savedAt) > 7 * 24 * 60 * 60 * 1000) {
+      localStorage.removeItem(STORAGE.onboardingState);
+      return null;
+    }
+    return data;
+  } catch (e) { return null; }
+}
+
+function clearOnboardingState() {
+  try { localStorage.removeItem(STORAGE.onboardingState); } catch {}
+}
+
+// Repoblar UI desde state restaurado (selecciones, inputs, etc.)
+function applyStateToUI() {
+  try {
+    // Sex selection (step 1)
+    if (state.sex) {
+      document.querySelectorAll('[data-step="1"] [data-sex]').forEach(el => {
+        el.classList.toggle('selected', el.dataset.sex === state.sex);
+      });
+    }
+    // Birthdate input (step 2)
+    if (state.birthdate) {
+      const bd = document.getElementById('birthdate-input');
+      if (bd) bd.value = state.birthdate;
+    }
+    // Goals (step 3)
+    if (state.goals && state.goals.length) {
+      document.querySelectorAll('[data-step="3"] [data-goal]').forEach(el => {
+        el.classList.toggle('selected', state.goals.includes(el.dataset.goal));
+      });
+    }
+    // Level (step 4)
+    if (state.level) {
+      document.querySelectorAll('[data-step="4"] [data-level]').forEach(el => {
+        el.classList.toggle('selected', el.dataset.level === state.level);
+      });
+    }
+    // Wearables (step 5)
+    if (state.wearables && state.wearables.length) {
+      document.querySelectorAll('[data-step="5"] [data-wearable]').forEach(el => {
+        el.classList.toggle('selected', state.wearables.includes(el.dataset.wearable));
+      });
+    }
+  } catch (e) { console.warn('Apply state to UI failed:', e); }
+}
 
 // Helpers para recordar credenciales para Face ID auto-login
 function rememberCredentials(email, password) {
@@ -2230,6 +2307,10 @@ function goStep(n) {
     target.scrollTop = 0;
   }
   state.step = n;
+  // Persist onboarding progress (sobrevive a confirmar email en otra pestaña)
+  // Solo guardamos durante onboarding real, no en auth/app screens
+  const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 0];
+  if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
 }
@@ -2778,6 +2859,8 @@ async function startCalculation() {
     if (error) console.warn('Profile upsert error:', error);
     // Refresh cache
     await loadCurrentProfile();
+    // Onboarding completo — el progreso ya está persistido en Supabase
+    clearOnboardingState();
   }
 
   goStep(6);
@@ -2907,6 +2990,7 @@ async function changeVerifyEmail() {
   if (resendCooldownInterval) clearInterval(resendCooldownInterval);
   await sb.auth.signOut();
   clearRememberedCredentials();
+  clearOnboardingState();
   cachedAccount = null;
   state.email = '';
   state.name = '';
@@ -3235,6 +3319,7 @@ async function confirmReset() {
     localStorage.removeItem(STORAGE.credentialId);
   } catch (e) { console.warn(e); }
   clearRememberedCredentials();
+  clearOnboardingState();
   cachedAccount = null;
   location.reload();
 }
@@ -3288,6 +3373,7 @@ async function confirmReset() {
       if (profile.isOnboarded) {
         // Completó onboarding
         if (emailConfirmed) {
+          clearOnboardingState();
           enterAppSimulation('login');
         } else {
           // Onboarding hecho pero email no confirmado → vuelve a la pantalla verify
@@ -3295,7 +3381,35 @@ async function confirmReset() {
           showVerifyScreen();
         }
       } else {
-        // Mitad de onboarding — continúa desde donde quedó
+        // Onboarding incompleto — intentar restaurar progreso desde localStorage
+        const saved = loadOnboardingState();
+        if (saved) {
+          // Merge saved state (sin sobrescribir lo que ya vino del profile)
+          state.sex = state.sex || saved.sex || '';
+          state.age = state.age || saved.age || '';
+          state.birthdate = saved.birthdate || '';
+          state.goals = (state.goals && state.goals.length) ? state.goals : (saved.goals || []);
+          state.resolution = saved.resolution || null;
+          state.maintenanceMode = saved.maintenanceMode || null;
+          state.level = state.level || saved.level || '';
+          state.wearables = (state.wearables && state.wearables.length) ? state.wearables : (saved.wearables || []);
+          state.entryIntent = saved.entryIntent || state.entryIntent;
+
+          // Caso especial: estaban en gate de verify y ya confirmaron → saltar a Face ID
+          if (saved.step === 'verify' && emailConfirmed) {
+            clearOnboardingState();
+            goStep(8);
+            return;
+          }
+
+          // Reanudar exactamente donde quedaron
+          if (saved.step) {
+            goStep(saved.step);
+            applyStateToUI();
+            return;
+          }
+        }
+        // Sin progreso guardado → empezar desde sexo
         goStep(1);
       }
       return;
