@@ -1225,6 +1225,41 @@
     padding: 0 32px;
   }
 
+  /* OTP code input cells */
+  .otp-cell {
+    width: 44px;
+    height: 56px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    font-family: 'SF Mono', Monaco, 'Courier New', monospace;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    color: white;
+    outline: none;
+    transition: all 0.15s ease;
+    caret-color: #10B981;
+  }
+  .otp-cell:focus {
+    border-color: #10B981;
+    background: rgba(16,185,129,0.08);
+    box-shadow: 0 0 0 4px rgba(16,185,129,0.15);
+  }
+  .otp-cell.filled {
+    border-color: rgba(16,185,129,0.4);
+    background: rgba(16,185,129,0.05);
+  }
+  .otp-cell.error {
+    border-color: #F87171;
+    animation: shakeOtp 0.4s ease;
+  }
+  @keyframes shakeOtp {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+
   .hidden { display: none !important; }
 </style>
 </head>
@@ -2045,17 +2080,25 @@
       <div class="verify-icon-circle" id="verify-icon">
         <svg class="icon" style="width:44px; height:44px; stroke-width:1.4;"><use href="#i-mail"/></svg>
       </div>
-      <div class="verify-title" id="verify-title">Confirma tu email</div>
+      <div class="verify-title" id="verify-title">Ingresa el código</div>
       <div class="verify-subtitle" id="verify-subtitle">
-        Te enviamos un link a <strong id="verify-email-text">tu email</strong>. Ábrelo en tu inbox para activar tu cuenta y entrar a SAVIA.
+        Te enviamos un código de 6 dígitos a <strong id="verify-email-text">tu email</strong>. Cópialo y pégalo abajo.
       </div>
-      <div class="verify-spinner-row" id="verify-status-row">
-        <div class="verify-spinner"></div>
-        <span>Esperando confirmación...</span>
+
+      <div id="otp-input-row" style="display: flex; gap: 8px; justify-content: center; margin: 32px 0 20px;">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-cell" data-idx="0" autocomplete="one-time-code"/>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-cell" data-idx="1"/>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-cell" data-idx="2"/>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-cell" data-idx="3"/>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-cell" data-idx="4"/>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="1" class="otp-cell" data-idx="5"/>
       </div>
+      <div id="otp-error" style="color: #F87171; font-size: 13px; text-align: center; min-height: 18px; margin-bottom: 16px;"></div>
+
+      <button class="btn-primary" id="otp-submit-btn" onclick="submitOtpCode()" disabled>Verificar</button>
     </div>
     <div class="verify-actions">
-      <button class="btn-secondary" id="verify-resend-btn" onclick="resendVerificationEmail()">Reenviar email</button>
+      <button class="btn-secondary" id="verify-resend-btn" onclick="resendVerificationEmail()">Reenviar código</button>
       <div class="verify-resend-cooldown" id="verify-resend-cd" style="display:none;"></div>
       <button class="btn-ghost" onclick="changeVerifyEmail()">Cambiar email o cancelar</button>
     </div>
@@ -2927,7 +2970,133 @@ function showVerifyScreen() {
   const emailText = document.getElementById('verify-email-text');
   if (emailText) emailText.textContent = state.email || 'tu email';
   goStep('verify');
-  startVerifyPolling();
+  setupOtpInputs();
+  // Foco automático en el primer dígito
+  setTimeout(() => {
+    const first = document.querySelector('.otp-cell[data-idx="0"]');
+    if (first) first.focus();
+  }, 250);
+}
+
+let otpInputsInitialized = false;
+function setupOtpInputs() {
+  if (otpInputsInitialized) return;
+  otpInputsInitialized = true;
+  const cells = document.querySelectorAll('.otp-cell');
+  cells.forEach((cell, idx) => {
+    cell.addEventListener('input', (e) => {
+      const v = e.target.value.replace(/\D/g, '');
+      e.target.value = v.slice(0, 1);
+      e.target.classList.toggle('filled', !!v);
+      // Auto-avanzar al siguiente
+      if (v && idx < cells.length - 1) cells[idx + 1].focus();
+      updateOtpSubmitState();
+    });
+    cell.addEventListener('keydown', (e) => {
+      // Backspace en celda vacía → ir atrás
+      if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+        cells[idx - 1].focus();
+        cells[idx - 1].value = '';
+        cells[idx - 1].classList.remove('filled');
+        updateOtpSubmitState();
+      }
+      // Enter → submit si está completo
+      if (e.key === 'Enter') {
+        if (!document.getElementById('otp-submit-btn').disabled) submitOtpCode();
+      }
+    });
+    cell.addEventListener('paste', (e) => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text');
+      const digits = text.replace(/\D/g, '').slice(0, 6);
+      digits.split('').forEach((d, i) => {
+        if (cells[i]) {
+          cells[i].value = d;
+          cells[i].classList.add('filled');
+        }
+      });
+      const nextEmpty = Array.from(cells).find(c => !c.value);
+      if (nextEmpty) nextEmpty.focus();
+      else cells[5].focus();
+      updateOtpSubmitState();
+    });
+  });
+}
+
+function getOtpCode() {
+  return Array.from(document.querySelectorAll('.otp-cell')).map(c => c.value).join('');
+}
+
+function updateOtpSubmitState() {
+  const btn = document.getElementById('otp-submit-btn');
+  if (btn) btn.disabled = getOtpCode().length !== 6;
+}
+
+async function submitOtpCode() {
+  const code = getOtpCode();
+  const errEl = document.getElementById('otp-error');
+  const btn = document.getElementById('otp-submit-btn');
+  if (code.length !== 6) return;
+  errEl.textContent = '';
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
+  showLoading('Verificando código');
+  try {
+    const { data, error } = await sb.auth.verifyOtp({
+      email: state.email,
+      token: code,
+      type: 'email',
+    });
+    hideLoading();
+    if (error) {
+      btn.disabled = false;
+      btn.textContent = 'Verificar';
+      errEl.textContent = 'Código incorrecto o expirado. Intentá de nuevo.';
+      // Shake animation en los inputs
+      document.querySelectorAll('.otp-cell').forEach(c => {
+        c.classList.add('error');
+        setTimeout(() => c.classList.remove('error'), 500);
+      });
+      // Limpiar inputs y focus en el primero
+      document.querySelectorAll('.otp-cell').forEach(c => {
+        c.value = '';
+        c.classList.remove('filled');
+      });
+      const first = document.querySelector('.otp-cell[data-idx="0"]');
+      if (first) first.focus();
+      return;
+    }
+    // Éxito → cura el flag de onboarding si hace falta + avanzar
+    btn.textContent = '✓ Verificado';
+    // Si tenemos datos completos, guardar en perfil (cura cualquier upsert fallido previo)
+    try {
+      const { data: { user } } = await sb.auth.getUser();
+      if (user) {
+        await sb.from('profiles').upsert({
+          id: user.id,
+          email: state.email,
+          name: state.name || null,
+          sex: state.sex || null,
+          age: state.age ? parseInt(state.age, 10) : null,
+          goals: state.goals,
+          level: state.level || null,
+          wearables: state.wearables,
+          photo_url: state.photo,
+          maintenance_mode: state.maintenanceMode || null,
+          resolution: state.resolution || null,
+          is_onboarded: true,
+        });
+      }
+    } catch (e) { console.warn('Post-OTP upsert:', e); }
+    clearOnboardingState();
+    setTimeout(() => goStep(8), 800);
+  } catch (e) {
+    hideLoading();
+    btn.disabled = false;
+    btn.textContent = 'Verificar';
+    errEl.textContent = 'Error inesperado. Intentá de nuevo.';
+    console.error('OTP verify error:', e);
+  }
 }
 
 function startVerifyPolling() {
@@ -2987,7 +3156,7 @@ async function resendVerificationEmail() {
 
   try {
     await sb.auth.resend({ type: 'signup', email: state.email });
-    btn.textContent = '✓ Email reenviado';
+    btn.textContent = '✓ Código reenviado';
     // Cooldown de 30 seg para evitar abuse
     resendCooldown = 30;
     cdEl.style.display = 'block';
@@ -2998,14 +3167,14 @@ async function resendVerificationEmail() {
         clearInterval(resendCooldownInterval);
         cdEl.style.display = 'none';
         btn.disabled = false;
-        btn.textContent = 'Reenviar email';
+        btn.textContent = 'Reenviar código';
       } else {
         cdEl.textContent = `Puedes reenviar en ${resendCooldown}s`;
       }
     }, 1000);
   } catch (err) {
     btn.disabled = false;
-    btn.textContent = 'Reenviar email';
+    btn.textContent = 'Reenviar código';
     console.warn('Resend error:', err);
   }
 }
