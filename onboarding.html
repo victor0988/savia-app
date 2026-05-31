@@ -4668,7 +4668,21 @@ async function confirmReset() {
 // 3. Si no, mostrar splash y ocultar Face ID si no se ha activado
 // Top-level: routea a un usuario autenticado al lugar correcto.
 // Usable desde init(), onAuthStateChange listener, y desde flows OAuth/OTP.
+let _routingInProgress = false;
 async function routeAuthenticatedUser() {
+  if (_routingInProgress) {
+    console.log('[SAVIA] Routing ya en progreso, skip');
+    return;
+  }
+  _routingInProgress = true;
+  try {
+    await _doRouteAuthenticatedUser();
+  } finally {
+    setTimeout(() => { _routingInProgress = false; }, 1000);
+  }
+}
+
+async function _doRouteAuthenticatedUser() {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) return;
 
@@ -4875,7 +4889,43 @@ async function routeAuthenticatedUser() {
     return;
   }
 
-  // Restaurar sesión si existe
+  // Si venimos de OAuth callback (Google) — hash tiene access_token
+  // El SDK necesita un momento para procesarlo. Esperamos SIGNED_IN o getSession().
+  const hashHasTokens = window.location.hash.includes('access_token=');
+  if (hashHasTokens) {
+    showLoading('Iniciando sesión');
+    // Esperar hasta 3 seg que el SDK procese el hash y dispare SIGNED_IN,
+    // O timeout y consultar getSession manualmente
+    const sessionFromHash = await new Promise((resolve) => {
+      let resolved = false;
+      const sub = sb.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session && !resolved) {
+          resolved = true;
+          sub.data.subscription.unsubscribe();
+          resolve(session);
+        }
+      });
+      setTimeout(async () => {
+        if (resolved) return;
+        resolved = true;
+        sub.data.subscription.unsubscribe();
+        const { data } = await sb.auth.getSession();
+        resolve(data.session || null);
+      }, 3000);
+    });
+
+    // Limpiar el hash del URL (cosmético, no afecta funcionamiento)
+    try { window.history.replaceState(null, '', window.location.pathname); } catch {}
+
+    if (sessionFromHash) {
+      await routeAuthenticatedUser();
+      hideLoading();
+      return;
+    }
+    hideLoading();
+  }
+
+  // Restaurar sesión normal si existe
   const { data: { session } } = await sb.auth.getSession();
   if (session) {
     await routeAuthenticatedUser();
