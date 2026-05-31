@@ -4766,12 +4766,27 @@ async function _doRouteAuthenticatedUser() {
   goStep(1);
 }
 
+function showDebugBanner(text, color) {
+  const old = document.getElementById('savia-debug-banner');
+  if (old) old.remove();
+  const b = document.createElement('div');
+  b.id = 'savia-debug-banner';
+  b.style.cssText = `position:fixed; top:8px; left:8px; right:8px; padding:10px 12px; border-radius:10px; font-size:11px; line-height:1.4; z-index:99999; background:${color}; color:white; font-family:monospace; word-break:break-all; box-shadow:0 4px 16px rgba(0,0,0,0.5);`;
+  b.textContent = text;
+  b.onclick = () => b.remove();
+  document.body.appendChild(b);
+}
+
 (async function init() {
   // Manejo del link de password reset (Supabase pone el access_token en el hash)
   const urlParams = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
   const isPasswordReset = urlParams.get('action') === 'reset' ||
                           hashParams.get('type') === 'recovery';
+
+  // DEBUG: mostrar qué detectamos
+  const hashHasTokensDebug = window.location.hash.includes('access_token=');
+  showDebugBanner(`DBG init: hash=${hashHasTokensDebug ? 'YES tokens' : 'no'} | reset=${isPasswordReset}`, '#3B82F6');
 
   // Listener para password recovery + auto-route en login OAuth (Google)
   sb.auth.onAuthStateChange(async (event, session) => {
@@ -4890,15 +4905,13 @@ async function _doRouteAuthenticatedUser() {
   }
 
   // Si venimos de OAuth callback (Google) — hash tiene access_token
-  // El SDK necesita un momento para procesarlo. Esperamos SIGNED_IN o getSession().
   const hashHasTokens = window.location.hash.includes('access_token=');
   if (hashHasTokens) {
-    showLoading('Iniciando sesión');
-    // Esperar hasta 3 seg que el SDK procese el hash y dispare SIGNED_IN,
-    // O timeout y consultar getSession manualmente
+    showDebugBanner('DBG: detected OAuth callback, waiting for SDK...', '#F59E0B');
     const sessionFromHash = await new Promise((resolve) => {
       let resolved = false;
       const sub = sb.auth.onAuthStateChange((event, session) => {
+        showDebugBanner(`DBG event=${event} session=${!!session}`, '#8B5CF6');
         if (event === 'SIGNED_IN' && session && !resolved) {
           resolved = true;
           sub.data.subscription.unsubscribe();
@@ -4910,23 +4923,24 @@ async function _doRouteAuthenticatedUser() {
         resolved = true;
         sub.data.subscription.unsubscribe();
         const { data } = await sb.auth.getSession();
+        showDebugBanner(`DBG timeout: session=${!!data.session}`, '#EF4444');
         resolve(data.session || null);
       }, 3000);
     });
 
-    // Limpiar el hash del URL (cosmético, no afecta funcionamiento)
     try { window.history.replaceState(null, '', window.location.pathname); } catch {}
 
     if (sessionFromHash) {
+      showDebugBanner('DBG: routing...', '#10B981');
       await routeAuthenticatedUser();
-      hideLoading();
       return;
     }
-    hideLoading();
+    showDebugBanner('DBG: no session after OAuth — algo falló', '#EF4444');
   }
 
   // Restaurar sesión normal si existe
   const { data: { session } } = await sb.auth.getSession();
+  showDebugBanner(`DBG fallback getSession: ${!!session}`, '#6366F1');
   if (session) {
     await routeAuthenticatedUser();
     return;
