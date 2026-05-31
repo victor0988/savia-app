@@ -2784,7 +2784,14 @@ const state = {
 // ============================================
 const SUPABASE_URL = 'https://vlzzgttjrpyywmahwooi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsenpndHRqcnB5eXdtYWh3b29pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTA0OTIsImV4cCI6MjA5NTY2NjQ5Mn0.wH4oohfDEcS5j5N0FAtw_sZzDovixmbvSBpDNZy-3yk';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    flowType: 'implicit',     // Matchea el flow que Supabase Auth devuelve (#access_token=...)
+    detectSessionInUrl: true, // Auto-detecta tokens del hash al cargar página
+    persistSession: true,
+    autoRefreshToken: true,
+  },
+});
 
 // Solo biometría + credenciales remember persisten en localStorage (device-specific)
 const STORAGE = {
