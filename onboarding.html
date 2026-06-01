@@ -1979,7 +1979,15 @@
     padding: 8px 0;
   }
   .nut-dash-macro-row + .nut-dash-macro-row { border-top: 1px solid rgba(255,255,255,0.04); }
-  .nut-dash-macro-icon { font-size: 18px; width: 24px; }
+  .nut-dash-macro-letter {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700;
+    letter-spacing: 0.5px; flex-shrink: 0;
+  }
+  .nut-dash-macro-letter-p { background: rgba(239,68,68,0.16); color: #FCA5A5; border: 1.5px solid rgba(239,68,68,0.5); }
+  .nut-dash-macro-letter-c { background: rgba(245,158,11,0.16); color: #FDE68A; border: 1.5px solid rgba(245,158,11,0.5); }
+  .nut-dash-macro-letter-f { background: rgba(132,204,22,0.16); color: #BEF264; border: 1.5px solid rgba(132,204,22,0.5); }
   .nut-dash-macro-name {
     font-size: 13px; font-weight: 600; color: #CBD5E1; width: 80px;
   }
@@ -1991,9 +1999,9 @@
     height: 100%; border-radius: 3px;
     transition: width 0.4s ease;
   }
-  .nut-dash-macro-fill-p { background: #34D399; }
+  .nut-dash-macro-fill-p { background: #EF4444; }
   .nut-dash-macro-fill-c { background: #F59E0B; }
-  .nut-dash-macro-fill-f { background: #EC4899; }
+  .nut-dash-macro-fill-f { background: #84CC16; }
   .nut-dash-macro-value {
     font-size: 12px; color: #94A3B8; font-weight: 600;
     min-width: 70px; text-align: right;
@@ -2003,26 +2011,48 @@
     background: rgba(99,102,241,0.06);
     border: 1px solid rgba(99,102,241,0.15);
     border-radius: 18px; padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .nut-dash-water-header {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 12px;
   }
-  .nut-dash-water-icon { font-size: 22px; }
+  .nut-dash-water-icon-svg { width: 22px; height: 22px; flex-shrink: 0; }
   .nut-dash-water-text { flex: 1; }
   .nut-dash-water-value {
     font-size: 18px; font-weight: 700; color: white;
+    margin-bottom: 6px;
   }
-  .nut-dash-water-target {
-    font-size: 12px; color: #94A3B8; font-weight: 500;
+  .nut-dash-water-bar {
+    height: 4px; background: rgba(255,255,255,0.06);
+    border-radius: 2px; overflow: hidden;
   }
-  .nut-dash-water-btn {
-    background: rgba(99,102,241,0.2);
-    border: 1px solid rgba(99,102,241,0.4);
-    color: #A5B4FC; border-radius: 12px;
-    padding: 8px 12px; font-size: 13px; font-weight: 700;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+  .nut-dash-water-bar-fill {
+    height: 100%; background: #60A5FA;
+    border-radius: 2px; transition: width 0.4s ease;
   }
-  .nut-dash-water-btn:active { transform: scale(0.95); }
+  .nut-dash-water-chips {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+  }
+  .nut-water-chip {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #CBD5E1; border-radius: 12px;
+    padding: 8px 4px; font-size: 13px; font-weight: 600;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    display: flex; flex-direction: column; align-items: center; gap: 2px;
+    transition: all 0.15s ease;
+  }
+  .nut-water-chip:active {
+    transform: scale(0.94);
+    background: rgba(96,165,250,0.16);
+    border-color: rgba(96,165,250,0.4);
+    color: #93C5FD;
+  }
+  .nut-water-chip svg { color: #60A5FA; }
+  .nut-water-chip-unit { font-size: 10px; color: #94A3B8; font-weight: 500; }
+  .nut-water-chip-other svg { color: #94A3B8; }
+  .nut-water-chip-other { justify-content: center; }
 
   .nut-dash-section-title {
     font-size: 11px; font-weight: 700; color: #64748B;
@@ -3480,9 +3510,12 @@
             <div class="hoy-pulse-kpi-label">Sueño</div>
           </div>
           <span class="hoy-pulse-kpi-sep">·</span>
-          <div class="hoy-pulse-kpi">
+          <div class="hoy-pulse-kpi" onclick="openModule('nutrition')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;">
             <div class="hoy-pulse-kpi-icon-row">
-              <svg class="hoy-pulse-kpi-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.5 2-4 6-4 8a4 4 0 008 0c0-2-2.5-6-4-8z"/></svg>
+              <svg class="hoy-pulse-kpi-donut" width="22" height="22" viewBox="0 0 22 22">
+                <circle cx="11" cy="11" r="8" fill="none" stroke="rgba(132,204,22,0.18)" stroke-width="3"/>
+                <circle id="hoy-pulse-macros-ring" cx="11" cy="11" r="8" fill="none" stroke="#84CC16" stroke-width="3" stroke-dasharray="0 50.27" stroke-linecap="round" transform="rotate(-90 11 11)"/>
+              </svg>
               <span class="hoy-pulse-kpi-value empty" id="hoy-pulse-macros">—</span>
             </div>
             <div class="hoy-pulse-kpi-label">Macros</div>
@@ -4045,19 +4078,19 @@
 
       <div class="nut-dash-macros">
         <div class="nut-dash-macro-row">
-          <div class="nut-dash-macro-icon">💪</div>
+          <div class="nut-dash-macro-letter nut-dash-macro-letter-p">P</div>
           <div class="nut-dash-macro-name">Proteína</div>
           <div class="nut-dash-macro-bar"><div class="nut-dash-macro-bar-fill nut-dash-macro-fill-p" id="nut-dash-p-fill" style="width:0%"></div></div>
           <div class="nut-dash-macro-value" id="nut-dash-p-value">0 / 0g</div>
         </div>
         <div class="nut-dash-macro-row">
-          <div class="nut-dash-macro-icon">🌾</div>
+          <div class="nut-dash-macro-letter nut-dash-macro-letter-c">C</div>
           <div class="nut-dash-macro-name">Carbs</div>
           <div class="nut-dash-macro-bar"><div class="nut-dash-macro-bar-fill nut-dash-macro-fill-c" id="nut-dash-c-fill" style="width:0%"></div></div>
           <div class="nut-dash-macro-value" id="nut-dash-c-value">0 / 0g</div>
         </div>
         <div class="nut-dash-macro-row">
-          <div class="nut-dash-macro-icon">🥑</div>
+          <div class="nut-dash-macro-letter nut-dash-macro-letter-f">F</div>
           <div class="nut-dash-macro-name">Grasas</div>
           <div class="nut-dash-macro-bar"><div class="nut-dash-macro-bar-fill nut-dash-macro-fill-f" id="nut-dash-f-fill" style="width:0%"></div></div>
           <div class="nut-dash-macro-value" id="nut-dash-f-value">0 / 0g</div>
@@ -4065,12 +4098,38 @@
       </div>
 
       <div class="nut-dash-water">
-        <div class="nut-dash-water-icon">💧</div>
-        <div class="nut-dash-water-text">
-          <div class="nut-dash-water-value"><span id="nut-water-current">0</span> ml</div>
-          <div class="nut-dash-water-target">de <span id="nut-water-target">2500</span> ml</div>
+        <div class="nut-dash-water-header">
+          <svg class="nut-dash-water-icon-svg" fill="none" stroke="#60A5FA" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3.5c1.5 2 5 6.5 5 10a5 5 0 01-10 0c0-3.5 3.5-8 5-10z"/></svg>
+          <div class="nut-dash-water-text">
+            <div class="nut-dash-water-value"><span id="nut-water-current">0</span> <span style="font-size:13px;color:#94A3B8;">/ <span id="nut-water-target">2500</span> ml</span></div>
+            <div class="nut-dash-water-bar"><div class="nut-dash-water-bar-fill" id="nut-water-bar-fill" style="width:0%"></div></div>
+          </div>
         </div>
-        <button class="nut-dash-water-btn" onclick="nutAddHydration(250)">+250 ml</button>
+        <div class="nut-dash-water-chips">
+          <button class="nut-water-chip" onclick="nutAddHydration(250)">
+            <svg width="14" height="20" viewBox="0 0 14 20" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M3 6 L3 17 Q3 19 5 19 L9 19 Q11 19 11 17 L11 6 M3 6 L3 4 L11 4 L11 6 Z" stroke-linecap="round"/></svg>
+            <span>250</span>
+            <span class="nut-water-chip-unit">ml</span>
+          </button>
+          <button class="nut-water-chip" onclick="nutAddHydration(500)">
+            <svg width="16" height="22" viewBox="0 0 16 22" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8 L4 19 Q4 21 6 21 L10 21 Q12 21 12 19 L12 8 Q12 6 11 5 L11 3 L5 3 L5 5 Q4 6 4 8 Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>500</span>
+            <span class="nut-water-chip-unit">ml</span>
+          </button>
+          <button class="nut-water-chip" onclick="nutAddHydration(600)">
+            <svg width="17" height="23" viewBox="0 0 17 23" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8 L4 20 Q4 22 6 22 L11 22 Q13 22 13 20 L13 8 Q13 6 12 5 L12 3 L5 3 L5 5 Q4 6 4 8 Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>600</span>
+            <span class="nut-water-chip-unit">ml</span>
+          </button>
+          <button class="nut-water-chip" onclick="nutAddHydration(1000)">
+            <svg width="18" height="24" viewBox="0 0 18 24" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M4 8 L4 21 Q4 23 6 23 L12 23 Q14 23 14 21 L14 8 Q14 6 13 5 L13 3 L5 3 L5 5 Q4 6 4 8 Z" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span>1 L</span>
+          </button>
+          <button class="nut-water-chip nut-water-chip-other" onclick="nutAskCustomHydration()">
+            <span style="font-size:18px;line-height:1;">+</span>
+            <span style="font-size:11px;">Otra</span>
+          </button>
+        </div>
       </div>
 
       <div class="nut-dash-section-title">Comidas de hoy</div>
@@ -5371,7 +5430,7 @@ function enterAppSimulation(source) {
   } catch (e) { console.error('[SAVIA] cycle card setup failed:', e); }
 
   try { switchHoyTab('hoy', { skipAnim: true }); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
-  try { renderDailyPulse(); } catch (e) { console.error('[SAVIA] renderDailyPulse failed:', e); }
+  renderDailyPulse().catch(e => console.error('[SAVIA] renderDailyPulse failed:', e));
 
   if (source !== 'login') {
     setTimeout(showWelcomeEmailDiagnostic, 1500);
@@ -5388,7 +5447,7 @@ function getDayContext() {
 // =============================================
 // HERO DAILY PULSE — render dinámico
 // =============================================
-function renderDailyPulse() {
+async function renderDailyPulse() {
   // Date + day counter
   try {
     const dateEl = document.getElementById('hoy-pulse-date');
@@ -5398,21 +5457,70 @@ function renderDailyPulse() {
   } catch (e) { console.warn('pulse meta failed:', e); }
 
   // Ring + score
-  // En Sprint 0.5 todavía no tenemos wearable real, así que estado = "Calibrando"
-  // Cuando tengamos data: setPulseScore(82) hace la animación al número
   const score = computePulseScore();
   applyPulseScore(score);
 
-  // KPIs inline — placeholder values (data real en Sprint 2+)
-  const sleep = getKpiSleep();      // null o "7h 42m"
-  const macros = getKpiMacros();    // null o "59%"
-  const strain = getKpiStrain();    // null o "12"
+  // KPI macros — carga data real de nutrition si user tiene targets
+  let macrosKpi = null;
+  try {
+    const macrosData = await computeMacrosKpiData();
+    if (macrosData) {
+      macrosKpi = macrosData.pct + '%';
+      updateMacrosKpiDonut(macrosData.pct);
+    } else {
+      updateMacrosKpiDonut(null);
+    }
+  } catch (e) { console.warn('macros kpi failed:', e); }
+
+  // Otros KPIs siguen placeholder (wearables en Sprint posterior)
+  const sleep = getKpiSleep();
+  const strain = getKpiStrain();
   setKpi('hoy-pulse-sleep', sleep);
-  setKpi('hoy-pulse-macros', macros);
+  setKpi('hoy-pulse-macros', macrosKpi);
   setKpi('hoy-pulse-strain', strain);
 
   // Acción contextual
   applyContextualAction();
+}
+
+// Lee data real de nutrition para el KPI macros del Daily Pulse.
+// Retorna {pct, kcal_consumed, kcal_target} o null si el user no tiene targets aún.
+// Si nutState.targets ya está cargado, lo reusa (cache simple); si no, hace fetch.
+async function computeMacrosKpiData() {
+  try {
+    // Cache: si ya tenemos targets en memoria, no re-fetch
+    let targets = nutState.targets;
+    if (!targets) {
+      targets = await nutLoadTargets();
+      if (targets) nutState.targets = targets;
+    }
+    if (!targets || !targets.kcal) return null;
+    // Today data se refresca cada render (puede haber meals nuevas)
+    await nutLoadTodayData();
+    const meals = nutState.todayMeals || [];
+    const kcalConsumed = meals.reduce((acc, m) => acc + (m.total_kcal || 0), 0);
+    const pct = Math.min(999, Math.round((kcalConsumed / targets.kcal) * 100));
+    return { pct, kcal_consumed: kcalConsumed, kcal_target: targets.kcal };
+  } catch (e) {
+    console.warn('[NUT] computeMacrosKpiData failed:', e);
+    return null;
+  }
+}
+
+// Actualiza el mini-donut del KPI macros. pct null = vacío gris.
+function updateMacrosKpiDonut(pct) {
+  const ring = document.getElementById('hoy-pulse-macros-ring');
+  if (!ring) return;
+  const CIRC = 50.27; // 2 * π * 8
+  if (pct === null || pct === undefined) {
+    ring.style.strokeDasharray = '0 ' + CIRC;
+    return;
+  }
+  const filled = Math.min(1, pct / 100);
+  const dash = filled * CIRC;
+  ring.style.strokeDasharray = dash + ' ' + CIRC;
+  // Si target alcanzado/excedido, color verde-lima brillante
+  ring.style.stroke = pct >= 95 ? '#BEF264' : '#84CC16';
 }
 
 function formatPulseDate() {
@@ -5491,9 +5599,9 @@ function setKpi(id, value) {
   }
 }
 
-// Getters de KPIs (placeholder ahora, conectan a wearable/nutrition en Sprint 2+)
+// Getters de KPIs (placeholder ahora, conectan a wearable en Sprint posterior)
+// Macros se calcula via computeMacrosKpiData() arriba (data real de nutrition_targets + meals).
 function getKpiSleep()   { return null; }
-function getKpiMacros()  { return null; }
 function getKpiStrain()  { return null; }
 
 // Acción contextual — la "calm AI" que sugiere lo correcto según hora + data
@@ -6099,9 +6207,23 @@ function nutRenderDashboard() {
   // Hydration
   document.getElementById('nut-water-current').textContent = nutState.todayHydrationMl;
   document.getElementById('nut-water-target').textContent = t.water_ml;
+  const waterPct = Math.min(100, Math.round((nutState.todayHydrationMl / (t.water_ml || 2500)) * 100));
+  const waterFill = document.getElementById('nut-water-bar-fill');
+  if (waterFill) waterFill.style.width = waterPct + '%';
 
   // Meals list
   renderMealsList();
+}
+
+function nutAskCustomHydration() {
+  const v = prompt('¿Cuántos ml?');
+  if (!v) return;
+  const ml = parseInt(v, 10);
+  if (!ml || ml < 10 || ml > 5000) {
+    alert('Ingresá un número entre 10 y 5000 ml');
+    return;
+  }
+  nutAddHydration(ml);
 }
 
 function setMacroBar(key, value, target) {
@@ -6142,6 +6264,13 @@ function renderMealsList() {
 async function nutAddHydration(ml) {
   nutState.todayHydrationMl += ml;
   document.getElementById('nut-water-current').textContent = nutState.todayHydrationMl;
+  // Actualizar bar de progreso inmediatamente (UX inmediato, sin esperar persist)
+  const t = nutState.targets;
+  if (t) {
+    const pct = Math.min(100, Math.round((nutState.todayHydrationMl / (t.water_ml || 2500)) * 100));
+    const fill = document.getElementById('nut-water-bar-fill');
+    if (fill) fill.style.width = pct + '%';
+  }
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (user) {
