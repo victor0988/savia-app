@@ -5590,6 +5590,13 @@ function showDebugBanner() { /* no-op */ }
       goStep('change-password');
       return;
     }
+    // CRÍTICO: si todavía hay hash de OAuth en URL, NO routear.
+    // Estamos en el contexto cross-site que Safari ITP bloquea — cualquier query se cuelga.
+    // El init va a hacer reload limpio inmediatamente, y en el nuevo load (sin hash) routeamos.
+    if (window.location.hash.includes('access_token=')) {
+      console.log('[SAVIA] Auth event durante OAuth callback, skip routing (reload pending)');
+      return;
+    }
     // Si volvió de OAuth (Google), routear automáticamente
     if (event === 'SIGNED_IN' && (state.step === 0 || state.step === 'auth' || state.step === undefined)) {
       await routeAuthenticatedUser(session);
