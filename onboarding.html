@@ -1422,6 +1422,28 @@
     padding: 4px 16px 96px; /* 96px bottom para que tab bar no tape */
     -webkit-overflow-scrolling: touch;
   }
+  /* Stagger sutil a cards al abrir Hoy */
+  .hoy-content > * {
+    animation: fadeInUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .hoy-content > *:nth-child(1) { animation-delay: 0.02s; }
+  .hoy-content > *:nth-child(2) { animation-delay: 0.08s; }
+  .hoy-content > *:nth-child(3) { animation-delay: 0.14s; }
+  .hoy-content > *:nth-child(4) { animation-delay: 0.20s; }
+  .hoy-content > *:nth-child(5) { animation-delay: 0.26s; }
+  .hoy-content > *:nth-child(6) { animation-delay: 0.32s; }
+  @keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  /* Animación al cambiar de tab dentro del Hoy (Hoy / Cuerpo / SAVIA) */
+  .tab-fade-in {
+    animation: tabFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  @keyframes tabFadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
   .hoy-content::-webkit-scrollbar { display: none; }
   .hoy-row { display: grid; gap: 12px; margin-bottom: 12px; }
   .hoy-row.cols-2 { grid-template-columns: 1fr 1fr; }
@@ -1522,12 +1544,14 @@
     transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0.0, 0.2, 1);
   }
   .hoy-pulse-ring-fg.calibrating {
-    stroke-dasharray: 80 246.7;
-    animation: pulseRingSweep 2.2s linear infinite;
+    /* Sin sweep infinito. El stroke-dashoffset se setea inline por JS según día de calibración.
+       Un pulso lento de opacidad indica "en progreso" sin parecer loader. */
+    opacity: 1;
+    animation: pulseRingBreath 3.2s ease-in-out infinite;
   }
-  @keyframes pulseRingSweep {
-    0% { stroke-dashoffset: 326.7; }
-    100% { stroke-dashoffset: 0; }
+  @keyframes pulseRingBreath {
+    0%, 100% { opacity: 0.55; }
+    50% { opacity: 1; }
   }
   .hoy-pulse-ring-center {
     position: absolute;
@@ -3046,8 +3070,8 @@
             <circle class="hoy-pulse-ring-fg calibrating" cx="60" cy="60" r="52" id="hoy-pulse-ring-fg"/>
           </svg>
           <div class="hoy-pulse-ring-center">
-            <div class="hoy-pulse-score calibrating" id="hoy-pulse-score">Calibrando</div>
-            <div class="hoy-pulse-score-label" id="hoy-pulse-score-label" style="display:none;">READINESS</div>
+            <div class="hoy-pulse-score calibrating" id="hoy-pulse-score">—</div>
+            <div class="hoy-pulse-score-label" id="hoy-pulse-score-label">CALIBRANDO</div>
           </div>
         </div>
 
@@ -4499,7 +4523,7 @@ function enterAppSimulation(source) {
     if (cycleCard) cycleCard.style.display = (state.sex === 'f') ? '' : 'none';
   } catch (e) { console.error('[SAVIA] cycle card setup failed:', e); }
 
-  try { switchHoyTab('hoy'); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
+  try { switchHoyTab('hoy', { skipAnim: true }); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
   try { renderDailyPulse(); } catch (e) { console.error('[SAVIA] renderDailyPulse failed:', e); }
 
   if (source !== 'login') {
@@ -4563,30 +4587,49 @@ function applyPulseScore(score) {
   const ring = document.getElementById('hoy-pulse-ring-fg');
   const scoreEl = document.getElementById('hoy-pulse-score');
   const labelEl = document.getElementById('hoy-pulse-score-label');
+  const RING_CIRCUMFERENCE = 326.7; // 2 * π * 52
+
   if (score === null || score === undefined) {
+    // Modo calibrando: ring muestra progreso del día N de 7 (no animación de sweep)
+    const dayNum = getCalibrationDay();   // 1-7
+    const progress = Math.min(1, dayNum / 7);
+    const offset = RING_CIRCUMFERENCE - progress * RING_CIRCUMFERENCE;
     if (ring) {
       ring.classList.add('calibrating');
-      ring.style.strokeDashoffset = '';
+      ring.style.strokeDasharray = String(RING_CIRCUMFERENCE);
+      ring.style.strokeDashoffset = String(offset);
     }
     if (scoreEl) {
       scoreEl.classList.add('calibrating');
-      scoreEl.textContent = 'Calibrando';
+      scoreEl.textContent = `Día ${dayNum} de 7`;
     }
-    if (labelEl) labelEl.style.display = 'none';
+    if (labelEl) {
+      labelEl.style.display = '';
+      labelEl.textContent = 'CALIBRANDO';
+    }
     return;
   }
   // Score real
   if (ring) {
     ring.classList.remove('calibrating');
-    // 326.7 = 2 * π * 52. Llenar proporcional a score (0-100)
-    const offset = 326.7 - (score / 100) * 326.7;
-    ring.style.strokeDashoffset = offset;
+    ring.style.strokeDasharray = String(RING_CIRCUMFERENCE);
+    const offset = RING_CIRCUMFERENCE - (score / 100) * RING_CIRCUMFERENCE;
+    ring.style.strokeDashoffset = String(offset);
   }
   if (scoreEl) {
     scoreEl.classList.remove('calibrating');
     scoreEl.textContent = String(score);
   }
-  if (labelEl) labelEl.style.display = '';
+  if (labelEl) {
+    labelEl.style.display = '';
+    labelEl.textContent = 'READINESS';
+  }
+}
+
+function getCalibrationDay() {
+  // Placeholder: por ahora día 1. Eventualmente: calcular desde profile.created_at
+  // (días desde signup, cap a 7)
+  return 1;
 }
 
 function setKpi(id, value) {
@@ -4678,18 +4721,33 @@ function onPulseActionClick() {
 // =============================================
 // SPRINT 0 — Tab bar + check-in placeholder + module modal
 // =============================================
-function switchHoyTab(tab) {
+function switchHoyTab(tab, opts) {
   // Toggle active class on tab buttons
   document.querySelectorAll('.hoy-tabbar-btn').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.tab === tab);
   });
   // Toggle visibility de los 3 contenidos (hoy / cuerpo / savia)
-  const hoyContent = document.getElementById('hoy-tab-content');
-  const cuerpoContent = document.getElementById('hoy-cuerpo-content');
-  const saviaContent = document.getElementById('hoy-savia-content');
-  if (hoyContent) hoyContent.style.display = tab === 'hoy' ? '' : 'none';
-  if (cuerpoContent) cuerpoContent.style.display = tab === 'cuerpo' ? 'flex' : 'none';
-  if (saviaContent) saviaContent.style.display = tab === 'savia' ? 'flex' : 'none';
+  const contents = {
+    hoy: document.getElementById('hoy-tab-content'),
+    cuerpo: document.getElementById('hoy-cuerpo-content'),
+    savia: document.getElementById('hoy-savia-content'),
+  };
+  const displayMap = { hoy: '', cuerpo: 'flex', savia: 'flex' };
+  Object.keys(contents).forEach(k => {
+    if (contents[k]) {
+      contents[k].style.display = (k === tab) ? displayMap[k] : 'none';
+      contents[k].classList.remove('tab-fade-in');
+    }
+  });
+  // Trigger animación en el contenido que se muestra — pero SOLO en tab switches reales.
+  // En entrada inicial al app (enterAppSimulation) el stagger de los children es suficiente
+  // y aplicar también la animación del parent crea conflicto de opacidades.
+  if (opts && opts.skipAnim) return;
+  const active = contents[tab];
+  if (active) {
+    void active.offsetWidth; // force reflow para reiniciar animación
+    active.classList.add('tab-fade-in');
+  }
 }
 
 // (Sprint 0.5: las funciones selectMood/showCheckinCompleted/loadTodayCheckinUI/getCheckinQuestion
