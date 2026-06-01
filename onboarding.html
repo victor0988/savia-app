@@ -3680,6 +3680,10 @@
       <div class="nut-onb-title">¿Qué querés lograr?</div>
       <div class="nut-onb-hint">Elegí tu objetivo principal. Podés cambiarlo después desde tu perfil.</div>
 
+      <div id="nut-onb-prefill-banner" style="display:none; padding:12px 14px; background:rgba(132,204,22,0.08); border:1px solid rgba(132,204,22,0.22); border-radius:12px; margin-bottom:14px; font-size:13px; color:#CBD5E1; line-height:1.45;">
+        <span style="color:#BEF264; font-weight:700;">Pre-seleccionado:</span> <span id="nut-onb-prefill-text">—</span>
+      </div>
+
       <div class="nut-onb-option" data-goal="fat_loss" onclick="nutSelectGoal('fat_loss', this)">
         <div class="nut-onb-option-icon">🔥</div>
         <div class="nut-onb-option-text">
@@ -5574,12 +5578,51 @@ async function openNutritionModule() {
   const targets = await nutLoadTargets();
   if (!targets) {
     goStep('nut-onb-1');
+    // Pre-llenar objetivo desde el onboarding principal (state.goals)
+    // Llamada sincrónica: goStep ya completó cambio de DOM
+    nutPrefillFromMainOnboarding();
     return;
   }
   nutState.targets = targets;
   await nutLoadTodayData();
   nutRenderDashboard();
   goStep('nutrition');
+}
+
+// Inferir objetivo nutricional desde los goals del onboarding principal.
+// Si el user tiene fat_loss Y muscle_gain → recomposition (semánticamente "quiere ambos").
+// Si no, prioridad: fat_loss > muscle_gain > recomposition > performance > longevity > maintenance.
+function nutInferGoalFromMainOnboarding() {
+  const goals = state.goals || [];
+  if (goals.includes('fat_loss') && goals.includes('muscle_gain')) return 'recomposition';
+  const priorityOrder = ['fat_loss', 'muscle_gain', 'recomposition', 'performance', 'longevity'];
+  for (const g of priorityOrder) {
+    if (goals.includes(g)) return g;
+  }
+  return 'maintenance';
+}
+
+function nutPrefillFromMainOnboarding() {
+  const banner = document.getElementById('nut-onb-prefill-banner');
+  // Ocultar por default (en re-entradas, si ya seleccionó algo distinto antes)
+  if (banner) banner.style.display = 'none';
+  const inferred = nutInferGoalFromMainOnboarding();
+  const opt = document.querySelector(`[data-step="nut-onb-1"] [data-goal="${inferred}"]`);
+  if (!opt) return;
+  nutSelectGoal(inferred, opt);
+  const text = document.getElementById('nut-onb-prefill-text');
+  if (banner && text) {
+    const labels = {
+      fat_loss: 'Pérdida de grasa (de tu onboarding)',
+      muscle_gain: 'Aumento de masa (de tu onboarding)',
+      recomposition: 'Recomposición (combinás pérdida + músculo)',
+      performance: 'Performance deportiva (de tu onboarding)',
+      longevity: 'Longevidad (de tu onboarding)',
+      maintenance: 'Mantenimiento (default)',
+    };
+    text.textContent = `${labels[inferred]}. Confirmá o escogé otro.`;
+    banner.style.display = '';
+  }
 }
 
 // --- ONBOARDING NAVIGATION ---
@@ -5593,6 +5636,10 @@ function nutSelectGoal(goal, el) {
     o.classList.toggle('selected', o === el);
   });
   document.getElementById('nut-onb-1-btn').disabled = false;
+  // Ocultar banner de pre-fill cuando el user explícitamente elige algo
+  // (puede ser distinto del pre-seleccionado — el banner ya no aplica)
+  const banner = document.getElementById('nut-onb-prefill-banner');
+  if (banner) banner.style.display = 'none';
 }
 
 function nutSelectBF(value, el) {
@@ -5668,11 +5715,18 @@ function nutCalculateTargets() {
   const lbm = w * (1 - (nutState.bodyFat || 20) / 100);
   const proteinTarget = nutState.goal === 'fat_loss' || nutState.goal === 'recomposition' ? PROTEIN_PER_KG[nutState.goal] * lbm : PROTEIN_PER_KG[nutState.goal] * w;
   const protein_g = Math.round(proteinTarget);
-  // Grasa: 25-30% calorías
-  const fat_g = Math.round((kcal * 0.27) / 9);
-  // Carbs: resto
-  const carbs_g = Math.max(0, Math.round((kcal - protein_g * 4 - fat_g * 9) / 4));
-  // Agua: 35 ml/kg
+  // Grasa: 27% calorías, con floor de 0.6 g/kg (mínimo hormonal — ACSM/ISSN).
+  // Previene caídas a niveles peligrosos en déficits agresivos.
+  let fat_g = Math.round((kcal * 0.27) / 9);
+  const fatFloorHormonal = Math.round(w * 0.6);
+  if (fat_g < fatFloorHormonal) fat_g = fatFloorHormonal;
+  // Carbs: resto. Para performance, floor de 3 g/kg (ISSN 2021 — base para entrenamiento).
+  let carbs_g = Math.max(0, Math.round((kcal - protein_g * 4 - fat_g * 9) / 4));
+  if (nutState.goal === 'performance') {
+    const carbFloorPerf = Math.round(w * 3);
+    if (carbs_g < carbFloorPerf) carbs_g = carbFloorPerf;
+  }
+  // Agua: 35 ml/kg (mid de rango ACSM 30-40)
   const water_ml = Math.round(w * 35);
   return { rmr: Math.round(rmr), tdee: Math.round(tdee), kcal, protein_g, carbs_g, fat_g, water_ml };
 }
@@ -5702,6 +5756,16 @@ async function nutFinishOnboarding() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (user) {
+      // Sync el nutrition goal de vuelta a state.goals (si difiere del onboarding principal,
+      // esta es la forma de actualizarlo — feedback de Victor 2026-06-01)
+      const NUTRITION_GOALS = ['fat_loss', 'muscle_gain', 'recomposition', 'performance', 'longevity'];
+      let updatedGoals = state.goals || [];
+      if (NUTRITION_GOALS.includes(nutState.goal)) {
+        // Reemplazar cualquier nutrition goal existente con el nuevo
+        updatedGoals = updatedGoals.filter(g => !NUTRITION_GOALS.includes(g));
+        updatedGoals.push(nutState.goal);
+        state.goals = updatedGoals;
+      }
       await sb.from('profiles').update({
         height_cm: nutState.height,
         weight_kg: nutState.weight,
@@ -5711,6 +5775,7 @@ async function nutFinishOnboarding() {
         meals_per_day: nutState.mealsPerDay,
         dietary_restrictions: nutState.allergies,
         dietary_preferences: nutState.prefs,
+        goals: updatedGoals,
       }).eq('id', user.id);
       // Insertar targets
       await sb.from('nutrition_targets').insert({
