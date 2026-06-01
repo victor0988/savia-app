@@ -7203,7 +7203,6 @@ function nutBcRenderResult() {
     if (def) def.classList.add('selected');
     nutBcState.portionG = 100;
   }
-  const cust = document.getElementById('nut-bc-portion-custom');
   if (cust) cust.value = '';
 
   // Auto-detect categoría por hora, marcamos visualmente
@@ -7401,7 +7400,7 @@ function renderMealsList() {
             <div class="nut-meal-icon-svg">${catSvg[m.meal_category] || defaultSvg}</div>
             <div class="nut-meal-body">
               <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
-              <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
+              <div class="nut-meal-text">${escapeHtml((m.items_text || '').slice(0, 50)) || '—'}</div>
             </div>
             <div class="nut-meal-kcal">${m.total_kcal || 0} kcal</div>
             <button class="nut-meal-delete-btn" data-meal-delete="${safeId}" aria-label="Eliminar comida">
@@ -7816,10 +7815,7 @@ let _nutLastHydrationAt = 0;
 async function nutAddHydration(ml) {
   // Cooldown 800ms para prevenir double-tap accidental (toques fantasma del swipe en iOS)
   const now = Date.now();
-  if (now - _nutLastHydrationAt < 800) {
-    console.log('[NUT] hydration tap debounced');
-    return;
-  }
+  if (now - _nutLastHydrationAt < 800) return;
   _nutLastHydrationAt = now;
 
   // Optimistic update inmediato (UX rápido)
