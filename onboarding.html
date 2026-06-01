@@ -1732,6 +1732,365 @@
     font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
   }
 
+  /* ============== NUTRITION MODULE ============== */
+  .nut-screen {
+    background: #0a0e1a;
+    overflow-y: auto; overflow-x: hidden;
+  }
+  .nut-topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px 8px;
+    position: sticky; top: 0;
+    background: linear-gradient(180deg, rgba(10,14,26,0.95), rgba(10,14,26,0.85));
+    backdrop-filter: blur(20px);
+    z-index: 10;
+  }
+  .nut-back-btn {
+    display: flex; align-items: center; gap: 4px;
+    background: transparent; border: none;
+    color: #84CC16; font-size: 16px; font-weight: 600;
+    cursor: pointer; padding: 8px 4px;
+  }
+  .nut-back-btn svg { width: 22px; height: 22px; stroke-width: 2.5; }
+  .nut-title { font-size: 15px; font-weight: 700; color: white; }
+  .nut-action-btn {
+    background: transparent; border: none;
+    color: #84CC16; font-size: 16px; font-weight: 600;
+    cursor: pointer; padding: 8px 4px;
+  }
+
+  /* Onboarding nutricional (steps) */
+  .nut-onb-content {
+    padding: 24px 24px 120px;
+  }
+  .nut-onb-progress {
+    display: flex; gap: 4px; margin-bottom: 22px;
+  }
+  .nut-onb-progress-seg {
+    flex: 1; height: 3px; border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+  }
+  .nut-onb-progress-seg.active { background: #84CC16; }
+  .nut-onb-progress-seg.done { background: rgba(132,204,22,0.4); }
+  .nut-onb-eyebrow {
+    font-size: 11px; font-weight: 700; color: #84CC16;
+    letter-spacing: 2px; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .nut-onb-title {
+    font-size: 26px; font-weight: 800; color: white;
+    letter-spacing: -0.6px; line-height: 1.2; margin-bottom: 8px;
+  }
+  .nut-onb-hint {
+    font-size: 14px; color: #94A3B8;
+    line-height: 1.5; margin-bottom: 24px;
+  }
+  .nut-onb-option {
+    display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    margin-bottom: 8px; cursor: pointer;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nut-onb-option:active { transform: scale(0.985); }
+  .nut-onb-option.selected {
+    background: rgba(132,204,22,0.1);
+    border-color: rgba(132,204,22,0.5);
+  }
+  .nut-onb-option-icon {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+  }
+  .nut-onb-option-text { flex: 1; }
+  .nut-onb-option-title {
+    font-size: 15px; font-weight: 600; color: white;
+  }
+  .nut-onb-option-sub {
+    font-size: 12px; color: #94A3B8; margin-top: 2px;
+  }
+  .nut-onb-option-check { color: #84CC16; opacity: 0; transition: opacity 0.15s; }
+  .nut-onb-option.selected .nut-onb-option-check { opacity: 1; }
+
+  .nut-onb-field-row {
+    display: flex; gap: 12px; margin-bottom: 12px;
+  }
+  .nut-onb-field { flex: 1; }
+  .nut-onb-field-label {
+    font-size: 11px; font-weight: 700; color: #94A3B8;
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .nut-onb-field-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    color: white; font-size: 16px; font-weight: 500;
+    outline: none;
+  }
+  .nut-onb-field-input:focus {
+    border-color: rgba(132,204,22,0.5);
+    background: rgba(132,204,22,0.05);
+  }
+  .nut-onb-pills {
+    display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px;
+  }
+  .nut-onb-pill {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    color: #CBD5E1; font-size: 13px; font-weight: 600;
+    cursor: pointer; transition: all 0.12s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nut-onb-pill:active { transform: scale(0.95); }
+  .nut-onb-pill.selected {
+    background: rgba(132,204,22,0.15);
+    border-color: rgba(132,204,22,0.5);
+    color: #BEF264;
+  }
+
+  .nut-onb-continue {
+    position: fixed; bottom: 24px; left: 24px; right: 24px;
+    padding: 16px;
+    background: #84CC16; color: #0a0e1a;
+    border: none; border-radius: 14px;
+    font-size: 16px; font-weight: 700;
+    cursor: pointer; max-width: 380px; margin: 0 auto;
+    transition: opacity 0.15s ease;
+    z-index: 20;
+  }
+  .nut-onb-continue:disabled {
+    opacity: 0.35; cursor: not-allowed;
+  }
+
+  /* Results screen */
+  .nut-results-hero {
+    text-align: center; padding: 32px 24px 8px;
+  }
+  .nut-results-kcal {
+    font-size: 56px; font-weight: 800; color: white;
+    letter-spacing: -2px; line-height: 1;
+  }
+  .nut-results-kcal-label {
+    font-size: 13px; color: #94A3B8; font-weight: 600;
+    letter-spacing: 1px; text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .nut-results-macros {
+    display: flex; gap: 8px; padding: 24px 20px;
+  }
+  .nut-results-macro {
+    flex: 1; padding: 16px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px; text-align: center;
+  }
+  .nut-results-macro-icon { font-size: 20px; margin-bottom: 4px; }
+  .nut-results-macro-value {
+    font-size: 22px; font-weight: 800; color: white;
+    letter-spacing: -0.5px;
+  }
+  .nut-results-macro-label {
+    font-size: 11px; color: #94A3B8; font-weight: 600;
+    letter-spacing: 0.5px; text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .nut-results-rationale {
+    margin: 8px 24px 0;
+    padding: 16px;
+    background: rgba(132,204,22,0.05);
+    border: 1px solid rgba(132,204,22,0.15);
+    border-radius: 14px;
+    font-size: 13px; color: #CBD5E1; line-height: 1.6;
+  }
+  .nut-results-rationale strong { color: white; }
+
+  /* Main dashboard */
+  .nut-dash {
+    padding: 12px 16px 96px;
+  }
+  .nut-dash-hero {
+    text-align: center; padding: 16px 8px 24px;
+  }
+  .nut-dash-kcal-row {
+    display: flex; align-items: baseline; justify-content: center; gap: 6px;
+  }
+  .nut-dash-kcal-current {
+    font-size: 44px; font-weight: 800; color: white;
+    letter-spacing: -1.5px; line-height: 1;
+  }
+  .nut-dash-kcal-target {
+    font-size: 18px; color: #64748B; font-weight: 600;
+  }
+  .nut-dash-kcal-label {
+    font-size: 11px; color: #94A3B8; font-weight: 600;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-top: 6px;
+  }
+  .nut-dash-kcal-bar {
+    width: 100%; height: 6px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px; margin: 14px 0 4px; overflow: hidden;
+  }
+  .nut-dash-kcal-bar-fill {
+    height: 100%; background: linear-gradient(90deg, #84CC16, #BEF264);
+    border-radius: 3px; transition: width 0.4s ease;
+  }
+  .nut-dash-macros {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px; padding: 16px; margin-bottom: 12px;
+  }
+  .nut-dash-macro-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 8px 0;
+  }
+  .nut-dash-macro-row + .nut-dash-macro-row { border-top: 1px solid rgba(255,255,255,0.04); }
+  .nut-dash-macro-icon { font-size: 18px; width: 24px; }
+  .nut-dash-macro-name {
+    font-size: 13px; font-weight: 600; color: #CBD5E1; width: 80px;
+  }
+  .nut-dash-macro-bar {
+    flex: 1; height: 5px; background: rgba(255,255,255,0.06);
+    border-radius: 3px; overflow: hidden;
+  }
+  .nut-dash-macro-bar-fill {
+    height: 100%; border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .nut-dash-macro-fill-p { background: #34D399; }
+  .nut-dash-macro-fill-c { background: #F59E0B; }
+  .nut-dash-macro-fill-f { background: #EC4899; }
+  .nut-dash-macro-value {
+    font-size: 12px; color: #94A3B8; font-weight: 600;
+    min-width: 70px; text-align: right;
+  }
+
+  .nut-dash-water {
+    background: rgba(99,102,241,0.06);
+    border: 1px solid rgba(99,102,241,0.15);
+    border-radius: 18px; padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .nut-dash-water-icon { font-size: 22px; }
+  .nut-dash-water-text { flex: 1; }
+  .nut-dash-water-value {
+    font-size: 18px; font-weight: 700; color: white;
+  }
+  .nut-dash-water-target {
+    font-size: 12px; color: #94A3B8; font-weight: 500;
+  }
+  .nut-dash-water-btn {
+    background: rgba(99,102,241,0.2);
+    border: 1px solid rgba(99,102,241,0.4);
+    color: #A5B4FC; border-radius: 12px;
+    padding: 8px 12px; font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nut-dash-water-btn:active { transform: scale(0.95); }
+
+  .nut-dash-section-title {
+    font-size: 11px; font-weight: 700; color: #64748B;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    padding: 16px 4px 8px;
+  }
+  .nut-meal-row {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 12px 14px;
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 8px;
+  }
+  .nut-meal-icon { font-size: 22px; }
+  .nut-meal-body { flex: 1; min-width: 0; }
+  .nut-meal-title {
+    font-size: 14px; font-weight: 600; color: white;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .nut-meal-cat {
+    font-size: 10px; color: #94A3B8; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .nut-meal-text {
+    font-size: 12px; color: #94A3B8; margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nut-meal-kcal {
+    font-size: 14px; font-weight: 700; color: #BEF264;
+  }
+  .nut-meal-empty {
+    text-align: center; padding: 24px 16px;
+    color: #64748B; font-size: 13px;
+  }
+
+  .nut-add-btn {
+    position: fixed; bottom: 88px; right: 20px;
+    width: 54px; height: 54px;
+    background: #84CC16; color: #0a0e1a;
+    border: none; border-radius: 50%;
+    font-size: 28px; font-weight: 800;
+    box-shadow: 0 8px 24px rgba(132,204,22,0.35);
+    cursor: pointer; z-index: 50;
+    display: flex; align-items: center; justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+  .nut-add-btn:active { transform: scale(0.92); }
+
+  /* Log meal form */
+  .nut-log-form {
+    padding: 20px 24px 120px;
+  }
+  .nut-log-cat-row {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 16px;
+  }
+  .nut-log-cat-pill {
+    padding: 7px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 999px;
+    color: #CBD5E1; font-size: 12px; font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nut-log-cat-pill.selected {
+    background: rgba(132,204,22,0.15);
+    border-color: rgba(132,204,22,0.5);
+    color: #BEF264;
+  }
+  .nut-log-textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    color: white; font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    resize: vertical; min-height: 70px;
+    margin-bottom: 4px;
+  }
+  .nut-log-textarea:focus {
+    border-color: rgba(132,204,22,0.5);
+  }
+  .nut-log-textarea-hint {
+    font-size: 12px; color: #64748B; margin: 4px 0 16px;
+  }
+  .nut-log-macros-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 16px;
+  }
+
   /* ============== PROFILE SCREEN (Apple-style) ============== */
   .profile-screen {
     background: #0a0e1a;
@@ -3300,6 +3659,390 @@
     <div class="profile-bottom-spacer"></div>
   </div>
 
+  <!-- ============== NUTRITION MODULE — Onboarding Step 1: Objetivo ============== -->
+  <div class="screen nut-screen" data-step="nut-onb-1">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('app')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Hoy
+      </button>
+      <div class="nut-title">Nutrition</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 1 de 4</div>
+      <div class="nut-onb-title">¿Qué querés lograr?</div>
+      <div class="nut-onb-hint">Elegí tu objetivo principal. Podés cambiarlo después desde tu perfil.</div>
+
+      <div class="nut-onb-option" data-goal="fat_loss" onclick="nutSelectGoal('fat_loss', this)">
+        <div class="nut-onb-option-icon">🔥</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Pérdida de grasa</div>
+          <div class="nut-onb-option-sub">Déficit calórico controlado · preserva masa muscular</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-goal="muscle_gain" onclick="nutSelectGoal('muscle_gain', this)">
+        <div class="nut-onb-option-icon">💪</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Aumento de masa</div>
+          <div class="nut-onb-option-sub">Surplus calórico moderado · maximiza hipertrofia</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-goal="recomposition" onclick="nutSelectGoal('recomposition', this)">
+        <div class="nut-onb-option-icon">⚖️</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Recomposición</div>
+          <div class="nut-onb-option-sub">Perder grasa y ganar músculo en simultáneo</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-goal="maintenance" onclick="nutSelectGoal('maintenance', this)">
+        <div class="nut-onb-option-icon">🌿</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Mantenimiento + salud</div>
+          <div class="nut-onb-option-sub">Energía estable · hábitos sostenibles</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-goal="performance" onclick="nutSelectGoal('performance', this)">
+        <div class="nut-onb-option-icon">⚡</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Performance deportiva</div>
+          <div class="nut-onb-option-sub">Optimizar carbs alrededor de entrenamientos</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-goal="longevity" onclick="nutSelectGoal('longevity', this)">
+        <div class="nut-onb-option-icon">🌱</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Longevidad</div>
+          <div class="nut-onb-option-sub">Salud metabólica · low inflammation</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-onb-1-btn" disabled onclick="nutGoToStep(2)">Continuar</button>
+  </div>
+
+  <!-- ============== NUTRITION — Onboarding Step 2: Tu cuerpo ============== -->
+  <div class="screen nut-screen" data-step="nut-onb-2">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="nutGoToStep(1)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Nutrition</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 2 de 4</div>
+      <div class="nut-onb-title">Tu cuerpo hoy</div>
+      <div class="nut-onb-hint">Necesitamos estos datos para calcular tu gasto calórico con la fórmula Mifflin-St Jeor.</div>
+
+      <div class="nut-onb-field-row">
+        <div class="nut-onb-field">
+          <div class="nut-onb-field-label">Peso (kg)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-weight" placeholder="75" oninput="nutValidateStep2()"/>
+        </div>
+        <div class="nut-onb-field">
+          <div class="nut-onb-field-label">Altura (cm)</div>
+          <input type="number" inputmode="numeric" class="nut-onb-field-input" id="nut-height" placeholder="178" oninput="nutValidateStep2()"/>
+        </div>
+      </div>
+      <div style="margin-top: 10px;">
+        <div class="nut-onb-field-label">% Grasa corporal (estimado)</div>
+        <div class="nut-onb-pills">
+          <div class="nut-onb-pill" data-bf="10" onclick="nutSelectBF(10, this)">~10%</div>
+          <div class="nut-onb-pill" data-bf="13" onclick="nutSelectBF(13, this)">~13%</div>
+          <div class="nut-onb-pill" data-bf="16" onclick="nutSelectBF(16, this)">~16%</div>
+          <div class="nut-onb-pill" data-bf="20" onclick="nutSelectBF(20, this)">~20%</div>
+          <div class="nut-onb-pill" data-bf="25" onclick="nutSelectBF(25, this)">~25%</div>
+          <div class="nut-onb-pill" data-bf="30" onclick="nutSelectBF(30, this)">~30%</div>
+          <div class="nut-onb-pill" data-bf="35" onclick="nutSelectBF(35, this)">35%+</div>
+        </div>
+        <div style="font-size:12px;color:#64748B;margin-top:8px;line-height:1.5;">Aproximación visual. Para precisión exacta usá InBody o DXA.</div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-onb-2-btn" disabled onclick="nutGoToStep(3)">Continuar</button>
+  </div>
+
+  <!-- ============== NUTRITION — Onboarding Step 3: Actividad ============== -->
+  <div class="screen nut-screen" data-step="nut-onb-3">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="nutGoToStep(2)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Nutrition</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 3 de 4</div>
+      <div class="nut-onb-title">Tu actividad típica</div>
+      <div class="nut-onb-hint">Esto define tu activity factor. Si conectás un wearable después, usamos tu gasto real.</div>
+
+      <div class="nut-onb-option" data-act="sedentary" onclick="nutSelectActivity('sedentary', this)">
+        <div class="nut-onb-option-icon">🪑</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Sedentario</div>
+          <div class="nut-onb-option-sub">Trabajo de escritorio, poco movimiento</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-act="light" onclick="nutSelectActivity('light', this)">
+        <div class="nut-onb-option-icon">🚶</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Ligero</div>
+          <div class="nut-onb-option-sub">Camina diario, ejercicio 1-3 veces/semana</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-act="moderate" onclick="nutSelectActivity('moderate', this)">
+        <div class="nut-onb-option-icon">🏃</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Moderado</div>
+          <div class="nut-onb-option-sub">Ejercicio 3-5 veces/semana</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-act="high" onclick="nutSelectActivity('high', this)">
+        <div class="nut-onb-option-icon">🏋️</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Alto</div>
+          <div class="nut-onb-option-sub">Ejercicio intenso 6-7 veces/semana</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-act="athlete" onclick="nutSelectActivity('athlete', this)">
+        <div class="nut-onb-option-icon">🏆</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Atleta</div>
+          <div class="nut-onb-option-sub">Múltiples sesiones diarias, deporte competitivo</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+
+      <div style="margin-top:18px;">
+        <div class="nut-onb-field-label">Comidas al día</div>
+        <div class="nut-onb-pills">
+          <div class="nut-onb-pill" data-meals="3" onclick="nutSelectMeals(3, this)">3</div>
+          <div class="nut-onb-pill" data-meals="4" onclick="nutSelectMeals(4, this)">4</div>
+          <div class="nut-onb-pill" data-meals="5" onclick="nutSelectMeals(5, this)">5+</div>
+        </div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-onb-3-btn" disabled onclick="nutGoToStep(4)">Continuar</button>
+  </div>
+
+  <!-- ============== NUTRITION — Onboarding Step 4: Restricciones ============== -->
+  <div class="screen nut-screen" data-step="nut-onb-4">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="nutGoToStep(3)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Nutrition</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 4 de 4 · Opcional</div>
+      <div class="nut-onb-title">¿Algo importante que sepamos?</div>
+      <div class="nut-onb-hint">Personalizamos tus recomendaciones según esto. Podés saltar este paso.</div>
+
+      <div class="nut-onb-field-label">Alergias / Intolerancias</div>
+      <div class="nut-onb-pills" id="nut-allergies-pills">
+        <div class="nut-onb-pill" data-allergy="lactose" onclick="nutTogglePill(this, 'allergies')">Lácteos</div>
+        <div class="nut-onb-pill" data-allergy="gluten" onclick="nutTogglePill(this, 'allergies')">Gluten</div>
+        <div class="nut-onb-pill" data-allergy="nuts" onclick="nutTogglePill(this, 'allergies')">Frutos secos</div>
+        <div class="nut-onb-pill" data-allergy="seafood" onclick="nutTogglePill(this, 'allergies')">Mariscos</div>
+        <div class="nut-onb-pill" data-allergy="eggs" onclick="nutTogglePill(this, 'allergies')">Huevos</div>
+        <div class="nut-onb-pill" data-allergy="soy" onclick="nutTogglePill(this, 'allergies')">Soya</div>
+      </div>
+
+      <div class="nut-onb-field-label" style="margin-top:18px;">Preferencias dietéticas</div>
+      <div class="nut-onb-pills" id="nut-prefs-pills">
+        <div class="nut-onb-pill" data-pref="vegetarian" onclick="nutTogglePill(this, 'prefs', true)">Vegetariano</div>
+        <div class="nut-onb-pill" data-pref="vegan" onclick="nutTogglePill(this, 'prefs', true)">Vegano</div>
+        <div class="nut-onb-pill" data-pref="keto" onclick="nutTogglePill(this, 'prefs', true)">Keto</div>
+        <div class="nut-onb-pill" data-pref="paleo" onclick="nutTogglePill(this, 'prefs', true)">Paleo</div>
+        <div class="nut-onb-pill" data-pref="mediterranean" onclick="nutTogglePill(this, 'prefs', true)">Mediterránea</div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" onclick="nutCalculateAndShow()">Calcular mis targets →</button>
+  </div>
+
+  <!-- ============== NUTRITION — Results screen ============== -->
+  <div class="screen nut-screen" data-step="nut-results">
+    <div class="nut-topbar">
+      <div style="width:56px;"></div>
+      <div class="nut-title">Tu plan</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-results-hero">
+      <div style="font-size:11px;font-weight:700;color:#84CC16;letter-spacing:2px;text-transform:uppercase;margin-bottom:14px;">✨ Tu plan está listo</div>
+      <div class="nut-results-kcal" id="nut-results-kcal">—</div>
+      <div class="nut-results-kcal-label">kcal por día</div>
+    </div>
+    <div class="nut-results-macros">
+      <div class="nut-results-macro">
+        <div class="nut-results-macro-icon">💪</div>
+        <div class="nut-results-macro-value" id="nut-results-p">—g</div>
+        <div class="nut-results-macro-label">Proteína</div>
+      </div>
+      <div class="nut-results-macro">
+        <div class="nut-results-macro-icon">🌾</div>
+        <div class="nut-results-macro-value" id="nut-results-c">—g</div>
+        <div class="nut-results-macro-label">Carbs</div>
+      </div>
+      <div class="nut-results-macro">
+        <div class="nut-results-macro-icon">🥑</div>
+        <div class="nut-results-macro-value" id="nut-results-f">—g</div>
+        <div class="nut-results-macro-label">Grasas</div>
+      </div>
+    </div>
+    <div class="nut-results-rationale" id="nut-results-rationale"></div>
+    <div style="padding: 24px;">
+      <div style="font-size: 12px; color: #64748B; line-height: 1.6; margin-bottom: 16px;">
+        Estos targets son aproximaciones basadas en fórmulas estándar (Mifflin-St Jeor + ACSM). Para personalización exacta, consultá un nutricionista certificado o conectá tu wearable para usar gasto real.
+      </div>
+    </div>
+    <button class="nut-onb-continue" onclick="nutFinishOnboarding()">Entendido, empezar →</button>
+  </div>
+
+  <!-- ============== NUTRITION — Main dashboard ============== -->
+  <div class="screen nut-screen" data-step="nutrition">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('app')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Hoy
+      </button>
+      <div class="nut-title">Nutrition</div>
+      <button class="nut-action-btn" onclick="nutOpenSettings()">⚙</button>
+    </div>
+    <div class="nut-dash">
+      <div class="nut-dash-hero">
+        <div class="nut-dash-kcal-row">
+          <span class="nut-dash-kcal-current" id="nut-dash-kcal-current">0</span>
+          <span class="nut-dash-kcal-target">/ <span id="nut-dash-kcal-target">—</span> kcal</span>
+        </div>
+        <div class="nut-dash-kcal-label" id="nut-dash-kcal-pct">0% del día</div>
+        <div class="nut-dash-kcal-bar"><div class="nut-dash-kcal-bar-fill" id="nut-dash-kcal-fill" style="width:0%"></div></div>
+      </div>
+
+      <div class="nut-dash-macros">
+        <div class="nut-dash-macro-row">
+          <div class="nut-dash-macro-icon">💪</div>
+          <div class="nut-dash-macro-name">Proteína</div>
+          <div class="nut-dash-macro-bar"><div class="nut-dash-macro-bar-fill nut-dash-macro-fill-p" id="nut-dash-p-fill" style="width:0%"></div></div>
+          <div class="nut-dash-macro-value" id="nut-dash-p-value">0 / 0g</div>
+        </div>
+        <div class="nut-dash-macro-row">
+          <div class="nut-dash-macro-icon">🌾</div>
+          <div class="nut-dash-macro-name">Carbs</div>
+          <div class="nut-dash-macro-bar"><div class="nut-dash-macro-bar-fill nut-dash-macro-fill-c" id="nut-dash-c-fill" style="width:0%"></div></div>
+          <div class="nut-dash-macro-value" id="nut-dash-c-value">0 / 0g</div>
+        </div>
+        <div class="nut-dash-macro-row">
+          <div class="nut-dash-macro-icon">🥑</div>
+          <div class="nut-dash-macro-name">Grasas</div>
+          <div class="nut-dash-macro-bar"><div class="nut-dash-macro-bar-fill nut-dash-macro-fill-f" id="nut-dash-f-fill" style="width:0%"></div></div>
+          <div class="nut-dash-macro-value" id="nut-dash-f-value">0 / 0g</div>
+        </div>
+      </div>
+
+      <div class="nut-dash-water">
+        <div class="nut-dash-water-icon">💧</div>
+        <div class="nut-dash-water-text">
+          <div class="nut-dash-water-value"><span id="nut-water-current">0</span> ml</div>
+          <div class="nut-dash-water-target">de <span id="nut-water-target">2500</span> ml</div>
+        </div>
+        <button class="nut-dash-water-btn" onclick="nutAddHydration(250)">+250 ml</button>
+      </div>
+
+      <div class="nut-dash-section-title">Comidas de hoy</div>
+      <div id="nut-meals-list">
+        <div class="nut-meal-empty">No has logueado comidas todavía. Tappeá el botón verde abajo derecha para empezar.</div>
+      </div>
+    </div>
+    <button class="nut-add-btn" onclick="nutOpenMealLog()" title="Loguear comida">+</button>
+  </div>
+
+  <!-- ============== NUTRITION — Meal log form ============== -->
+  <div class="screen nut-screen" data-step="nut-log">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('nutrition')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title">Nueva comida</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-log-form">
+      <div class="nut-onb-field-label">Categoría</div>
+      <div class="nut-log-cat-row" id="nut-log-cat-row">
+        <div class="nut-log-cat-pill" data-cat="breakfast" onclick="nutLogSelectCat('breakfast', this)">🍳 Desayuno</div>
+        <div class="nut-log-cat-pill" data-cat="snack_am" onclick="nutLogSelectCat('snack_am', this)">🍎 Snack mañana</div>
+        <div class="nut-log-cat-pill" data-cat="lunch" onclick="nutLogSelectCat('lunch', this)">🥗 Almuerzo</div>
+        <div class="nut-log-cat-pill" data-cat="snack_pm" onclick="nutLogSelectCat('snack_pm', this)">🥜 Snack tarde</div>
+        <div class="nut-log-cat-pill" data-cat="dinner" onclick="nutLogSelectCat('dinner', this)">🌙 Cena</div>
+        <div class="nut-log-cat-pill" data-cat="post_workout" onclick="nutLogSelectCat('post_workout', this)">⚡ Post-workout</div>
+      </div>
+
+      <div class="nut-onb-field-label" style="margin-top:16px;">¿Qué comiste?</div>
+      <textarea class="nut-log-textarea" id="nut-log-items" placeholder="Ej: pollo a la plancha, arroz, ensalada" oninput="nutLogValidate()"></textarea>
+      <div class="nut-log-textarea-hint">Describilo en una línea. En el futuro la IA va a estimar los macros desde la foto. Por ahora ingresalos a mano abajo.</div>
+
+      <div class="nut-onb-field-label" style="margin-top:8px;">Calorías y macros</div>
+      <div class="nut-log-macros-row">
+        <div class="nut-onb-field">
+          <div class="nut-onb-field-label" style="font-size:10px;">Kcal</div>
+          <input type="number" inputmode="numeric" class="nut-onb-field-input" id="nut-log-kcal" placeholder="0" oninput="nutLogValidate()"/>
+        </div>
+        <div class="nut-onb-field">
+          <div class="nut-onb-field-label" style="font-size:10px;">Proteína (g)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-log-p" placeholder="0" oninput="nutLogValidate()"/>
+        </div>
+      </div>
+      <div class="nut-log-macros-row">
+        <div class="nut-onb-field">
+          <div class="nut-onb-field-label" style="font-size:10px;">Carbs (g)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-log-c" placeholder="0" oninput="nutLogValidate()"/>
+        </div>
+        <div class="nut-onb-field">
+          <div class="nut-onb-field-label" style="font-size:10px;">Grasas (g)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-log-f" placeholder="0" oninput="nutLogValidate()"/>
+        </div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-log-save-btn" disabled onclick="nutSaveMealLog()">Guardar comida</button>
+  </div>
+
   <!-- ============== PHOTO CROPPER MODAL ============== -->
   <div class="cropper-overlay" id="cropper-overlay">
     <div class="cropper-topbar">
@@ -3472,7 +4215,8 @@ function goStep(n) {
   state.step = n;
   // Persist onboarding progress (sobrevive a confirmar email en otra pestaña)
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
-  const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify', 0];
+  const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
+    'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-results', 'nutrition', 'nut-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -4775,6 +5519,11 @@ function openModule(name) {
     openProfile();
     return;
   }
+  // Nutrition: si no hay targets → onboarding del módulo. Si hay → dashboard.
+  if (name === 'nutrition') {
+    openNutritionModule();
+    return;
+  }
   const labels = {
     readiness: 'Readiness · Recovery',
     workout: 'Workout',
@@ -4788,6 +5537,385 @@ function openModule(name) {
   banner.textContent = `${labels[name] || name} · próximamente`;
   document.body.appendChild(banner);
   setTimeout(() => { if (banner.parentNode) banner.remove(); }, 1600);
+}
+
+// =============================================
+// NUTRITION MODULE — onboarding + targets + log
+// =============================================
+const nutState = {
+  goal: null,
+  weight: null,
+  height: null,
+  bodyFat: null,
+  activity: null,
+  mealsPerDay: null,
+  allergies: [],
+  prefs: [],
+  targets: null,           // { kcal, p, c, f, water_ml }
+  todayMeals: [],
+  todayHydrationMl: 0,
+  selectedLogCategory: null,
+};
+
+const ACTIVITY_FACTOR = {
+  sedentary: 1.2, light: 1.375, moderate: 1.55, high: 1.725, athlete: 1.9,
+};
+const GOAL_ADJUST = {
+  fat_loss: 0.80, recomposition: 0.90, maintenance: 1.0,
+  muscle_gain: 1.10, performance: 1.0, longevity: 0.95,
+};
+const PROTEIN_PER_KG = {
+  fat_loss: 2.2, muscle_gain: 1.8, recomposition: 2.0,
+  maintenance: 1.4, performance: 1.8, longevity: 1.4,
+};
+
+async function openNutritionModule() {
+  // Cargar targets si existen. Si no, mandar a onboarding nutricional.
+  const targets = await nutLoadTargets();
+  if (!targets) {
+    goStep('nut-onb-1');
+    return;
+  }
+  nutState.targets = targets;
+  await nutLoadTodayData();
+  nutRenderDashboard();
+  goStep('nutrition');
+}
+
+// --- ONBOARDING NAVIGATION ---
+function nutGoToStep(n) {
+  goStep('nut-onb-' + n);
+}
+
+function nutSelectGoal(goal, el) {
+  nutState.goal = goal;
+  document.querySelectorAll('[data-step="nut-onb-1"] .nut-onb-option').forEach(o => {
+    o.classList.toggle('selected', o === el);
+  });
+  document.getElementById('nut-onb-1-btn').disabled = false;
+}
+
+function nutSelectBF(value, el) {
+  nutState.bodyFat = value;
+  document.querySelectorAll('[data-step="nut-onb-2"] [data-bf]').forEach(p => {
+    p.classList.toggle('selected', p === el);
+  });
+  nutValidateStep2();
+}
+
+function nutValidateStep2() {
+  const w = parseFloat(document.getElementById('nut-weight').value);
+  const h = parseFloat(document.getElementById('nut-height').value);
+  nutState.weight = (w > 30 && w < 250) ? w : null;
+  nutState.height = (h > 120 && h < 230) ? h : null;
+  const valid = nutState.weight && nutState.height && nutState.bodyFat;
+  document.getElementById('nut-onb-2-btn').disabled = !valid;
+}
+
+function nutSelectActivity(act, el) {
+  nutState.activity = act;
+  document.querySelectorAll('[data-step="nut-onb-3"] [data-act]').forEach(o => {
+    o.classList.toggle('selected', o === el);
+  });
+  nutValidateStep3();
+}
+
+function nutSelectMeals(n, el) {
+  nutState.mealsPerDay = n;
+  document.querySelectorAll('[data-step="nut-onb-3"] [data-meals]').forEach(p => {
+    p.classList.toggle('selected', p === el);
+  });
+  nutValidateStep3();
+}
+
+function nutValidateStep3() {
+  const valid = nutState.activity && nutState.mealsPerDay;
+  document.getElementById('nut-onb-3-btn').disabled = !valid;
+}
+
+function nutTogglePill(el, kind, single) {
+  if (single) {
+    // Solo uno seleccionable (prefs)
+    const isSel = el.classList.contains('selected');
+    el.parentNode.querySelectorAll('.nut-onb-pill').forEach(p => p.classList.remove('selected'));
+    if (!isSel) el.classList.add('selected');
+  } else {
+    el.classList.toggle('selected');
+  }
+  // Actualizar state
+  if (kind === 'allergies') {
+    nutState.allergies = Array.from(document.querySelectorAll('#nut-allergies-pills .selected')).map(p => p.dataset.allergy);
+  } else if (kind === 'prefs') {
+    nutState.prefs = Array.from(document.querySelectorAll('#nut-prefs-pills .selected')).map(p => p.dataset.pref);
+  }
+}
+
+// --- CÁLCULO DE TARGETS (Mifflin-St Jeor) ---
+function nutCalculateTargets() {
+  const sex = state.sex || 'm';
+  const age = state.birthdate ? calcAgeFromBirthdate(state.birthdate) : 30;
+  const w = nutState.weight;
+  const h = nutState.height;
+  // RMR Mifflin-St Jeor
+  const rmr = sex === 'f'
+    ? (10 * w + 6.25 * h - 5 * age - 161)
+    : (10 * w + 6.25 * h - 5 * age + 5);
+  const factor = ACTIVITY_FACTOR[nutState.activity] || 1.55;
+  const tdee = rmr * factor;
+  const goalAdjust = GOAL_ADJUST[nutState.goal] || 1.0;
+  const kcal = Math.round(tdee * goalAdjust);
+  // Proteína: g por kg peso magro (LBM = peso × (1 - bf/100))
+  const lbm = w * (1 - (nutState.bodyFat || 20) / 100);
+  const proteinTarget = nutState.goal === 'fat_loss' || nutState.goal === 'recomposition' ? PROTEIN_PER_KG[nutState.goal] * lbm : PROTEIN_PER_KG[nutState.goal] * w;
+  const protein_g = Math.round(proteinTarget);
+  // Grasa: 25-30% calorías
+  const fat_g = Math.round((kcal * 0.27) / 9);
+  // Carbs: resto
+  const carbs_g = Math.max(0, Math.round((kcal - protein_g * 4 - fat_g * 9) / 4));
+  // Agua: 35 ml/kg
+  const water_ml = Math.round(w * 35);
+  return { rmr: Math.round(rmr), tdee: Math.round(tdee), kcal, protein_g, carbs_g, fat_g, water_ml };
+}
+
+async function nutCalculateAndShow() {
+  const t = nutCalculateTargets();
+  nutState.targets = t;
+  // Llenar pantalla de resultados
+  document.getElementById('nut-results-kcal').textContent = t.kcal;
+  document.getElementById('nut-results-p').textContent = t.protein_g + 'g';
+  document.getElementById('nut-results-c').textContent = t.carbs_g + 'g';
+  document.getElementById('nut-results-f').textContent = t.fat_g + 'g';
+  const goalLabels = { fat_loss: 'pérdida de grasa', muscle_gain: 'aumento de masa', recomposition: 'recomposición', maintenance: 'mantenimiento', performance: 'performance', longevity: 'longevidad' };
+  // Proteína por kg: LBM si fat_loss/recomp, total weight para los demás
+  const isLbm = nutState.goal === 'fat_loss' || nutState.goal === 'recomposition';
+  const basis = isLbm ? (nutState.weight * (1 - (nutState.bodyFat || 20) / 100)) : nutState.weight;
+  const basisLabel = isLbm ? 'kg de masa magra' : 'kg de peso';
+  const proteinPerKg = (t.protein_g / basis).toFixed(1);
+  const rationale = `Basado en <strong>Mifflin-St Jeor RMR ${t.rmr} kcal</strong>, ajustado por actividad <strong>${nutState.activity}</strong> (TDEE ${t.tdee} kcal) y un objetivo de <strong>${goalLabels[nutState.goal] || nutState.goal}</strong>. Tu proteína está optimizada con <strong>${proteinPerKg}g por ${basisLabel}</strong> según ACSM 2024.`;
+  document.getElementById('nut-results-rationale').innerHTML = rationale;
+  goStep('nut-results');
+}
+
+async function nutFinishOnboarding() {
+  // Persistir profile + targets en Supabase
+  const t = nutState.targets;
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await sb.from('profiles').update({
+        height_cm: nutState.height,
+        weight_kg: nutState.weight,
+        body_fat_pct: nutState.bodyFat,
+        activity_level: nutState.activity,
+        nutrition_goal: nutState.goal,
+        meals_per_day: nutState.mealsPerDay,
+        dietary_restrictions: nutState.allergies,
+        dietary_preferences: nutState.prefs,
+      }).eq('id', user.id);
+      // Insertar targets
+      await sb.from('nutrition_targets').insert({
+        user_id: user.id,
+        kcal: t.kcal,
+        protein_g: t.protein_g,
+        carbs_g: t.carbs_g,
+        fat_g: t.fat_g,
+        water_ml: t.water_ml,
+      });
+    }
+  } catch (e) { console.warn('[NUT] save onboarding failed:', e); }
+  await nutLoadTodayData();
+  nutRenderDashboard();
+  goStep('nutrition');
+}
+
+// --- LOAD TARGETS + TODAY DATA ---
+async function nutLoadTargets() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return null;
+    const url = `${SUPABASE_URL}/rest/v1/nutrition_targets?user_id=eq.${session.user.id}&active=eq.true&order=computed_at.desc&limit=1`;
+    const resp = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!resp.ok) return null;
+    const rows = await resp.json();
+    if (!rows.length) return null;
+    const r = rows[0];
+    return { kcal: r.kcal, protein_g: r.protein_g, carbs_g: r.carbs_g, fat_g: r.fat_g, water_ml: r.water_ml };
+  } catch (e) {
+    console.warn('[NUT] loadTargets error:', e);
+    return null;
+  }
+}
+
+async function nutLoadTodayData() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const startISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+    const headers = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' };
+    // Meals
+    const mealsResp = await fetch(`${SUPABASE_URL}/rest/v1/meal_logs?user_id=eq.${session.user.id}&ts=gte.${startISO}&order=ts.asc`, { headers });
+    nutState.todayMeals = mealsResp.ok ? await mealsResp.json() : [];
+    // Hydration
+    const hydResp = await fetch(`${SUPABASE_URL}/rest/v1/hydration_logs?user_id=eq.${session.user.id}&ts=gte.${startISO}`, { headers });
+    const hydRows = hydResp.ok ? await hydResp.json() : [];
+    nutState.todayHydrationMl = hydRows.reduce((s, r) => s + (r.ml || 0), 0);
+  } catch (e) { console.warn('[NUT] loadTodayData error:', e); }
+}
+
+// --- RENDER DASHBOARD ---
+function nutRenderDashboard() {
+  const t = nutState.targets;
+  if (!t) return;
+  const meals = nutState.todayMeals || [];
+  const totals = meals.reduce((a, m) => ({
+    kcal: a.kcal + (m.total_kcal || 0),
+    p: a.p + parseFloat(m.total_protein_g || 0),
+    c: a.c + parseFloat(m.total_carbs_g || 0),
+    f: a.f + parseFloat(m.total_fat_g || 0),
+  }), { kcal: 0, p: 0, c: 0, f: 0 });
+
+  // Kcal hero
+  document.getElementById('nut-dash-kcal-current').textContent = totals.kcal;
+  document.getElementById('nut-dash-kcal-target').textContent = t.kcal;
+  const pct = Math.min(100, Math.round((totals.kcal / t.kcal) * 100));
+  document.getElementById('nut-dash-kcal-pct').textContent = pct + '% del día';
+  document.getElementById('nut-dash-kcal-fill').style.width = pct + '%';
+
+  // Macros
+  setMacroBar('p', totals.p, t.protein_g);
+  setMacroBar('c', totals.c, t.carbs_g);
+  setMacroBar('f', totals.f, t.fat_g);
+
+  // Hydration
+  document.getElementById('nut-water-current').textContent = nutState.todayHydrationMl;
+  document.getElementById('nut-water-target').textContent = t.water_ml;
+
+  // Meals list
+  renderMealsList();
+}
+
+function setMacroBar(key, value, target) {
+  const fill = document.getElementById('nut-dash-' + key + '-fill');
+  const valueEl = document.getElementById('nut-dash-' + key + '-value');
+  if (!fill || !valueEl) return;
+  const pct = target > 0 ? Math.min(100, Math.round((value / target) * 100)) : 0;
+  fill.style.width = pct + '%';
+  valueEl.textContent = Math.round(value) + ' / ' + target + 'g';
+}
+
+function renderMealsList() {
+  const el = document.getElementById('nut-meals-list');
+  const meals = nutState.todayMeals || [];
+  if (!meals.length) {
+    el.innerHTML = '<div class="nut-meal-empty">No has logueado comidas todavía. Tappeá el botón verde abajo derecha para empezar.</div>';
+    return;
+  }
+  const catIcon = { breakfast: '🍳', snack_am: '🍎', lunch: '🥗', snack_pm: '🥜', dinner: '🌙', post_workout: '⚡' };
+  const catLabel = { breakfast: 'Desayuno', snack_am: 'Snack AM', lunch: 'Almuerzo', snack_pm: 'Snack PM', dinner: 'Cena', post_workout: 'Post-workout' };
+  el.innerHTML = meals.map(m => {
+    const t = new Date(m.ts);
+    const time = t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+    return `
+      <div class="nut-meal-row">
+        <div class="nut-meal-icon">${catIcon[m.meal_category] || '🍽️'}</div>
+        <div class="nut-meal-body">
+          <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
+          <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
+        </div>
+        <div class="nut-meal-kcal">${m.total_kcal || 0} kcal</div>
+      </div>
+    `;
+  }).join('');
+}
+
+// --- HYDRATION ---
+async function nutAddHydration(ml) {
+  nutState.todayHydrationMl += ml;
+  document.getElementById('nut-water-current').textContent = nutState.todayHydrationMl;
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await sb.from('hydration_logs').insert({ user_id: user.id, ml });
+    }
+  } catch (e) { console.warn('[NUT] hydration save failed:', e); }
+}
+
+// --- MEAL LOG ---
+function nutOpenMealLog() {
+  // Reset form
+  ['nut-log-items', 'nut-log-kcal', 'nut-log-p', 'nut-log-c', 'nut-log-f'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.querySelectorAll('.nut-log-cat-pill').forEach(p => p.classList.remove('selected'));
+  nutState.selectedLogCategory = null;
+  // Auto-seleccionar categoría según hora del día
+  const h = new Date().getHours();
+  let cat;
+  if (h >= 5 && h < 10) cat = 'breakfast';
+  else if (h >= 10 && h < 12) cat = 'snack_am';
+  else if (h >= 12 && h < 15) cat = 'lunch';
+  else if (h >= 15 && h < 18) cat = 'snack_pm';
+  else if (h >= 18 && h < 22) cat = 'dinner';
+  else cat = 'snack_pm'; // 22:00-04:59 default sin auto-asumir desayuno
+  const catPill = document.querySelector(`.nut-log-cat-pill[data-cat="${cat}"]`);
+  if (catPill) {
+    catPill.classList.add('selected');
+    nutState.selectedLogCategory = cat;
+  }
+  document.getElementById('nut-log-save-btn').disabled = true;
+  goStep('nut-log');
+}
+
+function nutLogSelectCat(cat, el) {
+  nutState.selectedLogCategory = cat;
+  document.querySelectorAll('.nut-log-cat-pill').forEach(p => p.classList.toggle('selected', p === el));
+  nutLogValidate();
+}
+
+function nutLogValidate() {
+  const items = (document.getElementById('nut-log-items').value || '').trim();
+  const kcal = parseInt(document.getElementById('nut-log-kcal').value, 10);
+  const valid = items.length >= 2 && kcal > 0 && nutState.selectedLogCategory;
+  document.getElementById('nut-log-save-btn').disabled = !valid;
+}
+
+async function nutSaveMealLog() {
+  const btn = document.getElementById('nut-log-save-btn');
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+  const items = document.getElementById('nut-log-items').value.trim();
+  const kcal = parseInt(document.getElementById('nut-log-kcal').value, 10) || 0;
+  const p = parseFloat(document.getElementById('nut-log-p').value) || 0;
+  const c = parseFloat(document.getElementById('nut-log-c').value) || 0;
+  const f = parseFloat(document.getElementById('nut-log-f').value) || 0;
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await sb.from('meal_logs').insert({
+        user_id: user.id,
+        meal_category: nutState.selectedLogCategory,
+        source: 'manual',
+        items_text: items,
+        total_kcal: kcal,
+        total_protein_g: p,
+        total_carbs_g: c,
+        total_fat_g: f,
+      });
+    }
+  } catch (e) { console.warn('[NUT] save meal failed:', e); }
+  btn.textContent = 'Guardar comida';
+  // Recargar y volver al dashboard
+  await nutLoadTodayData();
+  nutRenderDashboard();
+  goStep('nutrition');
+}
+
+function nutOpenSettings() {
+  // Por ahora solo te lleva al profile (donde podés editar todo)
+  openProfile();
 }
 
 // =============================================
