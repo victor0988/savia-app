@@ -4802,6 +4802,7 @@ async function _doRouteAuthenticatedUser() {
     }
     clearOnboardingState();
     enterAppSimulation('login');
+    document.documentElement.classList.remove('oauth-loading');
     return;
   }
 
@@ -4809,6 +4810,7 @@ async function _doRouteAuthenticatedUser() {
     if (saved.step === 'verify') {
       clearOnboardingState();
       goStep(8);
+      document.documentElement.classList.remove('oauth-loading');
       return;
     }
     // Ignorar saved steps que son screens de auth (no son progreso real de onboarding)
@@ -4816,10 +4818,12 @@ async function _doRouteAuthenticatedUser() {
     if (saved.step && !authSteps.includes(saved.step)) {
       goStep(saved.step);
       applyStateToUI();
+      document.documentElement.classList.remove('oauth-loading');
       return;
     }
   }
   goStep(1);
+  document.documentElement.classList.remove('oauth-loading');
 }
 
 // Debug banner removido — usamos console.log + Safari Web Inspector
