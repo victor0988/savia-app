@@ -2125,6 +2125,24 @@
   }
   .nut-meal-swipe-underlay svg { width: 18px; height: 18px; }
   .nut-meal-swipe-underlay:active { background: #DC2626; }
+
+  /* Group headers (Desayuno · 550 kcal) */
+  .nut-meal-group { margin-bottom: 14px; }
+  .nut-meal-group:last-child { margin-bottom: 0; }
+  .nut-meal-group-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 4px 8px;
+    margin-bottom: 4px;
+    border-bottom: 0.5px solid rgba(255,255,255,0.06);
+  }
+  .nut-meal-group-name {
+    font-size: 11px; font-weight: 700; color: #94A3B8;
+    letter-spacing: 1.2px; text-transform: uppercase;
+  }
+  .nut-meal-group-kcal {
+    font-size: 11px; font-weight: 600; color: #BEF264;
+    letter-spacing: 0.3px;
+  }
   .nut-meal-body { flex: 1; min-width: 0; }
   .nut-meal-title {
     font-size: 14px; font-weight: 600; color: white;
@@ -4422,7 +4440,7 @@
             <div id="nut-bc-brand" style="font-size:12px; color:#94A3B8;">—</div>
           </div>
         </div>
-        <div style="font-size:11px; color:#64748B; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">Por 100 g/ml</div>
+        <div style="font-size:11px; color:#64748B; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;" id="nut-bc-per-label">Por 100 g</div>
         <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; font-size:11px;">
           <div style="text-align:center; padding:8px 4px; background:rgba(255,255,255,0.03); border-radius:8px;">
             <div id="nut-bc-kcal" style="font-size:15px; font-weight:600; color:#F8FAFC;">—</div>
@@ -4466,8 +4484,8 @@
         </div>
       </div>
 
-      <div style="font-size:11px; color:#94A3B8; margin-bottom:6px;">Por gramos</div>
-      <div class="nut-onb-pills" style="margin-bottom:10px;">
+      <div style="font-size:11px; color:#94A3B8; margin-bottom:6px;" id="nut-bc-portion-label">Por gramos</div>
+      <div class="nut-onb-pills" style="margin-bottom:10px;" id="nut-bc-portion-pills">
         <div class="nut-onb-pill" data-portion="50" onclick="nutBcSelectPortion(50, this)">50 g</div>
         <div class="nut-onb-pill selected" data-portion="100" onclick="nutBcSelectPortion(100, this)">100 g</div>
         <div class="nut-onb-pill" data-portion="150" onclick="nutBcSelectPortion(150, this)">150 g</div>
@@ -6973,6 +6991,16 @@ async function nutLookupBarcode(code) {
     if (!(servingG > 0)) servingG = null;
     const name = p.product_name || p.product_name_es || 'Producto sin nombre';
     if (!servingG) servingG = nutGuessUnitWeight(name);
+    // Detectar si es líquido (afecta label de unidades: ml vs g)
+    const servingSize = p.serving_size || '';
+    const quantity = p.quantity || '';
+    const catsArr = Array.isArray(p.categories_tags) ? p.categories_tags : [];
+    const cats = catsArr.join(' ').toLowerCase();
+    const isLiquid =
+      /\bml\b|\bl\b/i.test(servingSize) ||
+      /\bml\b|\bl\b/i.test(quantity) ||
+      /beverages?|drinks?|juices?|waters?|sodas?|milks?|yogurts?-drink/.test(cats);
+
     const product = {
       barcode: code,
       name,
@@ -6983,8 +7011,10 @@ async function nutLookupBarcode(code) {
       protein_100: parseFloat((n.proteins_100g || 0).toFixed(1)),
       carbs_100: parseFloat((n.carbohydrates_100g || 0).toFixed(1)),
       fat_100: parseFloat((n.fat_100g || 0).toFixed(1)),
-      servingG: servingG,                       // gramos por unidad (si conocido)
-      servingSize: p.serving_size || null,      // label original ej "1 huevo (50g)"
+      servingG: servingG,
+      servingSize: servingSize || null,
+      isLiquid,
+      unit: isLiquid ? 'ml' : 'g',
     };
     nutBcState.product = product;
     nutBcState.portionG = 100;
@@ -7057,12 +7087,27 @@ function nutBcRenderResult() {
   const img = document.getElementById('nut-bc-img');
   if (p.image) { img.src = p.image; img.style.display = ''; } else { img.style.display = 'none'; }
 
+  // Switch ml ↔ g si es líquido
+  const unit = p.unit || 'g';
+  document.getElementById('nut-bc-per-label').textContent = `Por 100 ${unit}`;
+  document.getElementById('nut-bc-portion-label').textContent = unit === 'ml' ? 'Por mililitros' : 'Por gramos';
+  // Re-renderizar pills con el sufijo correcto
+  const pills = document.getElementById('nut-bc-portion-pills');
+  if (pills) {
+    pills.querySelectorAll('[data-portion]').forEach(pill => {
+      const v = pill.dataset.portion;
+      pill.textContent = `${v} ${unit}`;
+    });
+  }
+  const cust = document.getElementById('nut-bc-portion-custom');
+  if (cust) cust.placeholder = `o ingresá la cantidad exacta (${unit})`;
+
   // Mostrar sección unidades si conocemos el peso por unidad
   const unitsSection = document.getElementById('nut-bc-units-section');
   const unitWeight = document.getElementById('nut-bc-unit-weight');
   if (p.servingG && unitsSection) {
     unitsSection.style.display = '';
-    if (unitWeight) unitWeight.textContent = `(≈${Math.round(p.servingG)}g c/u)`;
+    if (unitWeight) unitWeight.textContent = `(≈${Math.round(p.servingG)}${unit} c/u)`;
   } else if (unitsSection) {
     unitsSection.style.display = 'none';
   }
@@ -7146,8 +7191,9 @@ function nutBcUpdateSummary() {
   const prot = ((p.protein_100 || 0) * ratio).toFixed(1);
   const carb = ((p.carbs_100 || 0) * ratio).toFixed(1);
   const fat = ((p.fat_100 || 0) * ratio).toFixed(1);
+  const unit = p.unit || 'g';
   const el = document.getElementById('nut-bc-portion-summary');
-  if (el) el.textContent = `${kcal} · ${prot}P · ${carb}C · ${fat}F`;
+  if (el) el.textContent = `${Math.round(nutBcState.portionG)} ${unit} · ${kcal} kcal · ${prot}P · ${carb}C · ${fat}F`;
 }
 
 async function nutBcSaveMeal() {
@@ -7172,7 +7218,7 @@ async function nutBcSaveMeal() {
         user_id: user.id,
         meal_category: cat,
         source: 'barcode',
-        items_text: `${p.name}${p.brand ? ' (' + p.brand + ')' : ''} · ${grams} g`,
+        items_text: `${p.name}${p.brand ? ' (' + p.brand + ')' : ''} · ${grams} ${p.unit || 'g'}`,
         total_kcal: kcal,
         total_protein_g: prot,
         total_carbs_g: carb,
@@ -7228,28 +7274,54 @@ function renderMealsList() {
   };
   const defaultSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>';
   const catLabel = { breakfast: 'Desayuno', snack_am: 'Snack AM', lunch: 'Almuerzo', snack_pm: 'Snack PM', dinner: 'Cena', post_workout: 'Post-workout' };
-  el.innerHTML = meals.map(m => {
-    const t = new Date(m.ts);
-    const time = t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
-    const safeId = String(m.id || '');
-    const safeName = (catLabel[m.meal_category] || 'Comida') + ' ' + (m.items_text ? m.items_text.slice(0, 30) : '');
-    return `
-      <div class="nut-meal-swipe-wrap" data-meal-id="${safeId}" data-meal-name="${(safeName || '').replace(/"/g, '&quot;')}">
-        <div class="nut-meal-swipe-underlay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
-          <span>Eliminar</span>
-        </div>
-        <div class="nut-meal-row">
-          <div class="nut-meal-icon-svg">${catSvg[m.meal_category] || defaultSvg}</div>
-          <div class="nut-meal-body">
-            <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
-            <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
+  // Agrupar meals por categoría
+  const CAT_ORDER = ['breakfast', 'snack_am', 'lunch', 'snack_pm', 'dinner', 'post_workout'];
+  const groups = {};
+  meals.forEach(m => {
+    const c = m.meal_category || 'other';
+    if (!groups[c]) groups[c] = [];
+    groups[c].push(m);
+  });
+  // Render por grupo en orden fijo
+  const orderedCats = CAT_ORDER.filter(c => groups[c]);
+  // Agregar categorías "other" o desconocidas al final
+  Object.keys(groups).forEach(c => { if (!CAT_ORDER.includes(c)) orderedCats.push(c); });
+
+  el.innerHTML = orderedCats.map(cat => {
+    const groupMeals = groups[cat];
+    const groupKcal = groupMeals.reduce((s, m) => s + (m.total_kcal || 0), 0);
+    const groupRows = groupMeals.map(m => {
+      const t = new Date(m.ts);
+      const time = t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+      const safeId = String(m.id || '');
+      const safeName = (catLabel[m.meal_category] || 'Comida') + ' ' + (m.items_text ? m.items_text.slice(0, 30) : '');
+      return `
+        <div class="nut-meal-swipe-wrap" data-meal-id="${safeId}" data-meal-name="${(safeName || '').replace(/"/g, '&quot;')}">
+          <div class="nut-meal-swipe-underlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+            <span>Eliminar</span>
           </div>
-          <div class="nut-meal-kcal">${m.total_kcal || 0} kcal</div>
-          <button class="nut-meal-delete-btn" data-meal-delete="${safeId}" aria-label="Eliminar comida">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
-          </button>
+          <div class="nut-meal-row">
+            <div class="nut-meal-icon-svg">${catSvg[m.meal_category] || defaultSvg}</div>
+            <div class="nut-meal-body">
+              <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
+              <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
+            </div>
+            <div class="nut-meal-kcal">${m.total_kcal || 0} kcal</div>
+            <button class="nut-meal-delete-btn" data-meal-delete="${safeId}" aria-label="Eliminar comida">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+            </button>
+          </div>
         </div>
+      `;
+    }).join('');
+    return `
+      <div class="nut-meal-group">
+        <div class="nut-meal-group-header">
+          <span class="nut-meal-group-name">${catLabel[cat] || cat}</span>
+          <span class="nut-meal-group-kcal">${groupKcal} kcal</span>
+        </div>
+        ${groupRows}
       </div>
     `;
   }).join('');
@@ -7465,22 +7537,110 @@ async function nutDeleteMeal(mealId) {
 }
 
 // --- HYDRATION ---
+let _nutLastHydrationAt = 0;
 async function nutAddHydration(ml) {
+  // Cooldown 800ms para prevenir double-tap accidental (toques fantasma del swipe en iOS)
+  const now = Date.now();
+  if (now - _nutLastHydrationAt < 800) {
+    console.log('[NUT] hydration tap debounced');
+    return;
+  }
+  _nutLastHydrationAt = now;
+
+  // Optimistic update inmediato (UX rápido)
   nutState.todayHydrationMl += ml;
   document.getElementById('nut-water-current').textContent = nutState.todayHydrationMl;
-  // Actualizar bar de progreso inmediatamente (UX inmediato, sin esperar persist)
   const t = nutState.targets;
   if (t) {
     const pct = Math.min(100, Math.round((nutState.todayHydrationMl / (t.water_ml || 2500)) * 100));
     const fill = document.getElementById('nut-water-bar-fill');
     if (fill) fill.style.width = pct + '%';
   }
+
+  // Insert con return=representation para obtener el ID (necesario para undo)
+  let insertedId = null;
   try {
-    const { data: { user } } = await sb.auth.getUser();
-    if (user) {
-      await sb.from('hydration_logs').insert({ user_id: user.id, ml });
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no session');
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/hydration_logs`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify({ user_id: session.user.id, ml }),
+    });
+    if (resp.ok) {
+      const rows = await resp.json();
+      insertedId = (rows && rows[0]) ? rows[0].id : null;
     }
   } catch (e) { console.warn('[NUT] hydration save failed:', e); }
+
+  // Toast con UNDO (4 segundos)
+  nutShowHydrationToast(ml, insertedId);
+}
+
+function nutShowHydrationToast(ml, logId) {
+  // Si ya hay un toast activo, removerlo (para no apilar)
+  const existing = document.getElementById('nut-hyd-toast');
+  if (existing) existing.remove();
+
+  const toast = document.createElement('div');
+  toast.id = 'nut-hyd-toast';
+  toast.style.cssText = 'position:fixed;bottom:24px;left:16px;right:16px;background:rgba(15,23,42,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(96,165,250,0.3);border-radius:14px;padding:12px 14px;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.5);display:flex;align-items:center;gap:12px;';
+  toast.innerHTML = `
+    <svg style="width:18px;height:18px;color:#60A5FA;flex-shrink:0;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3.5c1.5 2 5 6.5 5 10a5 5 0 01-10 0c0-3.5 3.5-8 5-10z"/></svg>
+    <div style="flex:1;font-size:13px;color:#F8FAFC;font-weight:600;">+${ml} ml agregados</div>
+    <button id="nut-hyd-undo-btn" style="background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.4);color:#FCA5A5;padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;cursor:pointer;-webkit-tap-highlight-color:transparent;">Deshacer</button>
+  `;
+  document.body.appendChild(toast);
+
+  const undoBtn = document.getElementById('nut-hyd-undo-btn');
+  let undone = false;
+  undoBtn.onclick = async () => {
+    if (undone) return;
+    undone = true;
+    toast.remove();
+    await nutUndoHydration(ml, logId);
+  };
+
+  // Auto-dismiss tras 4 seg
+  setTimeout(() => { if (toast.parentNode && !undone) toast.remove(); }, 4000);
+}
+
+async function nutUndoHydration(ml, logId) {
+  // Revertir optimistic update
+  nutState.todayHydrationMl = Math.max(0, nutState.todayHydrationMl - ml);
+  document.getElementById('nut-water-current').textContent = nutState.todayHydrationMl;
+  const t = nutState.targets;
+  if (t) {
+    const pct = Math.min(100, Math.round((nutState.todayHydrationMl / (t.water_ml || 2500)) * 100));
+    const fill = document.getElementById('nut-water-bar-fill');
+    if (fill) fill.style.width = pct + '%';
+  }
+  // Borrar el log de Supabase (si tenemos ID)
+  if (logId) {
+    try {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) return;
+      await fetch(`${SUPABASE_URL}/rest/v1/hydration_logs?id=eq.${encodeURIComponent(logId)}`, {
+        method: 'DELETE',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${session.access_token}`,
+          Prefer: 'return=minimal',
+        },
+      });
+    } catch (e) { console.warn('[NUT] undo hydration failed:', e); }
+  }
+  // Toast confirmación
+  const ok = document.createElement('div');
+  ok.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+  ok.textContent = 'Deshecho';
+  document.body.appendChild(ok);
+  setTimeout(() => { if (ok.parentNode) ok.remove(); }, 1400);
 }
 
 // --- MEAL LOG ---
