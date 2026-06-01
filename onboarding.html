@@ -2094,6 +2094,37 @@
     color: #FCA5A5;
     transform: scale(0.92);
   }
+  /* Swipe-to-delete wrapper */
+  .nut-meal-swipe-wrap {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    margin-bottom: 8px;
+  }
+  .nut-meal-swipe-wrap .nut-meal-row {
+    margin-bottom: 0;
+    position: relative;
+    z-index: 2;
+    background: rgba(5,8,16,0.95);
+    touch-action: pan-y;
+  }
+  .nut-meal-swipe-underlay {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 88px;
+    background: #EF4444;
+    color: #fff;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    gap: 4px;
+    font-size: 11px; font-weight: 600;
+    letter-spacing: 0.3px;
+    z-index: 1;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nut-meal-swipe-underlay svg { width: 18px; height: 18px; }
+  .nut-meal-swipe-underlay:active { background: #DC2626; }
   .nut-meal-body { flex: 1; min-width: 0; }
   .nut-meal-title {
     font-size: 14px; font-weight: 600; color: white;
@@ -4413,6 +4444,19 @@
       </div>
 
       <div class="nut-onb-field-label">Porción consumida</div>
+
+      <div id="nut-bc-units-section" style="display:none; margin-bottom:14px;">
+        <div style="font-size:11px; color:#94A3B8; margin-bottom:6px;">Por unidad <span id="nut-bc-unit-weight" style="color:#64748B;"></span></div>
+        <div class="nut-onb-pills" style="margin-bottom:8px;">
+          <div class="nut-onb-pill" data-units="0.5" onclick="nutBcSelectUnits(0.5, this)">½</div>
+          <div class="nut-onb-pill" data-units="1" onclick="nutBcSelectUnits(1, this)">1</div>
+          <div class="nut-onb-pill" data-units="2" onclick="nutBcSelectUnits(2, this)">2</div>
+          <div class="nut-onb-pill" data-units="3" onclick="nutBcSelectUnits(3, this)">3</div>
+          <div class="nut-onb-pill" data-units="4" onclick="nutBcSelectUnits(4, this)">4</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px; color:#94A3B8; margin-bottom:6px;">Por gramos</div>
       <div class="nut-onb-pills" style="margin-bottom:10px;">
         <div class="nut-onb-pill" data-portion="50" onclick="nutBcSelectPortion(50, this)">50 g</div>
         <div class="nut-onb-pill selected" data-portion="100" onclick="nutBcSelectPortion(100, this)">100 g</div>
@@ -6851,9 +6895,16 @@ async function nutLookupBarcode(code) {
     }
     const p = json.product;
     const n = p.nutriments || {};
+    // Parse serving info para feature de unidades.
+    // serving_quantity: gramos por porción (a veces "50", "1", string vs número).
+    // Si no viene de OFF, usar fallback por keywords (huevo=50g, banana=120g, etc.)
+    let servingG = parseFloat(p.serving_quantity);
+    if (!(servingG > 0)) servingG = null;
+    const name = p.product_name || p.product_name_es || 'Producto sin nombre';
+    if (!servingG) servingG = nutGuessUnitWeight(name);
     const product = {
       barcode: code,
-      name: p.product_name || p.product_name_es || 'Producto sin nombre',
+      name,
       brand: p.brands || '',
       image: p.image_small_url || p.image_url || null,
       // Per 100g/ml
@@ -6861,6 +6912,8 @@ async function nutLookupBarcode(code) {
       protein_100: parseFloat((n.proteins_100g || 0).toFixed(1)),
       carbs_100: parseFloat((n.carbohydrates_100g || 0).toFixed(1)),
       fat_100: parseFloat((n.fat_100g || 0).toFixed(1)),
+      servingG: servingG,                       // gramos por unidad (si conocido)
+      servingSize: p.serving_size || null,      // label original ej "1 huevo (50g)"
     };
     nutBcState.product = product;
     nutBcState.portionG = 100;
@@ -6870,6 +6923,42 @@ async function nutLookupBarcode(code) {
     console.warn('[NUT] OFF lookup error:', e);
     nutBcShowNotFound(code);
   }
+}
+
+// Fallback: estima gramos por unidad basado en el nombre del producto.
+// Útil cuando OFF no tiene serving_quantity pero el alimento se cuenta por unidades.
+// Pesos basados en valores promedio USDA/Mifflin (huevo medium ~50g, banana medium ~120g).
+function nutGuessUnitWeight(name) {
+  if (!name) return null;
+  const n = name.toLowerCase();
+  const table = [
+    { kw: ['huevo', 'egg'], g: 50 },
+    { kw: ['banana', 'plátano', 'platano', 'guineo'], g: 120 },
+    { kw: ['manzana', 'apple'], g: 150 },
+    { kw: ['naranja', 'orange'], g: 130 },
+    { kw: ['mandarina'], g: 80 },
+    { kw: ['pera'], g: 160 },
+    { kw: ['kiwi'], g: 75 },
+    { kw: ['mango'], g: 200 },
+    { kw: ['palta', 'aguacate', 'avocado'], g: 200 },
+    { kw: ['tomate'], g: 120 },
+    { kw: ['papa', 'patata', 'potato'], g: 170 },
+    { kw: ['zanahoria', 'carrot'], g: 70 },
+    { kw: ['cebolla', 'onion'], g: 110 },
+    { kw: ['ajo', 'garlic'], g: 5 },
+    { kw: ['limón', 'limon', 'lemon'], g: 60 },
+    { kw: ['lima', 'lime'], g: 50 },
+    { kw: ['fresa', 'strawberr'], g: 12 },
+    { kw: ['uva'], g: 5 },
+    { kw: ['nuez', 'nuts', 'almendra', 'almond'], g: 1.2 },
+    { kw: ['galleta', 'cookie'], g: 12 },
+    { kw: ['rebanada de pan', 'pan tajado', 'pan de molde'], g: 30 },
+    { kw: ['tortilla'], g: 30 },
+  ];
+  for (const row of table) {
+    if (row.kw.some(k => n.includes(k))) return row.g;
+  }
+  return null;
 }
 
 function nutBcShowNotFound(code) {
@@ -6896,10 +6985,44 @@ function nutBcRenderResult() {
   document.getElementById('nut-bc-f').textContent = p.fat_100 || 0;
   const img = document.getElementById('nut-bc-img');
   if (p.image) { img.src = p.image; img.style.display = ''; } else { img.style.display = 'none'; }
-  // Reset portion to 100g
-  document.querySelectorAll('[data-step="nut-barcode-result"] [data-portion]').forEach(el => {
-    el.classList.toggle('selected', el.dataset.portion === '100');
+
+  // Mostrar sección unidades si conocemos el peso por unidad
+  const unitsSection = document.getElementById('nut-bc-units-section');
+  const unitWeight = document.getElementById('nut-bc-unit-weight');
+  if (p.servingG && unitsSection) {
+    unitsSection.style.display = '';
+    if (unitWeight) unitWeight.textContent = `(≈${Math.round(p.servingG)}g c/u)`;
+  } else if (unitsSection) {
+    unitsSection.style.display = 'none';
+  }
+
+  // Reset: por default elegimos "1 unidad" si tiene servingG, sino 100g
+  document.querySelectorAll('[data-step="nut-barcode-result"] [data-units]').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('[data-step="nut-barcode-result"] [data-portion]').forEach(el => el.classList.remove('selected'));
+  if (p.servingG) {
+    const oneUnit = document.querySelector('[data-step="nut-barcode-result"] [data-units="1"]');
+    if (oneUnit) oneUnit.classList.add('selected');
+    nutBcState.portionG = p.servingG;
+  } else {
+    const def = document.querySelector('[data-step="nut-barcode-result"] [data-portion="100"]');
+    if (def) def.classList.add('selected');
+    nutBcState.portionG = 100;
+  }
+  const cust = document.getElementById('nut-bc-portion-custom');
+  if (cust) cust.value = '';
+  nutBcUpdateSummary();
+}
+
+// Selección por unidades: calcula gramos internamente
+function nutBcSelectUnits(units, el) {
+  const p = nutBcState.product;
+  if (!p || !p.servingG) return;
+  nutBcState.portionG = units * p.servingG;
+  // Marcar la unit pill, deseleccionar gramos
+  document.querySelectorAll('[data-step="nut-barcode-result"] [data-units]').forEach(u => {
+    u.classList.toggle('selected', u === el);
   });
+  document.querySelectorAll('[data-step="nut-barcode-result"] [data-portion]').forEach(g => g.classList.remove('selected'));
   const cust = document.getElementById('nut-bc-portion-custom');
   if (cust) cust.value = '';
   nutBcUpdateSummary();
@@ -6910,6 +7033,8 @@ function nutBcSelectPortion(grams, el) {
   document.querySelectorAll('[data-step="nut-barcode-result"] [data-portion]').forEach(p => {
     p.classList.toggle('selected', p === el);
   });
+  // Deseleccionar unit pills (gramos vs unidades son mutuamente excluyentes)
+  document.querySelectorAll('[data-step="nut-barcode-result"] [data-units]').forEach(u => u.classList.remove('selected'));
   const cust = document.getElementById('nut-bc-portion-custom');
   if (cust) cust.value = '';
   nutBcUpdateSummary();
@@ -6922,6 +7047,7 @@ function nutBcSelectPortionCustom(val) {
   if (g > 0 && g < 5000) {
     nutBcState.portionG = g;
     document.querySelectorAll('[data-step="nut-barcode-result"] [data-portion]').forEach(p => p.classList.remove('selected'));
+    document.querySelectorAll('[data-step="nut-barcode-result"] [data-units]').forEach(u => u.classList.remove('selected'));
     nutBcUpdateSummary();
   }
 }
@@ -7028,26 +7154,91 @@ function renderMealsList() {
     const safeId = String(m.id || '');
     const safeName = (catLabel[m.meal_category] || 'Comida') + ' ' + (m.items_text ? m.items_text.slice(0, 30) : '');
     return `
-      <div class="nut-meal-row" data-meal-id="${safeId}">
-        <div class="nut-meal-icon-svg">${catSvg[m.meal_category] || defaultSvg}</div>
-        <div class="nut-meal-body">
-          <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
-          <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
+      <div class="nut-meal-swipe-wrap" data-meal-id="${safeId}" data-meal-name="${(safeName || '').replace(/"/g, '&quot;')}">
+        <div class="nut-meal-swipe-underlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+          <span>Eliminar</span>
         </div>
-        <div class="nut-meal-kcal">${m.total_kcal || 0} kcal</div>
-        <button class="nut-meal-delete-btn" data-meal-delete="${safeId}" data-meal-name="${(safeName || '').replace(/"/g, '&quot;')}" aria-label="Eliminar comida">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
-        </button>
+        <div class="nut-meal-row">
+          <div class="nut-meal-icon-svg">${catSvg[m.meal_category] || defaultSvg}</div>
+          <div class="nut-meal-body">
+            <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
+            <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
+          </div>
+          <div class="nut-meal-kcal">${m.total_kcal || 0} kcal</div>
+          <button class="nut-meal-delete-btn" data-meal-delete="${safeId}" aria-label="Eliminar comida">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+          </button>
+        </div>
       </div>
     `;
   }).join('');
-  // Event delegation para los delete buttons (evita inline onclick + XSS)
+  // Event delegation: trash button OR underlay (revealed via swipe)
   el.onclick = (e) => {
-    const btn = e.target.closest('[data-meal-delete]');
-    if (!btn) return;
-    e.stopPropagation();
-    nutConfirmDeleteMeal(btn.dataset.mealDelete, btn.dataset.mealName);
+    const trash = e.target.closest('[data-meal-delete]');
+    if (trash) {
+      e.stopPropagation();
+      const wrap = trash.closest('.nut-meal-swipe-wrap');
+      nutConfirmDeleteMeal(trash.dataset.mealDelete, wrap?.dataset?.mealName || '');
+      return;
+    }
+    const underlay = e.target.closest('.nut-meal-swipe-underlay');
+    if (underlay) {
+      const wrap = underlay.closest('.nut-meal-swipe-wrap');
+      if (wrap) {
+        nutConfirmDeleteMeal(wrap.dataset.mealId, wrap.dataset.mealName);
+      }
+      return;
+    }
+    // Tap en row mientras está abierto el swipe → cerrar
+    const row = e.target.closest('.nut-meal-row');
+    if (row && row.classList.contains('swiped')) {
+      row.classList.remove('swiped');
+      row.style.transform = '';
+    }
   };
+  // Attach swipe handlers a cada row
+  el.querySelectorAll('.nut-meal-swipe-wrap').forEach(wrap => nutAttachSwipe(wrap));
+}
+
+// Swipe-to-delete: touch handlers en cada row
+function nutAttachSwipe(wrap) {
+  const row = wrap.querySelector('.nut-meal-row');
+  if (!row) return;
+  let startX = 0, currentX = 0, dragging = false, openOffset = 0;
+  const THRESHOLD = 60;    // px para activar el reveal
+  const REVEAL = 88;       // px revelado cuando está abierto
+
+  row.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    currentX = startX;
+    dragging = true;
+    openOffset = row.classList.contains('swiped') ? -REVEAL : 0;
+    row.style.transition = 'none';
+  }, { passive: true });
+
+  row.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    currentX = e.touches[0].clientX;
+    const delta = currentX - startX;
+    const tx = Math.max(-REVEAL - 20, Math.min(0, openOffset + delta));
+    row.style.transform = `translateX(${tx}px)`;
+  }, { passive: true });
+
+  row.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    row.style.transition = 'transform 0.22s cubic-bezier(0.4, 0, 0.2, 1)';
+    const delta = currentX - startX;
+    const finalOffset = openOffset + delta;
+    if (finalOffset < -THRESHOLD) {
+      row.classList.add('swiped');
+      row.style.transform = `translateX(-${REVEAL}px)`;
+    } else {
+      row.classList.remove('swiped');
+      row.style.transform = 'translateX(0)';
+    }
+  });
 }
 
 // Confirm + delete con toast inline (sin alert nativo feo)
