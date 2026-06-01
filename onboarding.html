@@ -1480,53 +1480,162 @@
     font-size: 13px; color: #64748B; line-height: 1.5; margin-top: 4px;
   }
 
-  /* HERO CHECK-IN card */
-  .hoy-checkin-card {
+  /* ============== HERO: DAILY PULSE (ring + KPIs + acción contextual) ============== */
+  .hoy-pulse-card {
+    padding: 22px 8px 8px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .hoy-pulse-meta {
+    font-size: 12px;
+    color: #94A3B8;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+    margin-bottom: 14px;
+  }
+  .hoy-pulse-meta strong {
+    color: #34D399;
+    font-weight: 700;
+  }
+  .hoy-pulse-ring-wrap {
+    position: relative;
+    width: 180px;
+    height: 180px;
+    margin: 0 auto 16px;
+  }
+  .hoy-pulse-ring {
+    width: 100%; height: 100%;
+    transform: rotate(-90deg); /* iniciar arriba */
+  }
+  .hoy-pulse-ring-bg {
+    fill: none;
+    stroke: rgba(255,255,255,0.06);
+    stroke-width: 6;
+  }
+  .hoy-pulse-ring-fg {
+    fill: none;
+    stroke: url(#hoyPulseGradient);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 326.7; /* 2 * π * 52 */
+    stroke-dashoffset: 326.7;
+    transition: stroke-dashoffset 1.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  .hoy-pulse-ring-fg.calibrating {
+    stroke-dasharray: 80 246.7;
+    animation: pulseRingSweep 2.2s linear infinite;
+  }
+  @keyframes pulseRingSweep {
+    0% { stroke-dashoffset: 326.7; }
+    100% { stroke-dashoffset: 0; }
+  }
+  .hoy-pulse-ring-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    display: flex; flex-direction: column; align-items: center;
+    pointer-events: none;
+  }
+  .hoy-pulse-score {
+    font-size: 56px;
+    font-weight: 800;
+    color: white;
+    letter-spacing: -2.5px;
+    line-height: 1;
+  }
+  .hoy-pulse-score.calibrating {
+    font-size: 22px;
+    font-weight: 700;
+    color: #34D399;
+    letter-spacing: 0.5px;
+  }
+  .hoy-pulse-score-label {
+    margin-top: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #94A3B8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  /* KPIs inline */
+  .hoy-pulse-kpis {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 0;
+    margin: 14px 0 22px;
+    flex-wrap: nowrap;
+  }
+  .hoy-pulse-kpi {
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 14px;
+    min-width: 80px;
+  }
+  .hoy-pulse-kpi-icon-row {
+    display: flex; align-items: center; gap: 5px;
+    color: #CBD5E1;
+    font-size: 14px; font-weight: 600;
+  }
+  .hoy-pulse-kpi-icon {
+    width: 14px; height: 14px;
+    stroke-width: 1.7;
+  }
+  .hoy-pulse-kpi-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: white;
+    letter-spacing: -0.2px;
+  }
+  .hoy-pulse-kpi-value.empty { color: #475569; font-weight: 500; }
+  .hoy-pulse-kpi-label {
+    font-size: 10px;
+    color: #64748B;
+    font-weight: 600;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+  .hoy-pulse-kpi-sep {
+    color: rgba(255,255,255,0.08);
+    font-size: 14px;
+    align-self: center;
+    margin-top: -8px;
+  }
+  /* Acción contextual */
+  .hoy-pulse-action {
+    width: 100%;
     background: linear-gradient(135deg, rgba(16,185,129,0.12), rgba(52,211,153,0.04));
-    border: 1px solid rgba(16,185,129,0.2);
-    border-radius: 22px;
-    padding: 22px 20px;
-    margin-bottom: 14px;
-  }
-  .hoy-checkin-eyebrow {
-    display: flex; align-items: center; gap: 8px;
-    font-size: 11px; font-weight: 700; color: #34D399;
-    letter-spacing: 1.5px; text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-  .hoy-checkin-question {
-    font-size: 22px; font-weight: 700; color: white;
-    letter-spacing: -0.4px; line-height: 1.25; margin-bottom: 18px;
-  }
-  .hoy-checkin-emojis {
-    display: flex; justify-content: space-between; gap: 6px;
-    margin-bottom: 14px;
-  }
-  .hoy-checkin-emoji-btn {
-    flex: 1; max-width: 60px;
-    aspect-ratio: 1 / 1;
-    background: rgba(255,255,255,0.04);
-    border: 1.5px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(16,185,129,0.22);
     border-radius: 16px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 26px; cursor: pointer;
-    transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+    transition: transform 0.12s ease, background 0.15s ease;
     -webkit-tap-highlight-color: transparent;
+    text-align: left;
   }
-  .hoy-checkin-emoji-btn:active { transform: scale(0.92); }
-  .hoy-checkin-emoji-btn.selected {
-    background: rgba(16,185,129,0.18);
-    border-color: rgba(16,185,129,0.5);
-    transform: scale(1.06);
+  .hoy-pulse-action:active {
+    transform: scale(0.98);
+    background: linear-gradient(135deg, rgba(16,185,129,0.18), rgba(52,211,153,0.08));
   }
-  .hoy-checkin-hint {
-    font-size: 12px; color: #94A3B8; text-align: center;
+  .hoy-pulse-action-body { flex: 1; min-width: 0; }
+  .hoy-pulse-action-eyebrow {
+    font-size: 10px; font-weight: 700;
+    color: #34D399;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 3px;
   }
-  /* Estado post-check-in: hero se transforma */
-  .hoy-checkin-card.completed .hoy-checkin-emojis { display: none; }
-  .hoy-checkin-card.completed .hoy-checkin-question { font-size: 14px; color: #94A3B8; font-weight: 600; margin-bottom: 4px; }
-  .hoy-checkin-card.completed .hoy-checkin-state {
-    font-size: 32px; font-weight: 800; color: white; letter-spacing: -1px;
+  .hoy-pulse-action-text {
+    font-size: 14px; font-weight: 600;
+    color: white;
+    line-height: 1.35;
+  }
+  .hoy-pulse-action-arrow {
+    color: #34D399; font-size: 18px;
+    font-weight: 600;
+    margin-left: 8px;
+    flex-shrink: 0;
   }
 
   /* TAB BAR iOS-style */
@@ -2919,19 +3028,62 @@
 
     <!-- Scrollable content -->
     <div class="hoy-content" id="hoy-tab-content">
-      <!-- HERO: Check-in -->
-      <div class="hoy-checkin-card" id="hoy-checkin-card">
-        <div class="hoy-checkin-eyebrow"><span id="hoy-checkin-greeting">🌅 Check-in</span></div>
-        <div class="hoy-checkin-question" id="hoy-checkin-question">¿Cómo amaneciste?</div>
-        <div class="hoy-checkin-emojis" id="hoy-checkin-emojis">
-          <button class="hoy-checkin-emoji-btn" data-mood="1" onclick="selectMood(1)" title="Muy cansado">😴</button>
-          <button class="hoy-checkin-emoji-btn" data-mood="2" onclick="selectMood(2)" title="Bajo">😐</button>
-          <button class="hoy-checkin-emoji-btn" data-mood="3" onclick="selectMood(3)" title="Normal">🙂</button>
-          <button class="hoy-checkin-emoji-btn" data-mood="4" onclick="selectMood(4)" title="Bien">💪</button>
-          <button class="hoy-checkin-emoji-btn" data-mood="5" onclick="selectMood(5)" title="Increíble">🔥</button>
+      <!-- HERO: Daily Pulse -->
+      <div class="hoy-pulse-card">
+        <div class="hoy-pulse-meta">
+          <span id="hoy-pulse-date">—</span> · <strong id="hoy-pulse-day">Día —</strong>
         </div>
-        <div class="hoy-checkin-hint">Tappeá tu estado · 30 segundos</div>
-        <div class="hoy-checkin-state" id="hoy-checkin-state" style="display:none;"></div>
+
+        <div class="hoy-pulse-ring-wrap">
+          <svg class="hoy-pulse-ring" viewBox="0 0 120 120" aria-hidden="true">
+            <defs>
+              <linearGradient id="hoyPulseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#34D399"/>
+                <stop offset="100%" stop-color="#10B981"/>
+              </linearGradient>
+            </defs>
+            <circle class="hoy-pulse-ring-bg" cx="60" cy="60" r="52"/>
+            <circle class="hoy-pulse-ring-fg calibrating" cx="60" cy="60" r="52" id="hoy-pulse-ring-fg"/>
+          </svg>
+          <div class="hoy-pulse-ring-center">
+            <div class="hoy-pulse-score calibrating" id="hoy-pulse-score">Calibrando</div>
+            <div class="hoy-pulse-score-label" id="hoy-pulse-score-label" style="display:none;">READINESS</div>
+          </div>
+        </div>
+
+        <div class="hoy-pulse-kpis">
+          <div class="hoy-pulse-kpi">
+            <div class="hoy-pulse-kpi-icon-row">
+              <svg class="hoy-pulse-kpi-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              <span class="hoy-pulse-kpi-value empty" id="hoy-pulse-sleep">—</span>
+            </div>
+            <div class="hoy-pulse-kpi-label">Sueño</div>
+          </div>
+          <span class="hoy-pulse-kpi-sep">·</span>
+          <div class="hoy-pulse-kpi">
+            <div class="hoy-pulse-kpi-icon-row">
+              <svg class="hoy-pulse-kpi-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.5 2-4 6-4 8a4 4 0 008 0c0-2-2.5-6-4-8z"/></svg>
+              <span class="hoy-pulse-kpi-value empty" id="hoy-pulse-macros">—</span>
+            </div>
+            <div class="hoy-pulse-kpi-label">Macros</div>
+          </div>
+          <span class="hoy-pulse-kpi-sep">·</span>
+          <div class="hoy-pulse-kpi">
+            <div class="hoy-pulse-kpi-icon-row">
+              <svg class="hoy-pulse-kpi-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+              <span class="hoy-pulse-kpi-value empty" id="hoy-pulse-strain">—</span>
+            </div>
+            <div class="hoy-pulse-kpi-label">Strain</div>
+          </div>
+        </div>
+
+        <button class="hoy-pulse-action" id="hoy-pulse-action" onclick="onPulseActionClick()">
+          <div class="hoy-pulse-action-body">
+            <div class="hoy-pulse-action-eyebrow" id="hoy-pulse-action-eyebrow">⚡ EMPECEMOS</div>
+            <div class="hoy-pulse-action-text" id="hoy-pulse-action-text">Configurá tu primer wearable · 30 seg</div>
+          </div>
+          <span class="hoy-pulse-action-arrow">→</span>
+        </button>
       </div>
 
       <!-- Readiness / Recovery -->
@@ -4343,19 +4495,12 @@ function enterAppSimulation(source) {
   } catch (e) { console.error('[SAVIA] greeting setup failed:', e); }
 
   try {
-    const checkinGreeting = document.getElementById('hoy-checkin-greeting');
-    if (checkinGreeting) checkinGreeting.textContent = getCheckinGreetingLabel();
-    const checkinQuestion = document.getElementById('hoy-checkin-question');
-    if (checkinQuestion) checkinQuestion.textContent = getCheckinQuestion();
-  } catch (e) { console.error('[SAVIA] checkin labels failed:', e); }
-
-  try {
     const cycleCard = document.getElementById('hoy-cycle-card');
     if (cycleCard) cycleCard.style.display = (state.sex === 'f') ? '' : 'none';
   } catch (e) { console.error('[SAVIA] cycle card setup failed:', e); }
 
   try { switchHoyTab('hoy'); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
-  try { loadTodayCheckinUI(); } catch (e) { console.error('[SAVIA] loadTodayCheckinUI failed:', e); }
+  try { renderDailyPulse(); } catch (e) { console.error('[SAVIA] renderDailyPulse failed:', e); }
 
   if (source !== 'login') {
     setTimeout(showWelcomeEmailDiagnostic, 1500);
@@ -4364,22 +4509,170 @@ function enterAppSimulation(source) {
 }
 
 function getDayContext() {
-  // Día desde la creación de la cuenta (placeholder simple)
+  // Día desde el signup (calculado del created_at del user si existe; fallback Día 1)
+  // Placeholder por ahora — Sprint posterior conecta con profile.created_at
   return 'Día 1';
 }
 
-function getCheckinGreetingLabel() {
-  const h = new Date().getHours();
-  if (h < 12) return '🌅 Check-in mañana';
-  if (h < 18) return '☀️ Check-in tarde';
-  return '🌙 Check-in noche';
+// =============================================
+// HERO DAILY PULSE — render dinámico
+// =============================================
+function renderDailyPulse() {
+  // Date + day counter
+  try {
+    const dateEl = document.getElementById('hoy-pulse-date');
+    const dayEl = document.getElementById('hoy-pulse-day');
+    if (dateEl) dateEl.textContent = formatPulseDate();
+    if (dayEl) dayEl.textContent = getDayContext();
+  } catch (e) { console.warn('pulse meta failed:', e); }
+
+  // Ring + score
+  // En Sprint 0.5 todavía no tenemos wearable real, así que estado = "Calibrando"
+  // Cuando tengamos data: setPulseScore(82) hace la animación al número
+  const score = computePulseScore();
+  applyPulseScore(score);
+
+  // KPIs inline — placeholder values (data real en Sprint 2+)
+  const sleep = getKpiSleep();      // null o "7h 42m"
+  const macros = getKpiMacros();    // null o "59%"
+  const strain = getKpiStrain();    // null o "12"
+  setKpi('hoy-pulse-sleep', sleep);
+  setKpi('hoy-pulse-macros', macros);
+  setKpi('hoy-pulse-strain', strain);
+
+  // Acción contextual
+  applyContextualAction();
 }
 
-function getCheckinQuestion() {
+function formatPulseDate() {
+  const now = new Date();
+  const opts = { weekday: 'long', day: 'numeric', month: 'long' };
+  let s = now.toLocaleDateString('es-ES', opts);
+  // Capitalize first letter
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function computePulseScore() {
+  // Placeholder. Cuando haya wearable → readiness real desde HRV + sleep + strain.
+  // Cuando solo haya check-ins → WQ subjetivo.
+  // Por ahora: null = calibrando.
+  return null;
+}
+
+function applyPulseScore(score) {
+  const ring = document.getElementById('hoy-pulse-ring-fg');
+  const scoreEl = document.getElementById('hoy-pulse-score');
+  const labelEl = document.getElementById('hoy-pulse-score-label');
+  if (score === null || score === undefined) {
+    if (ring) {
+      ring.classList.add('calibrating');
+      ring.style.strokeDashoffset = '';
+    }
+    if (scoreEl) {
+      scoreEl.classList.add('calibrating');
+      scoreEl.textContent = 'Calibrando';
+    }
+    if (labelEl) labelEl.style.display = 'none';
+    return;
+  }
+  // Score real
+  if (ring) {
+    ring.classList.remove('calibrating');
+    // 326.7 = 2 * π * 52. Llenar proporcional a score (0-100)
+    const offset = 326.7 - (score / 100) * 326.7;
+    ring.style.strokeDashoffset = offset;
+  }
+  if (scoreEl) {
+    scoreEl.classList.remove('calibrating');
+    scoreEl.textContent = String(score);
+  }
+  if (labelEl) labelEl.style.display = '';
+}
+
+function setKpi(id, value) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  if (value === null || value === undefined || value === '') {
+    el.textContent = '—';
+    el.classList.add('empty');
+  } else {
+    el.textContent = value;
+    el.classList.remove('empty');
+  }
+}
+
+// Getters de KPIs (placeholder ahora, conectan a wearable/nutrition en Sprint 2+)
+function getKpiSleep()   { return null; }
+function getKpiMacros()  { return null; }
+function getKpiStrain()  { return null; }
+
+// Acción contextual — la "calm AI" que sugiere lo correcto según hora + data
+function applyContextualAction() {
+  const eyebrowEl = document.getElementById('hoy-pulse-action-eyebrow');
+  const textEl = document.getElementById('hoy-pulse-action-text');
+  if (!eyebrowEl || !textEl) return;
+
+  const action = computeContextualAction();
+  eyebrowEl.textContent = action.eyebrow;
+  textEl.textContent = action.text;
+  // Guardamos el module destino en el botón para handler
+  const btn = document.getElementById('hoy-pulse-action');
+  if (btn) btn.dataset.targetModule = action.target;
+}
+
+function computeContextualAction() {
   const h = new Date().getHours();
-  if (h < 12) return '¿Cómo amaneciste?';
-  if (h < 18) return '¿Cómo estás de energía?';
-  return '¿Cómo cerraste el día?';
+  const hasWearable = state.wearables && state.wearables.length > 0 && !state.wearables.includes('ninguno');
+
+  // Sin wearable y Día 1 → primero conectar wearable
+  if (!hasWearable) {
+    return {
+      eyebrow: '⚡ EMPECEMOS',
+      text: 'Conectá tu wearable · 30 seg',
+      target: 'wearables',
+    };
+  }
+
+  // Por hora del día (placeholder logic — Sprint posterior con data real)
+  if (h < 11) {
+    return {
+      eyebrow: '💪 RUTINA DEL DÍA',
+      text: 'Tu plan de hoy te espera',
+      target: 'workout',
+    };
+  }
+  if (h < 14) {
+    return {
+      eyebrow: '🥬 HORA DE ALMORZAR',
+      text: 'Logueá tu plato con foto · 1 tap',
+      target: 'nutrition',
+    };
+  }
+  if (h < 18) {
+    return {
+      eyebrow: '⚡ TARDE PRODUCTIVA',
+      text: 'Revisá tu progreso del día',
+      target: 'readiness',
+    };
+  }
+  if (h < 21) {
+    return {
+      eyebrow: '🥬 HORA DE CENAR',
+      text: 'Logueá tu cena · te quedan macros',
+      target: 'nutrition',
+    };
+  }
+  return {
+    eyebrow: '🌙 PRE-SUEÑO',
+    text: 'Prepará tu descanso · sin pantallas en 30 min',
+    target: 'sleep',
+  };
+}
+
+function onPulseActionClick() {
+  const btn = document.getElementById('hoy-pulse-action');
+  const target = btn?.dataset.targetModule || 'readiness';
+  openModule(target);
 }
 
 // =============================================
@@ -4399,58 +4692,16 @@ function switchHoyTab(tab) {
   if (saviaContent) saviaContent.style.display = tab === 'savia' ? 'flex' : 'none';
 }
 
-function selectMood(value) {
-  // Marcar visualmente el emoji seleccionado
-  document.querySelectorAll('.hoy-checkin-emoji-btn').forEach(btn => {
-    btn.classList.toggle('selected', parseInt(btn.dataset.mood, 10) === value);
-  });
-  // Sprint 0: solo placeholder local. Sprint 1: persistir en Supabase + WQ real.
-  try {
-    const today = new Date().toISOString().slice(0, 10);
-    localStorage.setItem('savia_checkin_' + today, JSON.stringify({ mood: value, ts: Date.now() }));
-  } catch {}
-  // Transformar el hero en estado "completed" después de 600ms
-  setTimeout(() => showCheckinCompleted(value), 600);
-}
-
-function showCheckinCompleted(mood) {
-  const card = document.getElementById('hoy-checkin-card');
-  const stateEl = document.getElementById('hoy-checkin-state');
-  const question = document.getElementById('hoy-checkin-question');
-  if (!card || !stateEl) return;
-  card.classList.add('completed');
-  question.textContent = 'Tu estado de hoy';
-  const labels = { 1: 'Cansado', 2: 'Bajo', 3: 'Normal', 4: 'Bien', 5: 'Increíble' };
-  const emojis = { 1: '😴', 2: '😐', 3: '🙂', 4: '💪', 5: '🔥' };
-  stateEl.innerHTML = `${emojis[mood] || ''} ${labels[mood] || ''}`;
-  stateEl.style.display = 'block';
-  const hint = card.querySelector('.hoy-checkin-hint');
-  if (hint) hint.textContent = 'Volvé mañana para tu próximo check-in';
-}
-
-function loadTodayCheckinUI() {
-  // SIEMPRE reseteamos primero a estado "pregunta" — más predecible que branching
-  const card = document.getElementById('hoy-checkin-card');
-  const stateEl = document.getElementById('hoy-checkin-state');
-  const question = document.getElementById('hoy-checkin-question');
-  const hint = card ? card.querySelector('.hoy-checkin-hint') : null;
-  if (card) card.classList.remove('completed');
-  if (stateEl) { stateEl.style.display = 'none'; stateEl.innerHTML = ''; }
-  if (question) question.textContent = getCheckinQuestion();
-  if (hint) hint.textContent = 'Tappeá tu estado · 30 segundos';
-  document.querySelectorAll('.hoy-checkin-emoji-btn').forEach(b => b.classList.remove('selected'));
-  // Si ya hizo check-in hoy, mostrar estado completed encima del reset
-  try {
-    const today = new Date().toISOString().slice(0, 10);
-    const raw = localStorage.getItem('savia_checkin_' + today);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    if (data && data.mood) showCheckinCompleted(data.mood);
-  } catch (e) { console.warn('loadTodayCheckinUI parse error:', e); }
-}
+// (Sprint 0.5: las funciones selectMood/showCheckinCompleted/loadTodayCheckinUI/getCheckinQuestion
+// fueron removidas — reemplazadas por renderDailyPulse y derivados. Ver más abajo.)
 
 function openModule(name) {
   // Sprint 0: módulos aún no construidos. Mensaje sutil.
+  // Excepción: 'wearables' lleva al perfil (donde se editan)
+  if (name === 'wearables') {
+    openProfile();
+    return;
+  }
   const labels = {
     readiness: 'Readiness · Recovery',
     workout: 'Workout',
