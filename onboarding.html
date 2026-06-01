@@ -2160,6 +2160,53 @@
     padding: 10px 16px; border-radius: 20px;
     white-space: nowrap;
   }
+  /* Search bar */
+  .nut-search-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-top: 8px;
+  }
+  .nut-search-bar svg {
+    width: 18px; height: 18px;
+    color: #94A3B8; flex-shrink: 0;
+  }
+  .nut-search-bar input {
+    flex: 1; background: transparent; border: none; outline: none;
+    color: #F8FAFC; font-size: 15px; font-weight: 500;
+    font-family: 'Inter', sans-serif;
+  }
+  .nut-search-bar input::placeholder { color: #64748B; }
+  .nut-search-result {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .nut-search-result:active { background: rgba(255,255,255,0.03); }
+  .nut-search-result-img {
+    width: 44px; height: 44px; border-radius: 10px;
+    object-fit: cover; flex-shrink: 0;
+    background: rgba(255,255,255,0.04);
+  }
+  .nut-search-result-text { flex: 1; min-width: 0; }
+  .nut-search-result-name {
+    font-size: 14px; font-weight: 600; color: #F8FAFC;
+    line-height: 1.3; margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nut-search-result-meta {
+    font-size: 11px; color: #94A3B8;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .nut-search-result-kcal {
+    font-size: 12px; font-weight: 600; color: #BEF264;
+    flex-shrink: 0;
+  }
+
   .nut-bc-status {
     position: absolute; left: 50%; top: 50%;
     transform: translate(-50%, calc(-50% + 110px));
@@ -4240,15 +4287,51 @@
         </div>
       </button>
 
-      <button class="nut-method-option" onclick="nutOpenMealLog()">
+      <button class="nut-method-option" onclick="nutOpenSearch()">
+        <div class="nut-method-icon" style="background:rgba(245,158,11,0.16); border-color:rgba(245,158,11,0.4); color:#FDE68A;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        </div>
+        <div class="nut-method-text">
+          <div class="nut-method-title">Buscar alimento</div>
+          <div class="nut-method-sub">Más de 2M productos · pollo, arroz, frutas, marcas...</div>
+        </div>
+      </button>
+
+      <button class="nut-method-option" onclick="nutOpenMealLog()" style="opacity:0.7;">
         <div class="nut-method-icon" style="background:rgba(255,255,255,0.06); border-color:rgba(255,255,255,0.12); color:#CBD5E1;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </div>
         <div class="nut-method-text">
           <div class="nut-method-title">Ingresar manual</div>
-          <div class="nut-method-sub">Texto libre con macros que conozcas</div>
+          <div class="nut-method-sub">Texto libre · si conocés los macros exactos</div>
         </div>
       </button>
+    </div>
+  </div>
+
+  <!-- ============== NUTRITION — Search alimentos (Open Food Facts) ============== -->
+  <div class="screen nut-screen" data-step="nut-search">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('nut-meal-method')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Buscar</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div style="padding:0 24px;">
+      <div class="nut-search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg>
+        <input type="search" id="nut-search-input" placeholder="Ej: arroz, pollo, Dos Pinos..." autocomplete="off" autocorrect="off" spellcheck="false"/>
+        <button id="nut-search-clear" onclick="nutSearchClear()" style="display:none;background:none;border:none;color:#94A3B8;font-size:18px;padding:4px 8px;cursor:pointer;">×</button>
+      </div>
+      <div id="nut-search-status" style="font-size:12px;color:#94A3B8;margin:8px 4px 0;min-height:18px;"></div>
+    </div>
+    <div id="nut-search-results" style="padding:8px 24px 24px;overflow-y:auto;flex:1;">
+      <div style="text-align:center;padding:40px 16px;color:#64748B;font-size:13px;line-height:1.6;">
+        Escribí al menos 3 letras para buscar.<br>
+        <span style="color:#94A3B8;">Funciona mejor en español: "yogurt", "atún", "leche".</span>
+      </div>
     </div>
   </div>
 
@@ -4276,9 +4359,9 @@
   <!-- ============== NUTRITION — Barcode result ============== -->
   <div class="screen nut-screen" data-step="nut-barcode-result">
     <div class="nut-topbar">
-      <button class="nut-back-btn" onclick="nutStartBarcodeScan()">
+      <button class="nut-back-btn" id="nut-bc-back-btn" onclick="nutBcBackFromResult()">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-        Escanear otro
+        <span id="nut-bc-back-label">Atrás</span>
       </button>
       <div class="nut-title">Producto</div>
       <div style="width:56px;"></div>
@@ -4571,7 +4654,7 @@ function goStep(n) {
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
-    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 0];
+    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -6438,6 +6521,122 @@ function nutOpenMealMethod() {
   goStep('nut-meal-method');
 }
 
+// ============================================================
+//  SEARCH ALIMENTOS (Open Food Facts) — estilo MyFitnessPal
+// ============================================================
+let _nutSearchTimer = null;
+let _nutSearchSeq = 0;
+
+function nutOpenSearch() {
+  goStep('nut-search');
+  const input = document.getElementById('nut-search-input');
+  if (input) {
+    input.value = '';
+    setTimeout(() => input.focus(), 250);
+    // Wire debounced search
+    input.oninput = () => nutSearchDebounced(input.value);
+  }
+  // Reset results
+  const results = document.getElementById('nut-search-results');
+  if (results) {
+    results.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#64748B;font-size:13px;line-height:1.6;">Escribí al menos 3 letras para buscar.<br><span style="color:#94A3B8;">Funciona mejor en español: "yogurt", "atún", "leche".</span></div>';
+  }
+  document.getElementById('nut-search-clear').style.display = 'none';
+  document.getElementById('nut-search-status').textContent = '';
+}
+
+function nutSearchClear() {
+  const input = document.getElementById('nut-search-input');
+  if (input) { input.value = ''; input.focus(); }
+  nutOpenSearch(); // reset
+}
+
+function nutSearchDebounced(query) {
+  clearTimeout(_nutSearchTimer);
+  const clearBtn = document.getElementById('nut-search-clear');
+  clearBtn.style.display = query ? '' : 'none';
+  const status = document.getElementById('nut-search-status');
+  const results = document.getElementById('nut-search-results');
+  if (!query || query.trim().length < 3) {
+    if (status) status.textContent = '';
+    if (results) results.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#64748B;font-size:13px;line-height:1.6;">Escribí al menos 3 letras para buscar.</div>';
+    return;
+  }
+  if (status) status.textContent = 'Buscando...';
+  _nutSearchTimer = setTimeout(() => nutDoSearch(query.trim()), 350);
+}
+
+async function nutDoSearch(query) {
+  const seq = ++_nutSearchSeq; // evita race entre requests rápidos
+  const status = document.getElementById('nut-search-status');
+  const results = document.getElementById('nut-search-results');
+  try {
+    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&page_size=20&json=1&fields=code,product_name,product_name_es,brands,nutriments,image_small_url`;
+    const resp = await fetch(url, { headers: { Accept: 'application/json' } });
+    if (seq !== _nutSearchSeq) return; // outdated
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    const items = (json.products || []).filter(p => {
+      const kcal = (p.nutriments || {})['energy-kcal_100g'];
+      return p.code && (p.product_name || p.product_name_es) && kcal > 0;
+    });
+    if (seq !== _nutSearchSeq) return;
+    if (items.length === 0) {
+      if (status) status.textContent = '';
+      if (results) results.innerHTML = `
+        <div style="text-align:center;padding:32px 16px;color:#94A3B8;font-size:13px;line-height:1.6;">
+          No encontramos resultados para <strong style="color:#CBD5E1;">"${escapeHtml(query)}"</strong>.<br>
+          <button onclick="nutOpenMealLog()" style="margin-top:14px;background:rgba(132,204,22,0.12);border:1px solid rgba(132,204,22,0.3);color:#BEF264;padding:8px 16px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Ingresar manual</button>
+        </div>`;
+      return;
+    }
+    if (status) status.textContent = `${items.length} resultado${items.length === 1 ? '' : 's'}`;
+    if (results) {
+      results.innerHTML = items.map(p => {
+        const name = p.product_name_es || p.product_name || 'Sin nombre';
+        const brand = p.brands || '';
+        const n = p.nutriments || {};
+        const kcal = Math.round(n['energy-kcal_100g'] || 0);
+        const img = p.image_small_url || '';
+        // Usamos data-code (escapado como atributo) + delegation handler para evitar XSS via onclick
+        return `
+          <div class="nut-search-result" data-code="${escapeAttr(p.code)}">
+            ${img ? `<img class="nut-search-result-img" src="${escapeAttr(img)}" alt="" loading="lazy"/>` : '<div class="nut-search-result-img"></div>'}
+            <div class="nut-search-result-text">
+              <div class="nut-search-result-name">${escapeHtml(name)}</div>
+              <div class="nut-search-result-meta">${escapeHtml(brand) || '—'}</div>
+            </div>
+            <div class="nut-search-result-kcal">${kcal} kcal<br><span style="font-size:9px;color:#64748B;font-weight:500;">/100g</span></div>
+          </div>
+        `;
+      }).join('');
+      // Event delegation: un solo listener en el container, lee data-code del card
+      results.onclick = (e) => {
+        const card = e.target.closest('.nut-search-result');
+        if (!card || !card.dataset.code) return;
+        nutSearchSelect(card.dataset.code);
+      };
+    }
+  } catch (e) {
+    if (seq !== _nutSearchSeq) return;
+    console.warn('[NUT] search error:', e);
+    if (status) status.textContent = '';
+    if (results) results.innerHTML = '<div style="text-align:center;padding:32px 16px;color:#F87171;font-size:13px;">Error de conexión. Probá de nuevo.</div>';
+  }
+}
+
+// Al tap un resultado, reusamos el flow de barcode-result (mismo selector de porción + save)
+async function nutSearchSelect(code) {
+  nutBcState.from = 'search'; // así el back del result vuelve a search, no abre cámara
+  await nutLookupBarcode(code);
+}
+
+// HTML escape helpers (previene injection en search results)
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+}
+function escapeAttr(s) { return escapeHtml(s); }
+
 function nutMethodSoon(method) {
   // Foto pendiente de Sprint B (Claude Vision Edge Function).
   // Mensaje suave para no romper el flow.
@@ -6455,7 +6654,14 @@ const nutBcState = {
   scanning: false,
   product: null,
   portionG: 100,
+  from: null, // 'scan' | 'search' — para routear el back button del result
 };
+
+// Router del back desde nut-barcode-result según cómo llegó el user
+function nutBcBackFromResult() {
+  if (nutBcState.from === 'search') goStep('nut-search');
+  else nutStartBarcodeScan();
+}
 
 // Carga lazy de ZXing (universal — funciona en Safari iOS donde BarcodeDetector no existe).
 // Usamos @zxing/library que tiene UMD bundle pre-built (a diferencia de @zxing/browser).
@@ -6471,6 +6677,7 @@ function nutLoadZXing() {
 }
 
 async function nutStartBarcodeScan() {
+  nutBcState.from = 'scan';
   goStep('nut-barcode-scan');
   const video = document.getElementById('nut-bc-video');
   const hint = document.getElementById('nut-bc-hint');
@@ -6655,6 +6862,9 @@ function nutBcShowNotFound(code) {
 function nutBcRenderResult() {
   const p = nutBcState.product;
   if (!p) return;
+  // Actualizar label del back según origen
+  const backLabel = document.getElementById('nut-bc-back-label');
+  if (backLabel) backLabel.textContent = nutBcState.from === 'search' ? 'Volver a buscar' : 'Escanear otro';
   document.getElementById('nut-bc-name').textContent = p.name;
   document.getElementById('nut-bc-brand').textContent = p.brand || '—';
   document.getElementById('nut-bc-kcal').textContent = p.kcal_100 || 0;
