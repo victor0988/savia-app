@@ -3153,8 +3153,8 @@ const SUPABASE_URL = 'https://vlzzgttjrpyywmahwooi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZsenpndHRqcnB5eXdtYWh3b29pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODAwOTA0OTIsImV4cCI6MjA5NTY2NjQ5Mn0.wH4oohfDEcS5j5N0FAtw_sZzDovixmbvSBpDNZy-3yk';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    flowType: 'implicit',     // Matchea el flow que Supabase Auth devuelve (#access_token=...)
-    detectSessionInUrl: true, // Auto-detecta tokens del hash al cargar página
+    flowType: 'implicit',      // Matchea el flow que Supabase Auth devuelve (#access_token=...)
+    detectSessionInUrl: false, // Lo hacemos manualmente en init para evitar conflictos en Safari
     persistSession: true,
     autoRefreshToken: true,
   },
@@ -5417,23 +5417,30 @@ async function confirmReset() {
 // 3. Si no, mostrar splash y ocultar Face ID si no se ha activado
 // Top-level: routea a un usuario autenticado al lugar correcto.
 // Usable desde init(), onAuthStateChange listener, y desde flows OAuth/OTP.
+// Acepta sessionHint para evitar llamar getSession() (que se cuelga en Safari con OAuth callback)
 let _routingInProgress = false;
-async function routeAuthenticatedUser() {
+async function routeAuthenticatedUser(sessionHint) {
   if (_routingInProgress) {
     console.log('[SAVIA] Routing ya en progreso, skip');
     return;
   }
   _routingInProgress = true;
   try {
-    await _doRouteAuthenticatedUser();
+    await _doRouteAuthenticatedUser(sessionHint);
   } finally {
     setTimeout(() => { _routingInProgress = false; }, 1000);
   }
 }
 
-async function _doRouteAuthenticatedUser() {
-  console.log('[SAVIA] _doRouteAuthenticatedUser start');
-  const { data: { session } } = await sb.auth.getSession();
+async function _doRouteAuthenticatedUser(sessionHint) {
+  console.log('[SAVIA] _doRouteAuthenticatedUser start, hint:', !!sessionHint);
+  let session = sessionHint;
+  if (!session) {
+    try {
+      const { data } = await sb.auth.getSession();
+      session = data.session;
+    } catch (e) { console.error('[SAVIA] getSession failed:', e); }
+  }
   if (!session) { console.warn('[SAVIA] no session, abort routing'); return; }
   console.log('[SAVIA] session OK, loading profile...');
 
@@ -5559,14 +5566,14 @@ function showDebugBanner() { /* no-op */ }
 
   // Listener para password recovery + auto-route en login OAuth (Google)
   sb.auth.onAuthStateChange(async (event, session) => {
-    console.log('[SAVIA] Auth event:', event, 'step:', state.step);
+    console.log('[SAVIA] Auth event:', event, 'step:', state.step, 'hasSession:', !!session);
     if (event === 'PASSWORD_RECOVERY') {
       goStep('change-password');
       return;
     }
     // Si volvió de OAuth (Google), routear automáticamente
     if (event === 'SIGNED_IN' && (state.step === 0 || state.step === 'auth' || state.step === undefined)) {
-      await routeAuthenticatedUser();
+      await routeAuthenticatedUser(session);
     }
   });
 
