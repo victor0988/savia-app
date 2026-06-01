@@ -2962,21 +2962,21 @@ function applyStateToUI() {
       const bd = document.getElementById('birthdate-input');
       if (bd) bd.value = state.birthdate;
     }
-    // Goals (step 3)
+    // Goals (step 2)
     if (state.goals && state.goals.length) {
-      document.querySelectorAll('[data-step="3"] [data-goal]').forEach(el => {
+      document.querySelectorAll('[data-step="2"] [data-goal]').forEach(el => {
         el.classList.toggle('selected', state.goals.includes(el.dataset.goal));
       });
     }
-    // Level (step 4)
+    // Level (step 3)
     if (state.level) {
-      document.querySelectorAll('[data-step="4"] [data-level]').forEach(el => {
+      document.querySelectorAll('[data-step="3"] [data-level]').forEach(el => {
         el.classList.toggle('selected', el.dataset.level === state.level);
       });
     }
-    // Wearables (step 5)
+    // Wearables (step 4)
     if (state.wearables && state.wearables.length) {
-      document.querySelectorAll('[data-step="5"] [data-wearable]').forEach(el => {
+      document.querySelectorAll('[data-step="4"] [data-wearable]').forEach(el => {
         el.classList.toggle('selected', state.wearables.includes(el.dataset.wearable));
       });
     }
@@ -3415,6 +3415,10 @@ function hasRecompConflict() {
 }
 
 function afterQ2() {
+  // Defensa: si estamos editando desde profile, redirigir a save
+  if (state.editingFromProfile === 'goals') {
+    return saveGoalsAndReturnToProfile();
+  }
   if (hasMaintenanceConflict()) {
     state.maintenanceMode = null;
     document.querySelectorAll('[data-step="2.4"] .resolve-card').forEach(c => c.classList.remove('selected'));
@@ -4354,40 +4358,102 @@ async function logoutFromProfile() {
   // y evitar que se vea la pantalla del app brevemente
   document.documentElement.classList.add('oauth-loading');
   await logout();
-  document.documentElement.classList.remove('oauth-loading');
+  // Esperar 2 frames para que el splash se pinte ANTES de remover el overlay
+  // Sin esto, en dispositivos lentos puede haber flash del app entre logout y splash
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      document.documentElement.classList.remove('oauth-loading');
+    });
+  });
 }
 
 // =============================================
 //  EDITAR DESDE PROFILE — Goals + Wearables
 // =============================================
-// Flag para que goals/wearables screens sepan que volver al profile (no avanzar onboarding)
+// Originales harcoded (más simple y confiable que snapshot dinámico).
+// Coinciden EXACTAMENTE con el HTML del onboarding normal.
+const SCREEN_DEFAULTS = {
+  goals: {
+    selector: '[data-step="2"]',
+    eyebrow: 'Paso 3 de 6',
+    continueBtnId: 'continue-2',
+    continueText: 'Continuar',
+    continueOnclick: () => afterQ2(),
+    backOnclick: () => goStep(1),
+  },
+  wearables: {
+    selector: '[data-step="4"]',
+    eyebrow: 'Paso 5 de 6',
+    title: '¿Qué wearables usas?',
+    hint: 'Selecciona todos los que tengas. SAVIA sincroniza todos a la vez y combina su data.',
+    continueBtnId: 'continue-4',
+    continueText: 'Continuar',
+    continueOnclick: () => goStep(5),
+    backOnclick: () => goStep(3),
+  },
+};
+
+function restoreOnboardingScreen(which) {
+  const def = SCREEN_DEFAULTS[which];
+  if (!def) return;
+  const screen = document.querySelector(def.selector);
+  if (!screen) return;
+  const eyebrow = screen.querySelector('.q-eyebrow');
+  const title = screen.querySelector('.q-title');
+  const hint = screen.querySelector('.q-hint');
+  const continueBtn = screen.querySelector('#' + def.continueBtnId);
+  const backBtn = screen.querySelector('.back-btn');
+  if (eyebrow && def.eyebrow) eyebrow.textContent = def.eyebrow;
+  if (title && def.title) title.textContent = def.title;
+  if (hint && def.hint) hint.textContent = def.hint;
+  if (continueBtn) {
+    continueBtn.textContent = def.continueText;
+    continueBtn.onclick = def.continueOnclick;
+  }
+  if (backBtn) backBtn.onclick = def.backOnclick;
+  if (which === 'wearables') {
+    cleanupWearableSwipeWrappers();
+    // Quitar locked y reset wearables al estado actual
+    screen.querySelectorAll('.list-card').forEach(card => {
+      card.classList.remove('locked');
+      card.style.transform = '';
+      card.style.position = '';
+      card.style.zIndex = '';
+      card.style.transition = '';
+      delete card.dataset.swiped;
+    });
+  }
+}
+
+function cleanupWearableSwipeWrappers() {
+  document.querySelectorAll('.wearable-swipe-wrap').forEach(wrap => {
+    const card = wrap.querySelector('.list-card');
+    if (card) wrap.parentNode.insertBefore(card, wrap);
+    wrap.remove();
+  });
+}
+
 function editGoalsFromProfile() {
   state.editingFromProfile = 'goals';
-  // Pre-poblar la pantalla con los goals actuales
-  applyStateToUI();
-  // Customizar el header de la pantalla goals (eyebrow + título)
   customizeGoalsScreenForEditing();
-  goStep(3);
+  applyStateToUI();
+  goStep(2);
 }
 
 function editWearablesFromProfile() {
   state.editingFromProfile = 'wearables';
-  // Pre-poblar con los wearables actuales (auto-select)
-  applyStateToUI();
-  // Customizar header de wearables screen
   customizeWearablesScreenForEditing();
-  goStep(5);
+  applyStateToUI();
+  goStep(4);
 }
 
 function customizeGoalsScreenForEditing() {
-  const screen = document.querySelector('[data-step="3"]');
+  const screen = document.querySelector('[data-step="2"]');
   if (!screen) return;
   const eyebrow = screen.querySelector('.q-eyebrow');
-  const title = screen.querySelector('.q-title');
-  const continueBtn = screen.querySelector('.continue-btn, button[onclick*="goStep(4)"]');
+  const continueBtn = screen.querySelector('#continue-2');
   const backBtn = screen.querySelector('.back-btn');
   if (eyebrow) eyebrow.textContent = 'Editar objetivos';
-  if (title) title.textContent = '¿Qué querés optimizar?';
   if (continueBtn) {
     continueBtn.textContent = 'Guardar';
     continueBtn.onclick = saveGoalsAndReturnToProfile;
@@ -4396,17 +4462,21 @@ function customizeGoalsScreenForEditing() {
 }
 
 function exitEditAndReturnToProfile() {
+  const which = state.editingFromProfile;
   state.editingFromProfile = null;
+  // Restaurar screen al estado de onboarding normal
+  if (which === 'goals') restoreOnboardingScreen('goals');
+  if (which === 'wearables') restoreOnboardingScreen('wearables');
   openProfile();
 }
 
 function customizeWearablesScreenForEditing() {
-  const screen = document.querySelector('[data-step="5"]');
+  const screen = document.querySelector('[data-step="4"]');
   if (!screen) return;
   const eyebrow = screen.querySelector('.q-eyebrow');
   const title = screen.querySelector('.q-title');
   const hint = screen.querySelector('.q-hint');
-  const continueBtn = screen.querySelector('#continue-5');
+  const continueBtn = screen.querySelector('#continue-4');
   const backBtn = screen.querySelector('.back-btn');
   if (eyebrow) eyebrow.textContent = 'Editar wearables';
   if (title) title.textContent = 'Tus wearables';
@@ -4414,6 +4484,7 @@ function customizeWearablesScreenForEditing() {
   if (continueBtn) {
     continueBtn.textContent = 'Guardar';
     continueBtn.onclick = saveWearablesAndReturnToProfile;
+    continueBtn.classList.add('show'); // Asegurar visible aunque haya 0 selected
   }
   if (backBtn) backBtn.onclick = exitEditAndReturnToProfile;
   // Marcar los wearables conectados como "locked" + envolverlos en swipe container
@@ -4457,10 +4528,15 @@ function wrapWearableCardWithSwipe(card, wearable) {
 }
 
 function attachSwipeHandlers(card, wearable) {
+  // Evitar acumular listeners en re-entries de edit mode
+  if (card._swipeHandlersAttached) return;
+  card._swipeHandlersAttached = true;
   let startX = 0, currentX = 0, dragging = false;
   card.addEventListener('touchstart', (e) => {
+    if (!card.classList.contains('locked')) return;
     if (e.touches.length !== 1) return;
     startX = e.touches[0].clientX;
+    currentX = startX;
     dragging = true;
   }, { passive: true });
   card.addEventListener('touchmove', (e) => {
@@ -4486,7 +4562,7 @@ function attachSwipeHandlers(card, wearable) {
 function removeWearableFromList(wearable) {
   state.wearables = (state.wearables || []).filter(w => w !== wearable);
   // Unlock + uncheck the card
-  const card = document.querySelector(`[data-step="5"] .list-card[data-wearable="${wearable}"]`);
+  const card = document.querySelector(`[data-step="4"] .list-card[data-wearable="${wearable}"]`);
   if (card) {
     card.classList.remove('selected', 'locked');
     card.style.transform = '';
@@ -4514,6 +4590,7 @@ async function saveGoalsAndReturnToProfile() {
       await sb.from('profiles').update({ goals: state.goals }).eq('id', user.id);
     }
   } catch (e) { console.warn('Save goals failed:', e); }
+  restoreOnboardingScreen('goals');
   openProfile();
 }
 
@@ -4525,6 +4602,7 @@ async function saveWearablesAndReturnToProfile() {
       await sb.from('profiles').update({ wearables: state.wearables }).eq('id', user.id);
     }
   } catch (e) { console.warn('Save wearables failed:', e); }
+  restoreOnboardingScreen('wearables');
   openProfile();
 }
 
