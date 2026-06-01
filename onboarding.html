@@ -7030,12 +7030,21 @@ async function _doRouteAuthenticatedUser(sessionHint) {
   state.goals = profile.goals || [];
   state.level = profile.level || '';
 
-  // Si el nombre vino del provider y no está en el profile, persistirlo
+  // Si el nombre vino del provider y no está en el profile, persistirlo.
+  // FIRE-AND-FORGET via manual REST (el SDK update se cuelga en Safari post-OAuth — bug conocido).
+  // No bloqueamos el routing por esta escritura cosmética.
   if (!profile.name && nameFromProvider) {
-    try {
-      await sb.from('profiles').update({ name: nameFromProvider, photo_url: state.photo }).eq('id', session.user.id);
-      console.log('[SAVIA] ✓ Nombre + foto de Google guardados en profile');
-    } catch (e) { console.warn('Sync name from provider failed:', e); }
+    fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify({ name: nameFromProvider, photo_url: state.photo }),
+    }).then(r => { if (r.ok) console.log('[SAVIA] ✓ Nombre + foto de Google guardados'); else console.warn('[SAVIA] sync name HTTP:', r.status); })
+      .catch(e => console.warn('[SAVIA] sync name failed:', e));
   }
 
   const saved = loadOnboardingState();
@@ -7069,22 +7078,32 @@ async function _doRouteAuthenticatedUser(sessionHint) {
 
   if (effectivelyOnboarded) {
     if (!profile.isOnboarded && hasOnboardingData) {
-      try {
-        await sb.from('profiles').upsert({
-          id: session.user.id,
-          email: state.email,
-          name: state.name || null,
-          sex: state.sex || null,
-          age: state.age ? parseInt(state.age, 10) : null,
-          goals: state.goals,
-          level: state.level || null,
-          wearables: state.wearables,
-          photo_url: state.photo,
-          maintenance_mode: state.maintenanceMode || null,
-          resolution: state.resolution || null,
-          is_onboarded: true,
-        });
-      } catch (e) { console.warn('Cura falló:', e); }
+      // Curar via REST fire-and-forget — el SDK upsert se cuelga en Safari post-OAuth.
+      // No bloqueamos el routing por esta escritura; si falla, próxima sesión la vuelve a intentar.
+      console.log('[SAVIA] Curando is_onboarded=true en DB (fire-and-forget REST)');
+      const curaPayload = {
+        name: state.name || null,
+        sex: state.sex || null,
+        age: state.age ? parseInt(state.age, 10) : null,
+        goals: state.goals,
+        level: state.level || null,
+        wearables: state.wearables,
+        photo_url: state.photo,
+        maintenance_mode: state.maintenanceMode || null,
+        resolution: state.resolution || null,
+        is_onboarded: true,
+      };
+      fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify(curaPayload),
+      }).then(r => console.log('[SAVIA] cura HTTP:', r.status))
+        .catch(e => console.warn('[SAVIA] Cura falló:', e));
     }
     clearOnboardingState();
     enterAppSimulation('login');
@@ -7208,24 +7227,33 @@ function showDebugBanner() { /* no-op */ }
 
     if (effectivelyOnboarded) {
       if (!profile.isOnboarded && hasOnboardingData) {
-        // Curar la inconsistencia: marcar como onboarded en DB
-        console.log('[SAVIA] Curando is_onboarded=true en DB');
-        try {
-          await sb.from('profiles').upsert({
-            id: session.user.id,
-            email: state.email,
-            name: state.name || null,
-            sex: state.sex || null,
-            age: state.age ? parseInt(state.age, 10) : null,
-            goals: state.goals,
-            level: state.level || null,
-            wearables: state.wearables,
-            photo_url: state.photo,
-            maintenance_mode: state.maintenanceMode || null,
-            resolution: state.resolution || null,
-            is_onboarded: true,
-          });
-        } catch (e) { console.warn('Cura falló:', e); }
+        // Curar via REST fire-and-forget — el SDK upsert se cuelga en Safari post-OAuth.
+        // No bloqueamos el routing por esta escritura; si falla, próxima sesión la vuelve a intentar.
+        console.log('[SAVIA] Curando is_onboarded=true en DB (fire-and-forget REST)');
+        const accessToken = (sessionHint && sessionHint.access_token) || (session && session.access_token);
+        const curaPayload = {
+          name: state.name || null,
+          sex: state.sex || null,
+          age: state.age ? parseInt(state.age, 10) : null,
+          goals: state.goals,
+          level: state.level || null,
+          wearables: state.wearables,
+          photo_url: state.photo,
+          maintenance_mode: state.maintenanceMode || null,
+          resolution: state.resolution || null,
+          is_onboarded: true,
+        };
+        fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}`, {
+          method: 'PATCH',
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+            Prefer: 'return=minimal',
+          },
+          body: JSON.stringify(curaPayload),
+        }).then(r => console.log('[SAVIA] cura HTTP:', r.status))
+          .catch(e => console.warn('[SAVIA] Cura falló:', e));
       }
       clearOnboardingState();
       enterAppSimulation('login');
