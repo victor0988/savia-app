@@ -29,6 +29,11 @@
   html.oauth-loading {
     background: radial-gradient(ellipse at 50% 50%, #0F2A1E 0%, #050810 70%);
   }
+  /* Body invisible mientras oauth-loading está activo.
+     Cuando JS quita la clase, body fade-in suavemente → app aparece sin gap visual.
+     Esto previene: bfcache flash, doble goStep animation, gap entre pulse y app. */
+  body { transition: opacity 0.35s ease; }
+  html.oauth-loading body { opacity: 0; pointer-events: none; }
   /* Pulse verde visible AUN ANTES de que body parsee (usa pseudo de html, no de body) */
   html.oauth-loading::before {
     content: '';
@@ -5890,7 +5895,7 @@ async function _doRouteAuthenticatedUser(sessionHint) {
     }
     clearOnboardingState();
     enterAppSimulation('login');
-    document.documentElement.classList.remove('oauth-loading');
+    // (enterAppSimulation maneja oauth-loading internamente con setTimeout 450ms)
     return;
   }
 
