@@ -4505,7 +4505,86 @@
     <button class="nut-onb-continue" id="nut-bc-save-btn" onclick="nutBcSaveMeal()">Guardar comida</button>
   </div>
 
-  <!-- ============== NUTRITION — Editar comida existente ============== -->
+  <!-- ============== NUTRITION — Editar porción (recalcula macros) ============== -->
+  <div class="screen nut-screen" data-step="nut-meal-edit-portion">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('nutrition')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title">Editar porción</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px; margin-bottom:18px;">
+        <div id="nut-edp-name" style="font-size:15px; font-weight:600; color:#F8FAFC; line-height:1.3; margin-bottom:2px;">—</div>
+        <div id="nut-edp-brand" style="font-size:12px; color:#94A3B8; margin-bottom:10px;">—</div>
+        <div style="font-size:11px; color:#64748B; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;" id="nut-edp-per-label">Por 100 g</div>
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:6px; font-size:11px;">
+          <div style="text-align:center; padding:8px 4px; background:rgba(255,255,255,0.03); border-radius:8px;">
+            <div id="nut-edp-kcal" style="font-size:15px; font-weight:600; color:#F8FAFC;">—</div>
+            <div style="color:#94A3B8; margin-top:2px;">kcal</div>
+          </div>
+          <div style="text-align:center; padding:8px 4px; background:rgba(239,68,68,0.08); border-radius:8px;">
+            <div id="nut-edp-p" style="font-size:15px; font-weight:600; color:#FCA5A5;">—</div>
+            <div style="color:#94A3B8; margin-top:2px;">P (g)</div>
+          </div>
+          <div style="text-align:center; padding:8px 4px; background:rgba(245,158,11,0.08); border-radius:8px;">
+            <div id="nut-edp-c" style="font-size:15px; font-weight:600; color:#FDE68A;">—</div>
+            <div style="color:#94A3B8; margin-top:2px;">C (g)</div>
+          </div>
+          <div style="text-align:center; padding:8px 4px; background:rgba(132,204,22,0.08); border-radius:8px;">
+            <div id="nut-edp-f" style="font-size:15px; font-weight:600; color:#BEF264;">—</div>
+            <div style="color:#94A3B8; margin-top:2px;">F (g)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nut-onb-field-label">Categoría</div>
+      <div class="nut-onb-pills" style="margin-bottom:18px;">
+        <div class="nut-onb-pill" data-edp-cat="breakfast" onclick="nutEdpSelectCategory('breakfast', this)">Desayuno</div>
+        <div class="nut-onb-pill" data-edp-cat="snack_am" onclick="nutEdpSelectCategory('snack_am', this)">Snack AM</div>
+        <div class="nut-onb-pill" data-edp-cat="lunch" onclick="nutEdpSelectCategory('lunch', this)">Almuerzo</div>
+        <div class="nut-onb-pill" data-edp-cat="snack_pm" onclick="nutEdpSelectCategory('snack_pm', this)">Snack PM</div>
+        <div class="nut-onb-pill" data-edp-cat="dinner" onclick="nutEdpSelectCategory('dinner', this)">Cena</div>
+        <div class="nut-onb-pill" data-edp-cat="post_workout" onclick="nutEdpSelectCategory('post_workout', this)">Post-WO</div>
+      </div>
+
+      <div class="nut-onb-field-label">Porción consumida</div>
+
+      <div id="nut-edp-units-section" style="display:none; margin-bottom:14px;">
+        <div style="font-size:11px; color:#94A3B8; margin-bottom:6px;">Por unidad <span id="nut-edp-unit-weight" style="color:#64748B;"></span></div>
+        <div class="nut-onb-pills" style="margin-bottom:8px;">
+          <div class="nut-onb-pill" data-edp-units="0.5" onclick="nutEdpSelectUnits(0.5, this)">½</div>
+          <div class="nut-onb-pill" data-edp-units="1" onclick="nutEdpSelectUnits(1, this)">1</div>
+          <div class="nut-onb-pill" data-edp-units="2" onclick="nutEdpSelectUnits(2, this)">2</div>
+          <div class="nut-onb-pill" data-edp-units="3" onclick="nutEdpSelectUnits(3, this)">3</div>
+          <div class="nut-onb-pill" data-edp-units="4" onclick="nutEdpSelectUnits(4, this)">4</div>
+        </div>
+      </div>
+
+      <div style="font-size:11px; color:#94A3B8; margin-bottom:6px;" id="nut-edp-portion-label">Por gramos</div>
+      <div class="nut-onb-pills" style="margin-bottom:10px;" id="nut-edp-portion-pills">
+        <div class="nut-onb-pill" data-edp-portion="50" onclick="nutEdpSelectPortion(50, this)">50 g</div>
+        <div class="nut-onb-pill" data-edp-portion="100" onclick="nutEdpSelectPortion(100, this)">100 g</div>
+        <div class="nut-onb-pill" data-edp-portion="150" onclick="nutEdpSelectPortion(150, this)">150 g</div>
+        <div class="nut-onb-pill" data-edp-portion="200" onclick="nutEdpSelectPortion(200, this)">200 g</div>
+        <div class="nut-onb-pill" data-edp-portion="250" onclick="nutEdpSelectPortion(250, this)">250 g</div>
+      </div>
+      <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-edp-portion-custom" placeholder="o ingresá la cantidad exacta" oninput="nutEdpSelectPortionCustom(this.value)"/>
+
+      <div style="margin-top:18px; padding:12px 14px; background:rgba(132,204,22,0.06); border:1px solid rgba(132,204,22,0.18); border-radius:12px;">
+        <div style="font-size:11px; color:#94A3B8; letter-spacing:1px; text-transform:uppercase; margin-bottom:6px;">Tu porción ajustada</div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline;">
+          <span style="font-size:13px; color:#CBD5E1;">total</span>
+          <span id="nut-edp-summary" style="font-size:14px; font-weight:600; color:#F8FAFC;">—</span>
+        </div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-edp-save-btn" onclick="nutSaveMealEditPortion()">Guardar cambios</button>
+  </div>
+
+  <!-- ============== NUTRITION — Editar comida existente (legacy macros directos) ============== -->
   <div class="screen nut-screen" data-step="nut-meal-edit">
     <div class="nut-topbar">
       <button class="nut-back-btn" onclick="goStep('nutrition')">
@@ -4791,7 +4870,7 @@ function goStep(n) {
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
-    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 0];
+    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -7214,6 +7293,22 @@ async function nutBcSaveMeal() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (user) {
+      // Metadata para permitir re-cálculo al editar la porción
+      const metadata = {
+        v: 1,
+        per100: {
+          kcal: p.kcal_100,
+          p: p.protein_100,
+          c: p.carbs_100,
+          f: p.fat_100,
+        },
+        portion: grams,
+        unit: p.unit || 'g',
+        barcode: p.barcode,
+        name: p.name,
+        brand: p.brand,
+        servingG: p.servingG,
+      };
       await sb.from('meal_logs').insert({
         user_id: user.id,
         meal_category: cat,
@@ -7223,6 +7318,7 @@ async function nutBcSaveMeal() {
         total_protein_g: prot,
         total_carbs_g: carb,
         total_fat_g: fat,
+        notes: JSON.stringify(metadata),
       });
     }
   } catch (e) {
@@ -7424,18 +7520,197 @@ function nutConfirmDeleteMeal(mealId, mealName) {
 
 // Estado de edición
 let _nutEditingMealId = null;
+let _nutEdpMeta = null;        // metadata del meal en edición de porción
+let _nutEdpPortion = 100;       // porción actual
 
 function nutOpenMealEdit(mealId) {
   const meal = (nutState.todayMeals || []).find(m => m.id === mealId);
   if (!meal) return;
   _nutEditingMealId = mealId;
-  // Pre-poblar form
+
+  // Intentar parsear metadata. Si tiene per100 → flow de porción. Si no → legacy form.
+  let meta = null;
+  try { if (meal.notes) meta = JSON.parse(meal.notes); } catch {}
+  if (meta && meta.per100 && typeof meta.per100.kcal !== 'undefined') {
+    nutOpenMealEditPortion(meal, meta);
+  } else {
+    nutOpenMealEditLegacy(meal);
+  }
+}
+
+// --- EDIT PORTION (recalcula macros automáticamente) ---
+function nutOpenMealEditPortion(meal, meta) {
+  _nutEdpMeta = meta;
+  _nutEdpPortion = meta.portion || 100;
+  const unit = meta.unit || 'g';
+
+  // Card header
+  document.getElementById('nut-edp-name').textContent = meta.name || 'Producto';
+  document.getElementById('nut-edp-brand').textContent = meta.brand || '—';
+  document.getElementById('nut-edp-per-label').textContent = `Por 100 ${unit}`;
+  document.getElementById('nut-edp-kcal').textContent = meta.per100.kcal || 0;
+  document.getElementById('nut-edp-p').textContent = meta.per100.p || 0;
+  document.getElementById('nut-edp-c').textContent = meta.per100.c || 0;
+  document.getElementById('nut-edp-f').textContent = meta.per100.f || 0;
+
+  // Categoría
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-cat]').forEach(el => {
+    el.classList.toggle('selected', el.dataset.edpCat === meal.meal_category);
+  });
+
+  // Sección unidades
+  const unitsSection = document.getElementById('nut-edp-units-section');
+  const unitWeight = document.getElementById('nut-edp-unit-weight');
+  if (meta.servingG) {
+    unitsSection.style.display = '';
+    if (unitWeight) unitWeight.textContent = `(≈${Math.round(meta.servingG)}${unit} c/u)`;
+  } else {
+    unitsSection.style.display = 'none';
+  }
+
+  // Labels y pills con unidad correcta
+  document.getElementById('nut-edp-portion-label').textContent = unit === 'ml' ? 'Por mililitros' : 'Por gramos';
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-portion]').forEach(pill => {
+    pill.textContent = `${pill.dataset.edpPortion} ${unit}`;
+  });
+  const cust = document.getElementById('nut-edp-portion-custom');
+  if (cust) { cust.placeholder = `o ingresá la cantidad exacta (${unit})`; cust.value = ''; }
+
+  // Reset selections + marcar la porción actual
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-units]').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-portion]').forEach(el => el.classList.remove('selected'));
+  // Si el portion actual coincide con una unidad exacta (1, 2, 3...), marcar esa pill
+  let markedUnit = false;
+  if (meta.servingG) {
+    const units = _nutEdpPortion / meta.servingG;
+    const exactUnit = document.querySelector(`[data-step="nut-meal-edit-portion"] [data-edp-units="${units}"]`);
+    if (exactUnit) { exactUnit.classList.add('selected'); markedUnit = true; }
+  }
+  if (!markedUnit) {
+    const exactG = document.querySelector(`[data-step="nut-meal-edit-portion"] [data-edp-portion="${_nutEdpPortion}"]`);
+    if (exactG) exactG.classList.add('selected');
+    else if (cust) cust.value = _nutEdpPortion;
+  }
+
+  nutEdpUpdateSummary();
+  goStep('nut-meal-edit-portion');
+}
+
+function nutEdpSelectCategory(cat, el) {
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-cat]').forEach(p => {
+    p.classList.toggle('selected', p === el);
+  });
+}
+
+function nutEdpSelectUnits(units, el) {
+  if (!_nutEdpMeta || !_nutEdpMeta.servingG) return;
+  _nutEdpPortion = units * _nutEdpMeta.servingG;
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-units]').forEach(u => u.classList.toggle('selected', u === el));
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-portion]').forEach(g => g.classList.remove('selected'));
+  const cust = document.getElementById('nut-edp-portion-custom');
+  if (cust) cust.value = '';
+  nutEdpUpdateSummary();
+}
+
+function nutEdpSelectPortion(grams, el) {
+  _nutEdpPortion = grams;
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-portion]').forEach(p => p.classList.toggle('selected', p === el));
+  document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-units]').forEach(u => u.classList.remove('selected'));
+  const cust = document.getElementById('nut-edp-portion-custom');
+  if (cust) cust.value = '';
+  nutEdpUpdateSummary();
+}
+
+function nutEdpSelectPortionCustom(val) {
+  const g = parseFloat(String(val || '').replace(',', '.'));
+  if (g > 0 && g < 5000) {
+    _nutEdpPortion = g;
+    document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-portion]').forEach(p => p.classList.remove('selected'));
+    document.querySelectorAll('[data-step="nut-meal-edit-portion"] [data-edp-units]').forEach(u => u.classList.remove('selected'));
+    nutEdpUpdateSummary();
+  }
+}
+
+function nutEdpUpdateSummary() {
+  if (!_nutEdpMeta) return;
+  const ratio = _nutEdpPortion / 100;
+  const kcal = Math.round((_nutEdpMeta.per100.kcal || 0) * ratio);
+  const prot = ((_nutEdpMeta.per100.p || 0) * ratio).toFixed(1);
+  const carb = ((_nutEdpMeta.per100.c || 0) * ratio).toFixed(1);
+  const fat = ((_nutEdpMeta.per100.f || 0) * ratio).toFixed(1);
+  const unit = _nutEdpMeta.unit || 'g';
+  const el = document.getElementById('nut-edp-summary');
+  if (el) el.textContent = `${Math.round(_nutEdpPortion)} ${unit} · ${kcal} kcal · ${prot}P · ${carb}C · ${fat}F`;
+}
+
+async function nutSaveMealEditPortion() {
+  if (!_nutEditingMealId || !_nutEdpMeta) return;
+  const grams = _nutEdpPortion;
+  const ratio = grams / 100;
+  const kcal = Math.round((_nutEdpMeta.per100.kcal || 0) * ratio);
+  const prot = parseFloat(((_nutEdpMeta.per100.p || 0) * ratio).toFixed(1));
+  const carb = parseFloat(((_nutEdpMeta.per100.c || 0) * ratio).toFixed(1));
+  const fat = parseFloat(((_nutEdpMeta.per100.f || 0) * ratio).toFixed(1));
+  const unit = _nutEdpMeta.unit || 'g';
+  const catEl = document.querySelector('[data-step="nut-meal-edit-portion"] [data-edp-cat].selected');
+  const cat = catEl ? catEl.dataset.edpCat : null;
+
+  const newMeta = { ..._nutEdpMeta, portion: grams };
+  const newItemsText = `${_nutEdpMeta.name || ''}${_nutEdpMeta.brand ? ' (' + _nutEdpMeta.brand + ')' : ''} · ${Math.round(grams)} ${unit}`;
+
+  const btn = document.getElementById('nut-edp-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no session');
+    const payload = {
+      meal_category: cat,
+      items_text: newItemsText,
+      total_kcal: kcal,
+      total_protein_g: prot,
+      total_carbs_g: carb,
+      total_fat_g: fat,
+      notes: JSON.stringify(newMeta),
+    };
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/meal_logs?id=eq.${encodeURIComponent(_nutEditingMealId)}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) throw new Error('Edit HTTP ' + resp.status);
+    nutState.todayMeals = (nutState.todayMeals || []).map(m =>
+      m.id === _nutEditingMealId ? { ...m, ...payload } : m
+    );
+    nutRenderDashboard();
+    const ok = document.createElement('div');
+    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+    ok.textContent = 'Porción ajustada';
+    document.body.appendChild(ok);
+    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 1800);
+    _nutEditingMealId = null;
+    _nutEdpMeta = null;
+    goStep('nutrition');
+  } catch (e) {
+    console.warn('[NUT] edit portion failed:', e);
+    alert('No se pudieron guardar los cambios. Probá de nuevo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
+  }
+}
+
+// --- LEGACY: edit de macros directos (para meals sin metadata) ---
+function nutOpenMealEditLegacy(meal) {
   document.getElementById('nut-edit-items').value = meal.items_text || '';
   document.getElementById('nut-edit-kcal').value = meal.total_kcal || 0;
   document.getElementById('nut-edit-p').value = meal.total_protein_g || 0;
   document.getElementById('nut-edit-c').value = meal.total_carbs_g || 0;
   document.getElementById('nut-edit-f').value = meal.total_fat_g || 0;
-  // Marcar categoría
   document.querySelectorAll('[data-step="nut-meal-edit"] [data-edit-cat]').forEach(el => {
     el.classList.toggle('selected', el.dataset.editCat === meal.meal_category);
   });
