@@ -1812,6 +1812,35 @@
   .nut-onb-option-check { color: #84CC16; opacity: 0; transition: opacity 0.15s; }
   .nut-onb-option.selected .nut-onb-option-check { opacity: 1; }
 
+  /* Method cards (silueta vs cintura) + silhouette grid */
+  .nut-method-card:hover { border-color: rgba(255,255,255,0.18) !important; }
+  .nut-method-card.selected {
+    background: rgba(132,204,22,0.1) !important;
+    border-color: rgba(132,204,22,0.5) !important;
+  }
+  .nut-silhouette-card {
+    display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+    padding: 10px 4px 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    cursor: pointer; transition: all 0.2s;
+    min-height: 110px;
+  }
+  .nut-silhouette-card.selected {
+    background: rgba(132,204,22,0.1);
+    border-color: rgba(132,204,22,0.5);
+  }
+  .nut-silhouette-svg { width: 36px; height: 70px; margin-bottom: 4px; }
+  .nut-silhouette-label { font-size: 10px; color: #94A3B8; font-weight: 600; letter-spacing: 0.3px; text-align: center; }
+  .nut-silhouette-card.selected .nut-silhouette-label { color: #BEF264; }
+
+  @keyframes nutShake {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-4px); }
+    40%, 80% { transform: translateX(4px); }
+  }
+
   .nut-onb-field-row {
     display: flex; gap: 12px; margin-bottom: 12px;
   }
@@ -3675,10 +3704,15 @@
       </div>
       <div class="nut-onb-eyebrow">Paso 1 de 4</div>
       <div class="nut-onb-title">¿Qué querés lograr?</div>
-      <div class="nut-onb-hint">Elegí tu objetivo principal. Podés cambiarlo después desde tu perfil.</div>
+      <div class="nut-onb-hint">Elegí hasta 2 objetivos compatibles. Podés cambiarlos después desde tu perfil.</div>
 
       <div id="nut-onb-prefill-banner" style="display:none; padding:12px 14px; background:rgba(132,204,22,0.08); border:1px solid rgba(132,204,22,0.22); border-radius:12px; margin-bottom:14px; font-size:13px; color:#CBD5E1; line-height:1.45;">
         <span style="color:#BEF264; font-weight:700;">Pre-seleccionado:</span> <span id="nut-onb-prefill-text">—</span>
+      </div>
+
+      <div id="nut-goals-counter" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.04); border-radius:10px; margin-bottom:14px; font-size:13px; color:#94A3B8;">
+        <span><span id="nut-goals-count">0</span> de 2 seleccionados</span>
+        <span style="font-size:11px; color:#64748B;">Tap para alternar</span>
       </div>
 
       <div class="nut-onb-option" data-goal="fat_loss" onclick="nutSelectGoal('fat_loss', this)">
@@ -3730,7 +3764,37 @@
         <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
       </div>
     </div>
-    <button class="nut-onb-continue" id="nut-onb-1-btn" disabled onclick="nutGoToStep(2)">Continuar</button>
+    <button class="nut-onb-continue" id="nut-onb-1-btn" disabled onclick="nutHandleGoalsContinue()">Continuar</button>
+  </div>
+
+  <!-- ============== NUTRITION — Conflict screen: auto-recomp ============== -->
+  <div class="screen nut-screen" data-step="nut-onb-conflict">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="nutGoToStep(1)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Nutrition</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content" style="display:flex; flex-direction:column; justify-content:center;">
+      <div style="text-align:center; padding:8px 0 18px;">
+        <div style="font-size:48px; line-height:1;">⚖️</div>
+      </div>
+      <div class="nut-onb-eyebrow" style="text-align:center;">Una pequeña aclaración</div>
+      <div class="nut-onb-title" style="text-align:center; margin-bottom:14px;">Esos dos objetivos juntos = Recomposición</div>
+      <div style="font-size:14px; color:#CBD5E1; line-height:1.6; margin-bottom:20px;">
+        <strong style="color:#F8FAFC;">Perder grasa</strong> requiere déficit calórico. <strong style="color:#F8FAFC;">Ganar músculo</strong> requiere superávit. No podés estar en los dos a la vez — pero SAVIA puede hacer algo más inteligente: <strong style="color:#BEF264;">Recomposición</strong>.
+      </div>
+      <div style="background:rgba(132,204,22,0.06); border:1px solid rgba(132,204,22,0.18); border-radius:14px; padding:16px; margin-bottom:24px;">
+        <div style="font-size:13px; font-weight:600; color:#BEF264; margin-bottom:8px;">¿Qué es Recomposición?</div>
+        <div style="font-size:13px; color:#CBD5E1; line-height:1.6;">
+          Déficit ligero (-10%) + proteína muy alta (~2g/kg LBM) + entrenamiento de fuerza. Perdés grasa y ganás (o preservás) músculo en simultáneo. Más lento que un cut o bulk puro, pero el resultado físico es mejor.
+        </div>
+      </div>
+      <button class="nut-onb-continue" onclick="nutAcceptRecomp()" style="margin-bottom:10px;">Sí, usar Recomposición</button>
+      <button class="nut-onb-continue" onclick="nutGoToStep(1)" style="background:transparent; border:1px solid rgba(255,255,255,0.18); color:#CBD5E1;">Elegir otros objetivos</button>
+    </div>
   </div>
 
   <!-- ============== NUTRITION — Onboarding Step 2: Tu cuerpo ============== -->
@@ -3764,18 +3828,41 @@
           <input type="number" inputmode="numeric" class="nut-onb-field-input" id="nut-height" placeholder="178" oninput="nutValidateStep2()"/>
         </div>
       </div>
-      <div style="margin-top: 10px;">
-        <div class="nut-onb-field-label">% Grasa corporal (estimado)</div>
-        <div class="nut-onb-pills">
-          <div class="nut-onb-pill" data-bf="10" onclick="nutSelectBF(10, this)">~10%</div>
-          <div class="nut-onb-pill" data-bf="13" onclick="nutSelectBF(13, this)">~13%</div>
-          <div class="nut-onb-pill" data-bf="16" onclick="nutSelectBF(16, this)">~16%</div>
-          <div class="nut-onb-pill" data-bf="20" onclick="nutSelectBF(20, this)">~20%</div>
-          <div class="nut-onb-pill" data-bf="25" onclick="nutSelectBF(25, this)">~25%</div>
-          <div class="nut-onb-pill" data-bf="30" onclick="nutSelectBF(30, this)">~30%</div>
-          <div class="nut-onb-pill" data-bf="35" onclick="nutSelectBF(35, this)">35%+</div>
+      <div style="margin-top:18px;">
+        <div class="nut-onb-field-label">Composición corporal</div>
+        <div class="nut-onb-hint" style="margin-bottom:12px;">No necesitás un % exacto. Elegí el método que te resulte más fácil.</div>
+
+        <!-- Method selector: silhouette vs waist -->
+        <div id="nut-method-selector" style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div class="nut-method-card" data-method="silhouette" onclick="nutSelectMethod('silhouette')" style="padding:14px; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.08); border-radius:14px; cursor:pointer; transition:all 0.2s;">
+            <div style="font-size:28px; line-height:1; margin-bottom:8px;">👤</div>
+            <div style="font-size:13px; font-weight:600; color:#F8FAFC; margin-bottom:2px;">Silueta visual</div>
+            <div style="font-size:11px; color:#94A3B8; line-height:1.4;">Elegí la más parecida a vos</div>
+          </div>
+          <div class="nut-method-card" data-method="waist" onclick="nutSelectMethod('waist')" style="padding:14px; background:rgba(255,255,255,0.04); border:1.5px solid rgba(255,255,255,0.08); border-radius:14px; cursor:pointer; transition:all 0.2s;">
+            <div style="font-size:28px; line-height:1; margin-bottom:8px;">📏</div>
+            <div style="font-size:13px; font-weight:600; color:#F8FAFC; margin-bottom:2px;">Medir cintura</div>
+            <div style="font-size:11px; color:#94A3B8; line-height:1.4;">Cinta métrica, en cm</div>
+          </div>
         </div>
-        <div style="font-size:12px;color:#64748B;margin-top:8px;line-height:1.5;">Aproximación visual. Para precisión exacta usá InBody o DXA.</div>
+
+        <!-- Silhouette picker (hidden by default) -->
+        <div id="nut-silhouette-section" style="display:none; margin-top:16px;">
+          <div style="font-size:12px; color:#94A3B8; margin-bottom:10px;">Tocá la silueta más parecida a vos hoy:</div>
+          <div id="nut-silhouette-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:6px;">
+            <!-- 5 SVG silhouettes injected by JS based on sex -->
+          </div>
+          <div style="font-size:11px; color:#64748B; margin-top:8px; line-height:1.5;">No te juzgues — esto es solo para calibrar tus targets. Podés ajustar después.</div>
+        </div>
+
+        <!-- Waist input (hidden by default) -->
+        <div id="nut-waist-section" style="display:none; margin-top:16px;">
+          <div class="nut-onb-field-label">Cintura (cm)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-waist" placeholder="82" oninput="nutValidateStep2()"/>
+          <div style="font-size:12px; color:#94A3B8; margin-top:10px; padding:10px 12px; background:rgba(255,255,255,0.03); border-radius:10px; line-height:1.5;">
+            <strong style="color:#CBD5E1;">Cómo medir:</strong> a la altura del ombligo, relajado (sin contraer ni inflar). Si no tenés cinta, usá un cordón y medilo con regla después.
+          </div>
+        </div>
       </div>
     </div>
     <button class="nut-onb-continue" id="nut-onb-2-btn" disabled onclick="nutGoToStep(3)">Continuar</button>
@@ -4217,7 +4304,7 @@ function goStep(n) {
   // Persist onboarding progress (sobrevive a confirmar email en otra pestaña)
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
-    'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-results', 'nutrition', 'nut-log', 0];
+    'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -5544,10 +5631,14 @@ function openModule(name) {
 // NUTRITION MODULE — onboarding + targets + log
 // =============================================
 const nutState = {
-  goal: null,
+  goal: null,              // single goal collapsed para cálculos (legacy)
+  goals: [],               // array hasta 2 goals (nuevo, multi-select)
   weight: null,
   height: null,
   bodyFat: null,
+  bodyMethod: null,        // 'silhouette' | 'waist'
+  silhouetteIdx: null,     // 0-4 si method=silhouette
+  waistCm: null,           // si method=waist
   activity: null,
   mealsPerDay: null,
   allergies: [],
@@ -5586,38 +5677,48 @@ async function openNutritionModule() {
   goStep('nutrition');
 }
 
-// Inferir objetivo nutricional desde los goals del onboarding principal.
-// Si el user tiene fat_loss Y muscle_gain → recomposition (semánticamente "quiere ambos").
-// Si no, prioridad: fat_loss > muscle_gain > recomposition > performance > longevity > maintenance.
-function nutInferGoalFromMainOnboarding() {
+// Inferir objetivos nutricionales desde los goals del onboarding principal.
+// Retorna array de hasta 2 goals. Si tiene fat_loss + muscle_gain, retorna ambos
+// (la pantalla de conflicto los convertirá a recomposition).
+function nutInferGoalsFromMainOnboarding() {
   const goals = state.goals || [];
-  if (goals.includes('fat_loss') && goals.includes('muscle_gain')) return 'recomposition';
+  const nutGoals = ['fat_loss', 'muscle_gain', 'recomposition', 'performance', 'longevity'];
   const priorityOrder = ['fat_loss', 'muscle_gain', 'recomposition', 'performance', 'longevity'];
+  const inferred = [];
   for (const g of priorityOrder) {
-    if (goals.includes(g)) return g;
+    if (goals.includes(g) && inferred.length < 2) inferred.push(g);
   }
-  return 'maintenance';
+  if (inferred.length === 0) return ['maintenance'];
+  return inferred;
 }
 
 function nutPrefillFromMainOnboarding() {
   const banner = document.getElementById('nut-onb-prefill-banner');
-  // Ocultar por default (en re-entradas, si ya seleccionó algo distinto antes)
   if (banner) banner.style.display = 'none';
-  const inferred = nutInferGoalFromMainOnboarding();
-  const opt = document.querySelector(`[data-step="nut-onb-1"] [data-goal="${inferred}"]`);
-  if (!opt) return;
-  nutSelectGoal(inferred, opt);
+  let inferred = nutInferGoalsFromMainOnboarding();
+  // Si el main onboarding tenía fat_loss + muscle_gain, colapsar a recomposition directamente
+  // (en pre-fill no mostramos el conflicto — es noise; lo asumimos como recomp).
+  if (inferred.includes('fat_loss') && inferred.includes('muscle_gain')) {
+    inferred = ['recomposition'];
+  }
+  nutState.goals = [];
+  inferred.forEach(g => {
+    const opt = document.querySelector(`[data-step="nut-onb-1"] [data-goal="${g}"]`);
+    if (opt) {
+      nutState.goals.push(g);
+      opt.classList.add('selected');
+    }
+  });
+  nutUpdateGoalsCounter();
   const text = document.getElementById('nut-onb-prefill-text');
-  if (banner && text) {
+  if (banner && text && inferred.length > 0) {
     const labels = {
-      fat_loss: 'Pérdida de grasa (de tu onboarding)',
-      muscle_gain: 'Aumento de masa (de tu onboarding)',
-      recomposition: 'Recomposición (combinás pérdida + músculo)',
-      performance: 'Performance deportiva (de tu onboarding)',
-      longevity: 'Longevidad (de tu onboarding)',
-      maintenance: 'Mantenimiento (default)',
+      fat_loss: 'Pérdida de grasa', muscle_gain: 'Aumento de masa',
+      recomposition: 'Recomposición', performance: 'Performance',
+      longevity: 'Longevidad', maintenance: 'Mantenimiento',
     };
-    text.textContent = `${labels[inferred]}. Confirmá o escogé otro.`;
+    const names = inferred.map(g => labels[g]).join(' + ');
+    text.textContent = `${names} (de tu onboarding). Confirmá o cambiá.`;
     banner.style.display = '';
   }
 }
@@ -5627,24 +5728,155 @@ function nutGoToStep(n) {
   goStep('nut-onb-' + n);
 }
 
+// Multi-select hasta 2 goals. Toggle on/off al tap.
 function nutSelectGoal(goal, el) {
-  nutState.goal = goal;
-  document.querySelectorAll('[data-step="nut-onb-1"] .nut-onb-option').forEach(o => {
-    o.classList.toggle('selected', o === el);
-  });
-  document.getElementById('nut-onb-1-btn').disabled = false;
-  // Ocultar banner de pre-fill cuando el user explícitamente elige algo
-  // (puede ser distinto del pre-seleccionado — el banner ya no aplica)
+  if (!nutState.goals) nutState.goals = [];
+  const isSelected = nutState.goals.includes(goal);
+  if (isSelected) {
+    // Deseleccionar
+    nutState.goals = nutState.goals.filter(g => g !== goal);
+    el.classList.remove('selected');
+  } else {
+    if (nutState.goals.length >= 2) {
+      // Shake suave para indicar límite — y tooltip transient
+      el.style.animation = 'none';
+      void el.offsetWidth;
+      el.style.animation = 'nutShake 0.4s ease';
+      return;
+    }
+    nutState.goals.push(goal);
+    el.classList.add('selected');
+  }
+  nutUpdateGoalsCounter();
+  // Ocultar banner pre-fill cuando user explícitamente toca algo
   const banner = document.getElementById('nut-onb-prefill-banner');
   if (banner) banner.style.display = 'none';
 }
 
-function nutSelectBF(value, el) {
-  nutState.bodyFat = value;
-  document.querySelectorAll('[data-step="nut-onb-2"] [data-bf]').forEach(p => {
-    p.classList.toggle('selected', p === el);
+function nutUpdateGoalsCounter() {
+  const count = (nutState.goals || []).length;
+  const el = document.getElementById('nut-goals-count');
+  if (el) el.textContent = count;
+  document.getElementById('nut-onb-1-btn').disabled = count === 0;
+}
+
+// Al continuar desde goals: si hay conflicto fat_loss+muscle_gain → screen conflict.
+// Si no, seguir directo al paso 2.
+function nutHandleGoalsContinue() {
+  const g = nutState.goals || [];
+  if (g.includes('fat_loss') && g.includes('muscle_gain')) {
+    goStep('nut-onb-conflict');
+    return;
+  }
+  // Reducir array a single "primary" goal para el cálculo
+  // Si tiene 2 goals compatibles, el primero en prioridad gana para los multipliers
+  nutState.goal = nutCollapseGoalsToSingle(g);
+  nutGoToStep(2);
+}
+
+// Mapping de goals múltiples a un goal único para cálculos.
+// Prioridad: fat_loss > muscle_gain > recomposition > performance > longevity > maintenance
+function nutCollapseGoalsToSingle(goals) {
+  if (!goals || goals.length === 0) return 'maintenance';
+  if (goals.length === 1) return goals[0];
+  const priorityOrder = ['fat_loss', 'muscle_gain', 'recomposition', 'performance', 'longevity', 'maintenance'];
+  for (const g of priorityOrder) {
+    if (goals.includes(g)) return g;
+  }
+  return goals[0];
+}
+
+// Aceptar conversión auto a recomposition
+function nutAcceptRecomp() {
+  nutState.goals = ['recomposition'];
+  nutState.goal = 'recomposition';
+  // Reflejar en UI por si vuelve a goals
+  document.querySelectorAll('[data-step="nut-onb-1"] .nut-onb-option').forEach(o => {
+    o.classList.toggle('selected', o.dataset.goal === 'recomposition');
+  });
+  nutUpdateGoalsCounter();
+  nutGoToStep(2);
+}
+
+// --- BODY COMPOSITION METHOD ---
+// Mapping silueta → % grasa, por sexo. Valores conservadores basados en literatura visual ACE/AccuFitness.
+const SILHOUETTE_BF = {
+  m: [10, 15, 20, 26, 32],   // very lean, lean, athletic, average, high
+  f: [18, 23, 28, 34, 40],
+};
+const SILHOUETTE_LABELS = ['Muy magro', 'Magro', 'Atlético', 'Promedio', 'Alto'];
+
+function nutSelectMethod(method) {
+  nutState.bodyMethod = method;
+  document.querySelectorAll('.nut-method-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.method === method);
+  });
+  document.getElementById('nut-silhouette-section').style.display = method === 'silhouette' ? '' : 'none';
+  document.getElementById('nut-waist-section').style.display = method === 'waist' ? '' : 'none';
+  if (method === 'silhouette') nutRenderSilhouettes();
+  // Reset COMPLETO de inputs de body composition — user debe re-elegir desde cero
+  nutState.bodyFat = null;
+  nutState.silhouetteIdx = null;
+  nutState.waistCm = null;
+  const waistEl = document.getElementById('nut-waist');
+  if (waistEl) waistEl.value = '';
+  nutValidateStep2();
+}
+
+// SVG silhouettes — 5 niveles, diferentes por sexo. Estilo: figura humana abstracta.
+function nutRenderSilhouettes() {
+  const sex = state.sex === 'f' ? 'f' : 'm';
+  const grid = document.getElementById('nut-silhouette-grid');
+  if (!grid) return;
+  const paths = sex === 'f' ? [
+    // F1: muy magra
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M16 14 L20 14 L21 26 Q22 36 21 50 L19 56 L17 56 L15 50 Q14 36 15 26 Z',
+    // F2: magra
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M15 14 L21 14 L22 27 Q23 38 22 52 L19 58 L17 58 L14 52 Q13 38 14 27 Z',
+    // F3: atlética
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M14 14 L22 14 L23.5 28 Q25 40 22.5 54 L19 60 L17 60 L13.5 54 Q11 40 12.5 28 Z',
+    // F4: promedio
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M13 14 L23 14 L25 30 Q27 44 23 56 L19 62 L17 62 L13 56 Q9 44 11 30 Z',
+    // F5: alto
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M11.5 14 L24.5 14 L27 32 Q30 48 24 58 L19 64 L17 64 L12 58 Q6 48 9 32 Z',
+  ] : [
+    // M1: muy magro
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M14 14 L22 14 L23 25 Q23 36 22 50 L19 56 L17 56 L14 50 Q13 36 13 25 Z',
+    // M2: magro
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M13 14 L23 14 L24.5 27 Q24.5 39 22.5 52 L19 58 L17 58 L13.5 52 Q11.5 39 11.5 27 Z',
+    // M3: atlético
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M12 14 L24 14 L26 28 Q27 42 23 54 L19 60 L17 60 L13 54 Q9 42 10 28 Z',
+    // M4: promedio
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M11 14 L25 14 L27.5 30 Q29 46 23.5 56 L19 62 L17 62 L12.5 56 Q7 46 8.5 30 Z',
+    // M5: alto
+    'M18 6 Q22 6 22 10 Q22 14 18 14 Q14 14 14 10 Q14 6 18 6 Z M9 14 L27 14 L30 32 Q33 50 24 58 L19 64 L17 64 L12 58 Q3 50 6 32 Z',
+  ];
+  grid.innerHTML = paths.map((d, i) => `
+    <div class="nut-silhouette-card" data-sil="${i}" onclick="nutSelectSilhouette(${i}, this)">
+      <svg class="nut-silhouette-svg" viewBox="0 0 36 70" fill="#94A3B8"><path d="${d}"/></svg>
+      <div class="nut-silhouette-label">${SILHOUETTE_LABELS[i]}</div>
+    </div>
+  `).join('');
+}
+
+function nutSelectSilhouette(idx, el) {
+  const sex = state.sex === 'f' ? 'f' : 'm';
+  nutState.silhouetteIdx = idx;
+  nutState.bodyFat = SILHOUETTE_BF[sex][idx];
+  document.querySelectorAll('#nut-silhouette-grid .nut-silhouette-card').forEach(c => {
+    c.classList.toggle('selected', c === el);
   });
   nutValidateStep2();
+}
+
+// Fórmula RFM (Relative Fat Mass) — Woolcott & Bergman 2018.
+// Validada contra DXA, requiere solo altura y cintura.
+function nutComputeBfFromWaist(heightCm, waistCm, sex) {
+  if (!heightCm || !waistCm) return null;
+  const base = sex === 'f' ? 76 : 64;
+  const bf = base - (20 * heightCm / waistCm);
+  // Clamp a rango razonable
+  return Math.max(5, Math.min(50, Math.round(bf)));
 }
 
 function nutValidateStep2() {
@@ -5652,7 +5884,24 @@ function nutValidateStep2() {
   const h = parseFloat(document.getElementById('nut-height').value);
   nutState.weight = (w > 30 && w < 250) ? w : null;
   nutState.height = (h > 120 && h < 230) ? h : null;
-  const valid = nutState.weight && nutState.height && nutState.bodyFat;
+
+  // Compute bodyFat from method
+  if (nutState.bodyMethod === 'waist') {
+    const waistEl = document.getElementById('nut-waist');
+    const waist = waistEl ? parseFloat(waistEl.value) : null;
+    nutState.waistCm = (waist > 40 && waist < 200) ? waist : null;
+    if (nutState.waistCm && nutState.height) {
+      nutState.bodyFat = nutComputeBfFromWaist(nutState.height, nutState.waistCm, state.sex || 'm');
+    } else {
+      nutState.bodyFat = null;
+    }
+  }
+  // Si method es silhouette, bodyFat se setea en nutSelectSilhouette
+
+  // Validación unificada: ambos métodos deben terminar con nutState.bodyFat seteado.
+  // Esto previene estado stale al alternar entre métodos.
+  const hasBodyComp = nutState.bodyMethod && nutState.bodyFat !== null && nutState.bodyFat !== undefined;
+  const valid = nutState.weight && nutState.height && hasBodyComp;
   document.getElementById('nut-onb-2-btn').disabled = !valid;
 }
 
@@ -5753,16 +6002,13 @@ async function nutFinishOnboarding() {
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (user) {
-      // Sync el nutrition goal de vuelta a state.goals (si difiere del onboarding principal,
-      // esta es la forma de actualizarlo — feedback de Victor 2026-06-01)
-      const NUTRITION_GOALS = ['fat_loss', 'muscle_gain', 'recomposition', 'performance', 'longevity'];
-      let updatedGoals = state.goals || [];
-      if (NUTRITION_GOALS.includes(nutState.goal)) {
-        // Reemplazar cualquier nutrition goal existente con el nuevo
-        updatedGoals = updatedGoals.filter(g => !NUTRITION_GOALS.includes(g));
-        updatedGoals.push(nutState.goal);
-        state.goals = updatedGoals;
-      }
+      // Sync los nutrition goals (array hasta 2) de vuelta a state.goals.
+      // Reemplaza cualquier nutrition goal existente con los que el user eligió en este módulo.
+      const NUTRITION_GOALS = ['fat_loss', 'muscle_gain', 'recomposition', 'performance', 'longevity', 'maintenance'];
+      const selectedGoals = (nutState.goals && nutState.goals.length) ? nutState.goals : [nutState.goal];
+      let updatedGoals = (state.goals || []).filter(g => !NUTRITION_GOALS.includes(g));
+      selectedGoals.forEach(g => { if (g && !updatedGoals.includes(g)) updatedGoals.push(g); });
+      state.goals = updatedGoals;
       await sb.from('profiles').update({
         height_cm: nutState.height,
         weight_kg: nutState.weight,
