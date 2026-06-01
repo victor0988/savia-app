@@ -6496,15 +6496,44 @@ async function nutStartBarcodeScan() {
     }
   }
 
-  if (hint) hint.textContent = 'Apuntá al código de barras del producto';
+  if (hint) hint.textContent = 'Apuntá al código a 10-15 cm · tap para enfocar';
 
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1920 },
+        height: { ideal: 1080 },
+      },
     });
     nutBcState.stream = stream;
     video.srcObject = stream;
-    await video.play().catch(() => {});
+    // NO llamar video.play() — el atributo autoplay + ZXing manejan el play.
+    // Llamarlo manualmente causa el warning "video already playing" y puede romper el decode.
+
+    // Autofocus continuo (Safari por default usa single-shot, lo cual pierde focus al mover el celu)
+    const track = stream.getVideoTracks()[0];
+    if (track && track.getCapabilities) {
+      try {
+        const caps = track.getCapabilities();
+        const advanced = [];
+        if (caps.focusMode && caps.focusMode.includes('continuous')) {
+          advanced.push({ focusMode: 'continuous' });
+        }
+        if (advanced.length > 0) {
+          await track.applyConstraints({ advanced }).catch(() => {});
+        }
+      } catch {}
+    }
+
+    // Tap en video → re-focus manual (útil si el autofocus no agarra el barcode)
+    video.onclick = () => {
+      if (!track || !track.applyConstraints) return;
+      track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+      const hintEl = document.getElementById('nut-bc-hint');
+      if (hintEl) { hintEl.textContent = 'Reajustando enfoque...'; setTimeout(() => { hintEl.textContent = 'Apuntá al código a 10-15 cm'; }, 800); }
+    };
+
     nutBcState.scanning = true;
 
     if (nativeDetector) {
