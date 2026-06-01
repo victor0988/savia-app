@@ -6457,12 +6457,13 @@ const nutBcState = {
   portionG: 100,
 };
 
-// Carga lazy de ZXing (universal — funciona en Safari iOS donde BarcodeDetector no existe)
+// Carga lazy de ZXing (universal — funciona en Safari iOS donde BarcodeDetector no existe).
+// Usamos @zxing/library que tiene UMD bundle pre-built (a diferencia de @zxing/browser).
 function nutLoadZXing() {
-  if (window.ZXingBrowser || window.ZXing) return Promise.resolve();
+  if (window.ZXing) return Promise.resolve();
   return new Promise((resolve, reject) => {
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js';
+    s.src = 'https://cdn.jsdelivr.net/npm/@zxing/library@0.21.3/umd/index.min.js';
     s.onload = () => resolve();
     s.onerror = () => reject(new Error('ZXing CDN load failed'));
     document.head.appendChild(s);
@@ -6510,11 +6511,14 @@ async function nutStartBarcodeScan() {
       nutBcState.detector = nativeDetector;
       nutBcLoopNative();
     } else {
-      // ZXing path — usa decodeFromVideoElement con callback continuo
-      const ZXingNS = window.ZXingBrowser || window.ZXing;
-      const Reader = ZXingNS.BrowserMultiFormatReader || ZXingNS.BrowserBarcodeReader;
-      const reader = new Reader();
+      // ZXing path — BrowserMultiFormatReader del paquete @zxing/library (global window.ZXing)
+      if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
+        if (hint) hint.textContent = 'Scanner no disponible. Probá manual.';
+        return;
+      }
+      const reader = new window.ZXing.BrowserMultiFormatReader();
       nutBcState.reader = reader;
+      // decodeFromVideoElement toma el video element y callback continuo (result, err)
       reader.decodeFromVideoElement(video, (result, err) => {
         if (!nutBcState.scanning) return;
         if (result) {
@@ -6525,8 +6529,8 @@ async function nutStartBarcodeScan() {
             nutLookupBarcode(code);
           }
         }
-        // err es normal (no detect yet) — ignorar
-      }).catch(e => console.warn('[NUT] ZXing decode error:', e));
+        // err normal cuando no detecta nada — ignorar (es NotFoundException continuo)
+      });
     }
   } catch (e) {
     console.warn('[NUT] camera access failed:', e);
