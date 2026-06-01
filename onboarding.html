@@ -3342,22 +3342,34 @@ function isValidEmail(email) {
 // Cache local de la cuenta actual (rellenada al login / session restore)
 let cachedAccount = null;
 function getStoredAccount() { return cachedAccount; }
-async function loadCurrentProfile() {
-  const { data: { user } } = await sb.auth.getUser();
+async function loadCurrentProfile(userHint) {
+  let user = userHint;
+  if (!user) {
+    try {
+      const { data } = await sb.auth.getUser();
+      user = data.user;
+    } catch (e) { console.error('[SAVIA] getUser failed:', e); }
+  }
   if (!user) { cachedAccount = null; return null; }
-  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
-  cachedAccount = profile ? {
-    email: user.email,
-    name: profile.name || '',
-    sex: profile.sex,
-    age: profile.age,
-    goals: profile.goals || [],
-    level: profile.level,
-    wearables: profile.wearables || [],
-    photo: profile.photo_url || null,
-    isOnboarded: profile.is_onboarded,
-  } : { email: user.email };
-  return cachedAccount;
+  try {
+    const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    cachedAccount = profile ? {
+      email: user.email,
+      name: profile.name || '',
+      sex: profile.sex,
+      age: profile.age,
+      goals: profile.goals || [],
+      level: profile.level,
+      wearables: profile.wearables || [],
+      photo: profile.photo_url || null,
+      isOnboarded: profile.is_onboarded,
+    } : { email: user.email };
+    return cachedAccount;
+  } catch (e) {
+    console.error('[SAVIA] profile fetch failed:', e);
+    cachedAccount = { email: user.email };
+    return cachedAccount;
+  }
 }
 
 // =============================================
@@ -5442,9 +5454,10 @@ async function _doRouteAuthenticatedUser(sessionHint) {
     } catch (e) { console.error('[SAVIA] getSession failed:', e); }
   }
   if (!session) { console.warn('[SAVIA] no session, abort routing'); return; }
-  console.log('[SAVIA] session OK, loading profile...');
+  console.log('[SAVIA] session OK, loading profile (passing user hint)...');
 
-  const profile = await loadCurrentProfile();
+  // Pasamos session.user para evitar getUser() (que también se cuelga en Safari OAuth callback)
+  const profile = await loadCurrentProfile(session.user);
   if (!profile) { console.warn('[SAVIA] no profile, abort routing'); return; }
   console.log('[SAVIA] profile loaded:', profile);
 
