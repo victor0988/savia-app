@@ -4258,45 +4258,59 @@ function enterFinalApp() {
 }
 
 function enterAppSimulation(source) {
+  // CRÍTICO: ir al app screen PRIMERO, sin importar si el resto falla.
+  // Cualquier error en la decoración no debe atrapar al user en splash.
+  console.log('[SAVIA] enterAppSimulation start, source:', source);
+  try {
+    goStep('app');
+  } catch (e) {
+    console.error('[SAVIA] goStep(app) failed:', e);
+  }
+  hideLoading();
+  document.documentElement.classList.remove('oauth-loading');
+
+  // Decorar la UI con la data del user (cada bloque aislado en try/catch)
   const firstName = (state.name || 'usuario').split(' ')[0] || 'usuario';
 
-  // Avatar
-  const avatar = document.getElementById('app-avatar');
-  if (state.photo) {
-    avatar.style.backgroundImage = `url(${state.photo})`;
-    avatar.textContent = '';
-  } else {
-    avatar.style.backgroundImage = '';
-    avatar.textContent = firstName[0].toUpperCase();
-  }
+  try {
+    const avatar = document.getElementById('app-avatar');
+    if (avatar) {
+      if (state.photo) {
+        avatar.style.backgroundImage = `url(${state.photo})`;
+        avatar.textContent = '';
+      } else {
+        avatar.style.backgroundImage = '';
+        avatar.textContent = firstName[0].toUpperCase();
+      }
+    }
+  } catch (e) { console.error('[SAVIA] avatar setup failed:', e); }
 
-  // Greeting + subgreeting según hora del día
-  document.getElementById('app-greeting').textContent = `Hola, ${firstName}`;
-  const sub = document.getElementById('app-subgreeting');
-  if (sub) sub.textContent = getDayContext();
+  try {
+    const greeting = document.getElementById('app-greeting');
+    if (greeting) greeting.textContent = `Hola, ${firstName}`;
+    const sub = document.getElementById('app-subgreeting');
+    if (sub) sub.textContent = getDayContext();
+  } catch (e) { console.error('[SAVIA] greeting setup failed:', e); }
 
-  // Greeting del check-in según hora
-  const checkinGreeting = document.getElementById('hoy-checkin-greeting');
-  if (checkinGreeting) checkinGreeting.textContent = getCheckinGreetingLabel();
-  const checkinQuestion = document.getElementById('hoy-checkin-question');
-  if (checkinQuestion) checkinQuestion.textContent = getCheckinQuestion();
+  try {
+    const checkinGreeting = document.getElementById('hoy-checkin-greeting');
+    if (checkinGreeting) checkinGreeting.textContent = getCheckinGreetingLabel();
+    const checkinQuestion = document.getElementById('hoy-checkin-question');
+    if (checkinQuestion) checkinQuestion.textContent = getCheckinQuestion();
+  } catch (e) { console.error('[SAVIA] checkin labels failed:', e); }
 
-  // Mostrar tarjeta de Ciclo solo si sexo femenino
-  const cycleCard = document.getElementById('hoy-cycle-card');
-  if (cycleCard) cycleCard.style.display = (state.sex === 'f') ? '' : 'none';
+  try {
+    const cycleCard = document.getElementById('hoy-cycle-card');
+    if (cycleCard) cycleCard.style.display = (state.sex === 'f') ? '' : 'none';
+  } catch (e) { console.error('[SAVIA] cycle card setup failed:', e); }
 
-  // Mostrar el app screen PRIMERO, luego configurar tabs/check-in
-  // (evita medir/configurar elementos hidden)
-  goStep('app');
-  switchHoyTab('hoy');
-  loadTodayCheckinUI();
-  hideLoading();
+  try { switchHoyTab('hoy'); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
+  try { loadTodayCheckinUI(); } catch (e) { console.error('[SAVIA] loadTodayCheckinUI failed:', e); }
 
-  // Diagnóstico del welcome email solo justo después de signup nuevo,
-  // no en re-login (evita banner stale en usuarios existentes)
   if (source !== 'login') {
     setTimeout(showWelcomeEmailDiagnostic, 1500);
   }
+  console.log('[SAVIA] enterAppSimulation done');
 }
 
 function getDayContext() {
@@ -5418,11 +5432,14 @@ async function routeAuthenticatedUser() {
 }
 
 async function _doRouteAuthenticatedUser() {
+  console.log('[SAVIA] _doRouteAuthenticatedUser start');
   const { data: { session } } = await sb.auth.getSession();
-  if (!session) return;
+  if (!session) { console.warn('[SAVIA] no session, abort routing'); return; }
+  console.log('[SAVIA] session OK, loading profile...');
 
   const profile = await loadCurrentProfile();
-  if (!profile) return;
+  if (!profile) { console.warn('[SAVIA] no profile, abort routing'); return; }
+  console.log('[SAVIA] profile loaded:', profile);
 
   // Si profile.name está vacío pero el provider (Google/Apple) nos dio un nombre, lo usamos.
   const userMeta = session.user.user_metadata || {};
