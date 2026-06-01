@@ -4443,6 +4443,16 @@
         </div>
       </div>
 
+      <div class="nut-onb-field-label">¿A qué comida pertenece?</div>
+      <div class="nut-onb-pills" id="nut-bc-cat-pills" style="margin-bottom:18px;">
+        <div class="nut-onb-pill" data-bc-cat="breakfast" onclick="nutBcSelectCategory('breakfast', this)">Desayuno</div>
+        <div class="nut-onb-pill" data-bc-cat="snack_am" onclick="nutBcSelectCategory('snack_am', this)">Snack AM</div>
+        <div class="nut-onb-pill" data-bc-cat="lunch" onclick="nutBcSelectCategory('lunch', this)">Almuerzo</div>
+        <div class="nut-onb-pill" data-bc-cat="snack_pm" onclick="nutBcSelectCategory('snack_pm', this)">Snack PM</div>
+        <div class="nut-onb-pill" data-bc-cat="dinner" onclick="nutBcSelectCategory('dinner', this)">Cena</div>
+        <div class="nut-onb-pill" data-bc-cat="post_workout" onclick="nutBcSelectCategory('post_workout', this)">Post-WO</div>
+      </div>
+
       <div class="nut-onb-field-label">Porción consumida</div>
 
       <div id="nut-bc-units-section" style="display:none; margin-bottom:14px;">
@@ -4475,6 +4485,55 @@
       </div>
     </div>
     <button class="nut-onb-continue" id="nut-bc-save-btn" onclick="nutBcSaveMeal()">Guardar comida</button>
+  </div>
+
+  <!-- ============== NUTRITION — Editar comida existente ============== -->
+  <div class="screen nut-screen" data-step="nut-meal-edit">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('nutrition')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title">Editar comida</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-field-label">Categoría</div>
+      <div class="nut-onb-pills" id="nut-edit-cat-pills" style="margin-bottom:18px;">
+        <div class="nut-onb-pill" data-edit-cat="breakfast" onclick="nutEditSelectCategory('breakfast', this)">Desayuno</div>
+        <div class="nut-onb-pill" data-edit-cat="snack_am" onclick="nutEditSelectCategory('snack_am', this)">Snack AM</div>
+        <div class="nut-onb-pill" data-edit-cat="lunch" onclick="nutEditSelectCategory('lunch', this)">Almuerzo</div>
+        <div class="nut-onb-pill" data-edit-cat="snack_pm" onclick="nutEditSelectCategory('snack_pm', this)">Snack PM</div>
+        <div class="nut-onb-pill" data-edit-cat="dinner" onclick="nutEditSelectCategory('dinner', this)">Cena</div>
+        <div class="nut-onb-pill" data-edit-cat="post_workout" onclick="nutEditSelectCategory('post_workout', this)">Post-WO</div>
+      </div>
+
+      <div class="nut-onb-field-label">Descripción</div>
+      <input type="text" class="nut-onb-field-input" id="nut-edit-items" placeholder="Ej: huevos con tostadas"/>
+
+      <div class="nut-onb-field-label" style="margin-top:14px;">Macros</div>
+      <div class="nut-onb-field-row">
+        <div class="nut-onb-field">
+          <div style="font-size:10px;color:#94A3B8;margin-bottom:4px;">kcal</div>
+          <input type="number" inputmode="numeric" class="nut-onb-field-input" id="nut-edit-kcal" placeholder="0"/>
+        </div>
+        <div class="nut-onb-field">
+          <div style="font-size:10px;color:#94A3B8;margin-bottom:4px;">Proteína (g)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-edit-p" placeholder="0"/>
+        </div>
+      </div>
+      <div class="nut-onb-field-row" style="margin-top:8px;">
+        <div class="nut-onb-field">
+          <div style="font-size:10px;color:#94A3B8;margin-bottom:4px;">Carbs (g)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-edit-c" placeholder="0"/>
+        </div>
+        <div class="nut-onb-field">
+          <div style="font-size:10px;color:#94A3B8;margin-bottom:4px;">Grasas (g)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-edit-f" placeholder="0"/>
+        </div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-edit-save-btn" onclick="nutSaveMealEdit()">Guardar cambios</button>
   </div>
 
   <!-- ============== NUTRITION — Meal log form ============== -->
@@ -4714,7 +4773,7 @@ function goStep(n) {
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
-    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 0];
+    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -6721,8 +6780,20 @@ const nutBcState = {
   scanning: false,
   product: null,
   portionG: 100,
-  from: null, // 'scan' | 'search' — para routear el back button del result
+  from: null,         // 'scan' | 'search' — para routear el back button del result
+  category: null,     // 'breakfast' | 'snack_am' | 'lunch' | 'snack_pm' | 'dinner' | 'post_workout'
 };
+
+// Categoría auto-detect por hora del día. Default lookup.
+function nutGuessCategoryByHour() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 10) return 'breakfast';
+  if (h >= 10 && h < 12) return 'snack_am';
+  if (h >= 12 && h < 15) return 'lunch';
+  if (h >= 15 && h < 18) return 'snack_pm';
+  if (h >= 18 && h < 22) return 'dinner';
+  return 'snack_pm';
+}
 
 // Router del back desde nut-barcode-result según cómo llegó el user
 function nutBcBackFromResult() {
@@ -7010,7 +7081,22 @@ function nutBcRenderResult() {
   }
   const cust = document.getElementById('nut-bc-portion-custom');
   if (cust) cust.value = '';
+
+  // Auto-detect categoría por hora, marcamos visualmente
+  const defaultCat = nutGuessCategoryByHour();
+  nutBcState.category = defaultCat;
+  document.querySelectorAll('[data-step="nut-barcode-result"] [data-bc-cat]').forEach(el => {
+    el.classList.toggle('selected', el.dataset.bcCat === defaultCat);
+  });
+
   nutBcUpdateSummary();
+}
+
+function nutBcSelectCategory(cat, el) {
+  nutBcState.category = cat;
+  document.querySelectorAll('[data-step="nut-barcode-result"] [data-bc-cat]').forEach(p => {
+    p.classList.toggle('selected', p === el);
+  });
 }
 
 // Selección por unidades: calcula gramos internamente
@@ -7073,14 +7159,8 @@ async function nutBcSaveMeal() {
   const prot = parseFloat(((p.protein_100 || 0) * ratio).toFixed(1));
   const carb = parseFloat(((p.carbs_100 || 0) * ratio).toFixed(1));
   const fat = parseFloat(((p.fat_100 || 0) * ratio).toFixed(1));
-  // Auto-categoría por hora (mismo helper que manual)
-  const h = new Date().getHours();
-  let cat = 'snack_pm';
-  if (h >= 5 && h < 10) cat = 'breakfast';
-  else if (h >= 10 && h < 12) cat = 'snack_am';
-  else if (h >= 12 && h < 15) cat = 'lunch';
-  else if (h >= 15 && h < 18) cat = 'snack_pm';
-  else if (h >= 18 && h < 22) cat = 'dinner';
+  // Usar la categoría elegida por el user (default fue auto-set en render)
+  const cat = nutBcState.category || nutGuessCategoryByHour();
 
   const btn = document.getElementById('nut-bc-save-btn');
   if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
@@ -7173,7 +7253,7 @@ function renderMealsList() {
       </div>
     `;
   }).join('');
-  // Event delegation: trash button OR underlay (revealed via swipe)
+  // Event delegation: trash button OR underlay OR tap row (edit) OR tap-to-close
   el.onclick = (e) => {
     const trash = e.target.closest('[data-meal-delete]');
     if (trash) {
@@ -7185,9 +7265,7 @@ function renderMealsList() {
     const underlay = e.target.closest('.nut-meal-swipe-underlay');
     if (underlay) {
       const wrap = underlay.closest('.nut-meal-swipe-wrap');
-      if (wrap) {
-        nutConfirmDeleteMeal(wrap.dataset.mealId, wrap.dataset.mealName);
-      }
+      if (wrap) nutConfirmDeleteMeal(wrap.dataset.mealId, wrap.dataset.mealName);
       return;
     }
     // Tap en row mientras está abierto el swipe → cerrar
@@ -7195,6 +7273,12 @@ function renderMealsList() {
     if (row && row.classList.contains('swiped')) {
       row.classList.remove('swiped');
       row.style.transform = '';
+      return;
+    }
+    // Tap normal del row → abrir edición
+    const wrap = e.target.closest('.nut-meal-swipe-wrap');
+    if (wrap && wrap.dataset.mealId) {
+      nutOpenMealEdit(wrap.dataset.mealId);
     }
   };
   // Attach swipe handlers a cada row
@@ -7264,6 +7348,87 @@ function nutConfirmDeleteMeal(mealId, mealName) {
     toast.remove();
     await nutDeleteMeal(mealId);
   };
+}
+
+// Estado de edición
+let _nutEditingMealId = null;
+
+function nutOpenMealEdit(mealId) {
+  const meal = (nutState.todayMeals || []).find(m => m.id === mealId);
+  if (!meal) return;
+  _nutEditingMealId = mealId;
+  // Pre-poblar form
+  document.getElementById('nut-edit-items').value = meal.items_text || '';
+  document.getElementById('nut-edit-kcal').value = meal.total_kcal || 0;
+  document.getElementById('nut-edit-p').value = meal.total_protein_g || 0;
+  document.getElementById('nut-edit-c').value = meal.total_carbs_g || 0;
+  document.getElementById('nut-edit-f').value = meal.total_fat_g || 0;
+  // Marcar categoría
+  document.querySelectorAll('[data-step="nut-meal-edit"] [data-edit-cat]').forEach(el => {
+    el.classList.toggle('selected', el.dataset.editCat === meal.meal_category);
+  });
+  goStep('nut-meal-edit');
+}
+
+function nutEditSelectCategory(cat, el) {
+  document.querySelectorAll('[data-step="nut-meal-edit"] [data-edit-cat]').forEach(p => {
+    p.classList.toggle('selected', p === el);
+  });
+}
+
+async function nutSaveMealEdit() {
+  if (!_nutEditingMealId) return;
+  const items = document.getElementById('nut-edit-items').value.trim();
+  const kcal = parseInt(document.getElementById('nut-edit-kcal').value, 10) || 0;
+  const p = parseFloat(String(document.getElementById('nut-edit-p').value || '').replace(',', '.')) || 0;
+  const c = parseFloat(String(document.getElementById('nut-edit-c').value || '').replace(',', '.')) || 0;
+  const f = parseFloat(String(document.getElementById('nut-edit-f').value || '').replace(',', '.')) || 0;
+  const catEl = document.querySelector('[data-step="nut-meal-edit"] [data-edit-cat].selected');
+  const cat = catEl ? catEl.dataset.editCat : null;
+
+  const btn = document.getElementById('nut-edit-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no session');
+    const payload = {
+      meal_category: cat,
+      items_text: items || null,
+      total_kcal: kcal,
+      total_protein_g: p,
+      total_carbs_g: c,
+      total_fat_g: f,
+    };
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/meal_logs?id=eq.${encodeURIComponent(_nutEditingMealId)}`, {
+      method: 'PATCH',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!resp.ok) throw new Error('Edit HTTP ' + resp.status);
+    // Optimistic local update
+    nutState.todayMeals = (nutState.todayMeals || []).map(m =>
+      m.id === _nutEditingMealId ? { ...m, ...payload } : m
+    );
+    nutRenderDashboard();
+    const ok = document.createElement('div');
+    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+    ok.textContent = 'Cambios guardados';
+    document.body.appendChild(ok);
+    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 1800);
+    _nutEditingMealId = null;
+    goStep('nutrition');
+  } catch (e) {
+    console.warn('[NUT] edit meal failed:', e);
+    alert('No se pudieron guardar los cambios. Probá de nuevo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar cambios'; }
+  }
 }
 
 async function nutDeleteMeal(mealId) {
