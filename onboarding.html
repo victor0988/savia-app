@@ -6571,24 +6571,17 @@ async function nutDoSearch(query) {
   const status = document.getElementById('nut-search-status');
   const results = document.getElementById('nut-search-results');
   try {
-    // Search-a-licious (search.openfoodfacts.org) — endpoint estable.
-    // El legacy /cgi/search.pl devuelve 503 frecuente. Si search-a-licious falla,
-    // fallback a v2 search del dominio principal.
-    let json = null;
-    const primaryUrl = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&page_size=20&fields=code,product_name,product_name_es,brands,nutriments,image_small_url`;
-    try {
-      const r = await fetch(primaryUrl, { headers: { Accept: 'application/json' } });
-      if (r.ok) json = await r.json();
-    } catch {}
-    if (!json) {
-      const fallbackUrl = `https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}&page_size=20&json=1&fields=code,product_name,product_name_es,brands,nutriments,image_small_url`;
-      const r2 = await fetch(fallbackUrl, { headers: { Accept: 'application/json' } });
-      if (!r2.ok) throw new Error('Search HTTP ' + r2.status);
-      json = await r2.json();
-    }
+    // Edge Function proxy (CORS-safe). OFF no permite CORS desde browsers,
+    // así que llamamos a nuestra Supabase Edge Function que proxy-ea server-side.
+    // Response normalizado: { hits: [...] } siempre.
+    const url = `${SUPABASE_URL}/functions/v1/search-food?q=${encodeURIComponent(query)}`;
+    const r = await fetch(url, {
+      headers: { Accept: 'application/json', apikey: SUPABASE_ANON_KEY },
+    });
+    if (!r.ok) throw new Error('Search HTTP ' + r.status);
+    const json = await r.json();
     if (seq !== _nutSearchSeq) return; // outdated
-    // Search-a-licious devuelve {hits:[...]} · v2 devuelve {products:[...]}
-    const rawItems = json.hits || json.products || [];
+    const rawItems = json.hits || [];
     const items = rawItems.filter(p => {
       const n = p.nutriments || {};
       const kcal = n['energy-kcal_100g'] || (n.energy_100g ? n.energy_100g / 4.184 : 0);
