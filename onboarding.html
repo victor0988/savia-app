@@ -3348,8 +3348,9 @@ function isValidEmail(email) {
 // Cache local de la cuenta actual (rellenada al login / session restore)
 let cachedAccount = null;
 function getStoredAccount() { return cachedAccount; }
-async function loadCurrentProfile(userHint) {
+async function loadCurrentProfile(userHint, sessionHint) {
   let user = userHint;
+  let session = sessionHint;
   if (!user) {
     try {
       const { data } = await sb.auth.getUser();
@@ -3357,8 +3358,39 @@ async function loadCurrentProfile(userHint) {
     } catch (e) { console.error('[SAVIA] getUser failed:', e); }
   }
   if (!user) { cachedAccount = null; return null; }
+
+  // Obtener access_token si no nos pasaron session
+  if (!session) {
+    try {
+      const { data } = await sb.auth.getSession();
+      session = data.session;
+    } catch (e) { console.warn('[SAVIA] getSession failed inside loadCurrentProfile:', e); }
+  }
+  const accessToken = session?.access_token;
+
+  // Manual fetch al REST API (bypasea bug del SDK Supabase en Safari)
+  console.log('[SAVIA] loadCurrentProfile: fetching via manual REST...');
   try {
-    const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+    if (!accessToken) {
+      console.warn('[SAVIA] no access_token, returning minimal profile');
+      cachedAccount = { email: user.email };
+      return cachedAccount;
+    }
+    const url = `${SUPABASE_URL}/rest/v1/profiles?id=eq.${encodeURIComponent(user.id)}&select=*`;
+    const resp = await fetch(url, {
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${accessToken}`,
+        'Accept': 'application/json',
+      },
+    });
+    console.log('[SAVIA] profile fetch HTTP:', resp.status);
+    if (!resp.ok) {
+      cachedAccount = { email: user.email };
+      return cachedAccount;
+    }
+    const rows = await resp.json();
+    const profile = rows && rows[0];
     cachedAccount = profile ? {
       email: user.email,
       name: profile.name || '',
@@ -3372,7 +3404,7 @@ async function loadCurrentProfile(userHint) {
     } : { email: user.email };
     return cachedAccount;
   } catch (e) {
-    console.error('[SAVIA] profile fetch failed:', e);
+    console.error('[SAVIA] profile manual fetch failed:', e);
     cachedAccount = { email: user.email };
     return cachedAccount;
   }
@@ -5460,10 +5492,10 @@ async function _doRouteAuthenticatedUser(sessionHint) {
     } catch (e) { console.error('[SAVIA] getSession failed:', e); }
   }
   if (!session) { console.warn('[SAVIA] no session, abort routing'); return; }
-  console.log('[SAVIA] session OK, loading profile (passing user hint)...');
+  console.log('[SAVIA] session OK, loading profile (passing user + session hints)...');
 
-  // Pasamos session.user para evitar getUser() (que también se cuelga en Safari OAuth callback)
-  const profile = await loadCurrentProfile(session.user);
+  // Pasamos session entera — loadCurrentProfile usa session.access_token para fetch manual
+  const profile = await loadCurrentProfile(session.user, session);
   if (!profile) { console.warn('[SAVIA] no profile, abort routing'); return; }
   console.log('[SAVIA] profile loaded:', profile);
 
