@@ -1477,6 +1477,71 @@
     letter-spacing: 1.5px;
     padding: 0 4px 8px;
   }
+  .profile-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 4px;
+  }
+  .profile-section-header .profile-section-title {
+    padding: 0;
+  }
+  .profile-section-action {
+    background: transparent;
+    border: none;
+    color: #10B981;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 6px;
+    -webkit-tap-highlight-color: rgba(16,185,129,0.1);
+  }
+  .profile-section-action:active { opacity: 0.6; }
+  /* Wearable row con swipe-to-delete */
+  .profile-row-swipe-wrap {
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+  .profile-row-swipe-wrap:last-child { border-bottom: none; }
+  .profile-row-delete {
+    position: absolute;
+    top: 0; right: 0; bottom: 0;
+    width: 90px;
+    background: #EF4444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+  }
+  .profile-row-swipeable {
+    background: rgba(255,255,255,0.04);
+    transform: translateX(0);
+    transition: transform 0.25s ease;
+    position: relative;
+    z-index: 1;
+  }
+  .profile-row-swipeable.swiped {
+    transform: translateX(-90px);
+  }
+  /* Wearables: lock badge + swipe hint */
+  .wearable-locked-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    color: #34D399;
+    background: rgba(16,185,129,0.1);
+    padding: 3px 8px;
+    border-radius: 999px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
   .profile-card {
     background: rgba(255,255,255,0.04);
     border: 1px solid rgba(255,255,255,0.06);
@@ -2717,7 +2782,10 @@
 
     <!-- Mis objetivos -->
     <div class="profile-section">
-      <div class="profile-section-title">Mis objetivos</div>
+      <div class="profile-section-header">
+        <div class="profile-section-title">Mis objetivos</div>
+        <button class="profile-section-action" onclick="editGoalsFromProfile()">Editar</button>
+      </div>
       <div class="profile-card" style="padding:14px 16px;">
         <div class="profile-chips-row" id="profile-goals-chips">
           <span class="profile-chip">—</span>
@@ -2750,7 +2818,10 @@
 
     <!-- Wearables -->
     <div class="profile-section">
-      <div class="profile-section-title">Wearables conectados</div>
+      <div class="profile-section-header">
+        <div class="profile-section-title">Wearables conectados</div>
+        <button class="profile-section-action" onclick="editWearablesFromProfile()">+ Wearable</button>
+      </div>
       <div class="profile-card" id="profile-wearables-card">
         <div class="profile-row">
           <div class="profile-row-label">—</div>
@@ -3414,6 +3485,16 @@ function selectLevel(card, value) {
 //  Q4: Wearables (multi-select with explicit Continue)
 // =============================================
 function toggleWearable(card, value) {
+  // Si el card está locked (modo edit desde profile), tap no toggle.
+  // El usuario debe hacer swipe-left y tap "Eliminar" para sacarlo.
+  if (card && card.classList.contains('locked')) {
+    // Si está swiped, reset al tap (cierra el swipe)
+    if (card.dataset.swiped === 'true') {
+      card.style.transform = 'translateX(0)';
+      card.dataset.swiped = 'false';
+    }
+    return;
+  }
   // "Ninguno" is exclusive — if it's selected and user picks another, remove ninguno
   // If user picks ninguno, remove all others
   if (value === 'ninguno') {
@@ -4269,8 +4350,182 @@ function toggleProfileFaceID() {
 }
 
 async function logoutFromProfile() {
-  closeProfile();
-  setTimeout(() => logout(), 200);
+  // Overlay negro + pulse (mismo que OAuth) para cubrir toda la transición
+  // y evitar que se vea la pantalla del app brevemente
+  document.documentElement.classList.add('oauth-loading');
+  await logout();
+  document.documentElement.classList.remove('oauth-loading');
+}
+
+// =============================================
+//  EDITAR DESDE PROFILE — Goals + Wearables
+// =============================================
+// Flag para que goals/wearables screens sepan que volver al profile (no avanzar onboarding)
+function editGoalsFromProfile() {
+  state.editingFromProfile = 'goals';
+  // Pre-poblar la pantalla con los goals actuales
+  applyStateToUI();
+  // Customizar el header de la pantalla goals (eyebrow + título)
+  customizeGoalsScreenForEditing();
+  goStep(3);
+}
+
+function editWearablesFromProfile() {
+  state.editingFromProfile = 'wearables';
+  // Pre-poblar con los wearables actuales (auto-select)
+  applyStateToUI();
+  // Customizar header de wearables screen
+  customizeWearablesScreenForEditing();
+  goStep(5);
+}
+
+function customizeGoalsScreenForEditing() {
+  const screen = document.querySelector('[data-step="3"]');
+  if (!screen) return;
+  const eyebrow = screen.querySelector('.q-eyebrow');
+  const title = screen.querySelector('.q-title');
+  const continueBtn = screen.querySelector('.continue-btn, button[onclick*="goStep(4)"]');
+  const backBtn = screen.querySelector('.back-btn');
+  if (eyebrow) eyebrow.textContent = 'Editar objetivos';
+  if (title) title.textContent = '¿Qué querés optimizar?';
+  if (continueBtn) {
+    continueBtn.textContent = 'Guardar';
+    continueBtn.onclick = saveGoalsAndReturnToProfile;
+  }
+  if (backBtn) backBtn.onclick = exitEditAndReturnToProfile;
+}
+
+function exitEditAndReturnToProfile() {
+  state.editingFromProfile = null;
+  openProfile();
+}
+
+function customizeWearablesScreenForEditing() {
+  const screen = document.querySelector('[data-step="5"]');
+  if (!screen) return;
+  const eyebrow = screen.querySelector('.q-eyebrow');
+  const title = screen.querySelector('.q-title');
+  const hint = screen.querySelector('.q-hint');
+  const continueBtn = screen.querySelector('#continue-5');
+  const backBtn = screen.querySelector('.back-btn');
+  if (eyebrow) eyebrow.textContent = 'Editar wearables';
+  if (title) title.textContent = 'Tus wearables';
+  if (hint) hint.textContent = 'Deslizá hacia la izquierda los wearables conectados para desconectarlos. Tappeá uno nuevo para agregarlo.';
+  if (continueBtn) {
+    continueBtn.textContent = 'Guardar';
+    continueBtn.onclick = saveWearablesAndReturnToProfile;
+  }
+  if (backBtn) backBtn.onclick = exitEditAndReturnToProfile;
+  // Marcar los wearables conectados como "locked" + envolverlos en swipe container
+  const connected = (state.wearables || []).filter(w => w !== 'ninguno');
+  screen.querySelectorAll('.list-card').forEach(card => {
+    const w = card.dataset.wearable;
+    // Limpiar wrap viejo si existe
+    const oldWrap = card.closest('.wearable-swipe-wrap');
+    if (oldWrap) {
+      oldWrap.parentNode.insertBefore(card, oldWrap);
+      oldWrap.remove();
+    }
+    card.classList.remove('locked');
+    card.style.transform = '';
+    if (connected.includes(w)) {
+      card.classList.add('locked', 'selected');
+      wrapWearableCardWithSwipe(card, w);
+    }
+  });
+}
+
+function wrapWearableCardWithSwipe(card, wearable) {
+  const wrap = document.createElement('div');
+  wrap.className = 'wearable-swipe-wrap';
+  wrap.style.cssText = 'position:relative; overflow:hidden; border-radius:14px; margin-bottom:8px;';
+  const deleteBtn = document.createElement('button');
+  deleteBtn.textContent = 'Eliminar';
+  deleteBtn.style.cssText = 'position:absolute; top:0; right:0; bottom:0; width:96px; background:#EF4444; color:white; border:none; font-weight:700; font-size:14px; cursor:pointer; z-index:0;';
+  deleteBtn.onclick = (e) => {
+    e.stopPropagation();
+    removeWearableFromList(wearable);
+  };
+  card.parentNode.insertBefore(wrap, card);
+  wrap.appendChild(deleteBtn);
+  wrap.appendChild(card);
+  card.style.position = 'relative';
+  card.style.zIndex = '1';
+  card.style.transition = 'transform 0.25s ease';
+  card.style.background = card.style.background || ''; // ensure opaque
+  attachSwipeHandlers(card, wearable);
+}
+
+function attachSwipeHandlers(card, wearable) {
+  let startX = 0, currentX = 0, dragging = false;
+  card.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    startX = e.touches[0].clientX;
+    dragging = true;
+  }, { passive: true });
+  card.addEventListener('touchmove', (e) => {
+    if (!dragging) return;
+    currentX = e.touches[0].clientX;
+    const diff = Math.max(-96, Math.min(0, currentX - startX));
+    card.style.transform = `translateX(${diff}px)`;
+  }, { passive: true });
+  card.addEventListener('touchend', () => {
+    if (!dragging) return;
+    dragging = false;
+    const diff = currentX - startX;
+    if (diff < -45) {
+      card.style.transform = 'translateX(-96px)';
+      card.dataset.swiped = 'true';
+    } else {
+      card.style.transform = 'translateX(0)';
+      card.dataset.swiped = 'false';
+    }
+  });
+}
+
+function removeWearableFromList(wearable) {
+  state.wearables = (state.wearables || []).filter(w => w !== wearable);
+  // Unlock + uncheck the card
+  const card = document.querySelector(`[data-step="5"] .list-card[data-wearable="${wearable}"]`);
+  if (card) {
+    card.classList.remove('selected', 'locked');
+    card.style.transform = '';
+    delete card.dataset.swiped;
+    // Unwrap del swipe container
+    const wrap = card.closest('.wearable-swipe-wrap');
+    if (wrap) {
+      wrap.parentNode.insertBefore(card, wrap);
+      wrap.remove();
+    }
+    card.style.position = '';
+    card.style.zIndex = '';
+    card.style.transition = '';
+  }
+}
+
+// (lógica de locked + swipe ya está dentro de toggleWearable original)
+
+async function saveGoalsAndReturnToProfile() {
+  state.editingFromProfile = null;
+  // Persistir en Supabase
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await sb.from('profiles').update({ goals: state.goals }).eq('id', user.id);
+    }
+  } catch (e) { console.warn('Save goals failed:', e); }
+  openProfile();
+}
+
+async function saveWearablesAndReturnToProfile() {
+  state.editingFromProfile = null;
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (user) {
+      await sb.from('profiles').update({ wearables: state.wearables }).eq('id', user.id);
+    }
+  } catch (e) { console.warn('Save wearables failed:', e); }
+  openProfile();
 }
 
 // =============================================
