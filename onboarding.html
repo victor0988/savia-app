@@ -2068,6 +2068,16 @@
     margin-bottom: 8px;
   }
   .nut-meal-icon { font-size: 22px; }
+  .nut-meal-icon-svg {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(132,204,22,0.1);
+    border: 1px solid rgba(132,204,22,0.25);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: #BEF264;
+  }
+  .nut-meal-icon-svg svg { width: 18px; height: 18px; }
   .nut-meal-body { flex: 1; min-width: 0; }
   .nut-meal-title {
     font-size: 14px; font-weight: 600; color: white;
@@ -4353,6 +4363,7 @@ function clearRememberedCredentials() {
 }
 
 function goStep(n) {
+  const prevStep = state.step;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const target = document.querySelector(`[data-step="${n}"]`);
   if (target) {
@@ -4367,6 +4378,14 @@ function goStep(n) {
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
+  // Re-render Daily Pulse cuando VOLVEMOS al Hoy desde otra pantalla
+  // (ej: después de loguear una comida en nutrition, el donut macros debe actualizarse).
+  // Skip si venimos del initial load (prevStep undefined o 0) — enterAppSimulation ya renderiza.
+  if (n === 'app' && prevStep && prevStep !== 0 && prevStep !== 'app') {
+    if (typeof renderDailyPulse === 'function') {
+      renderDailyPulse().catch(e => console.warn('[SAVIA] pulse refresh failed:', e));
+    }
+  }
 }
 
 // Loading overlay durante async operations
@@ -6242,14 +6261,23 @@ function renderMealsList() {
     el.innerHTML = '<div class="nut-meal-empty">No has logueado comidas todavía. Tappeá el botón verde abajo derecha para empezar.</div>';
     return;
   }
-  const catIcon = { breakfast: '🍳', snack_am: '🍎', lunch: '🥗', snack_pm: '🥜', dinner: '🌙', post_workout: '⚡' };
+  // SVG icons outline (estilo Tabler/Heroicons, sin emojis)
+  const catSvg = {
+    breakfast: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.5" fill="currentColor" opacity="0.4"/></svg>',
+    snack_am: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c-2 0-3 2-3 4 0 0-3 0-4 3-1 4 2 9 7 9s8-5 7-9c-1-3-4-3-4-3 0-2-1-4-3-4z"/><path d="M12 4c0-1 1-2 2-2"/></svg>',
+    lunch: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14h18M5 14a7 7 0 0114 0M12 4v3M9 21h6"/></svg>',
+    snack_pm: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="5" ry="8"/><path d="M8 8c1-1 3-2 4-2"/></svg>',
+    dinner: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>',
+    post_workout: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4 14h7l-1 8 9-12h-7l1-8z"/></svg>',
+  };
+  const defaultSvg = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/></svg>';
   const catLabel = { breakfast: 'Desayuno', snack_am: 'Snack AM', lunch: 'Almuerzo', snack_pm: 'Snack PM', dinner: 'Cena', post_workout: 'Post-workout' };
   el.innerHTML = meals.map(m => {
     const t = new Date(m.ts);
     const time = t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
     return `
       <div class="nut-meal-row">
-        <div class="nut-meal-icon">${catIcon[m.meal_category] || '🍽️'}</div>
+        <div class="nut-meal-icon-svg">${catSvg[m.meal_category] || defaultSvg}</div>
         <div class="nut-meal-body">
           <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
           <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
