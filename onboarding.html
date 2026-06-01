@@ -2078,6 +2078,22 @@
     color: #BEF264;
   }
   .nut-meal-icon-svg svg { width: 18px; height: 18px; }
+  .nut-meal-delete-btn {
+    width: 32px; height: 32px;
+    background: transparent; border: none;
+    color: #64748B; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+  }
+  .nut-meal-delete-btn svg { width: 16px; height: 16px; }
+  .nut-meal-delete-btn:active {
+    background: rgba(239,68,68,0.15);
+    color: #FCA5A5;
+    transform: scale(0.92);
+  }
   .nut-meal-body { flex: 1; min-width: 0; }
   .nut-meal-title {
     font-size: 14px; font-weight: 600; color: white;
@@ -7009,17 +7025,87 @@ function renderMealsList() {
   el.innerHTML = meals.map(m => {
     const t = new Date(m.ts);
     const time = t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false });
+    const safeId = String(m.id || '');
+    const safeName = (catLabel[m.meal_category] || 'Comida') + ' ' + (m.items_text ? m.items_text.slice(0, 30) : '');
     return `
-      <div class="nut-meal-row">
+      <div class="nut-meal-row" data-meal-id="${safeId}">
         <div class="nut-meal-icon-svg">${catSvg[m.meal_category] || defaultSvg}</div>
         <div class="nut-meal-body">
           <div class="nut-meal-title">${catLabel[m.meal_category] || 'Comida'} <span class="nut-meal-cat">· ${time}</span></div>
           <div class="nut-meal-text">${(m.items_text || '').slice(0, 50) || '—'}</div>
         </div>
         <div class="nut-meal-kcal">${m.total_kcal || 0} kcal</div>
+        <button class="nut-meal-delete-btn" data-meal-delete="${safeId}" data-meal-name="${(safeName || '').replace(/"/g, '&quot;')}" aria-label="Eliminar comida">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14z"/></svg>
+        </button>
       </div>
     `;
   }).join('');
+  // Event delegation para los delete buttons (evita inline onclick + XSS)
+  el.onclick = (e) => {
+    const btn = e.target.closest('[data-meal-delete]');
+    if (!btn) return;
+    e.stopPropagation();
+    nutConfirmDeleteMeal(btn.dataset.mealDelete, btn.dataset.mealName);
+  };
+}
+
+// Confirm + delete con toast inline (sin alert nativo feo)
+function nutConfirmDeleteMeal(mealId, mealName) {
+  if (!mealId) return;
+  // Toast con 2 botones: Eliminar / Cancelar
+  const existing = document.getElementById('nut-confirm-toast');
+  if (existing) existing.remove();
+  const toast = document.createElement('div');
+  toast.id = 'nut-confirm-toast';
+  toast.style.cssText = 'position:fixed;bottom:24px;left:16px;right:16px;background:rgba(15,23,42,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:16px;z-index:99999;box-shadow:0 16px 48px rgba(0,0,0,0.5);';
+  toast.innerHTML = `
+    <div style="font-size:14px;color:#F8FAFC;font-weight:600;margin-bottom:4px;">¿Eliminar esta comida?</div>
+    <div style="font-size:12px;color:#94A3B8;margin-bottom:14px;line-height:1.4;">${escapeHtml((mealName || '').slice(0, 80))}</div>
+    <div style="display:flex;gap:8px;">
+      <button id="nut-confirm-cancel" style="flex:1;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#CBD5E1;padding:10px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Cancelar</button>
+      <button id="nut-confirm-delete" style="flex:1;background:rgba(239,68,68,0.18);border:1px solid rgba(239,68,68,0.5);color:#FCA5A5;padding:10px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;">Eliminar</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
+  document.getElementById('nut-confirm-cancel').onclick = () => toast.remove();
+  document.getElementById('nut-confirm-delete').onclick = async () => {
+    toast.remove();
+    await nutDeleteMeal(mealId);
+  };
+}
+
+async function nutDeleteMeal(mealId) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no session');
+    // Manual REST DELETE — RLS verifica ownership por user_id
+    const resp = await fetch(`${SUPABASE_URL}/rest/v1/meal_logs?id=eq.${encodeURIComponent(mealId)}`, {
+      method: 'DELETE',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        Prefer: 'return=minimal',
+      },
+    });
+    if (!resp.ok) throw new Error('Delete HTTP ' + resp.status);
+    // Optimistic update local + refresh dashboard
+    nutState.todayMeals = (nutState.todayMeals || []).filter(m => m.id !== mealId);
+    nutRenderDashboard();
+    // Toast verde de éxito
+    const ok = document.createElement('div');
+    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+    ok.textContent = 'Comida eliminada';
+    document.body.appendChild(ok);
+    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 1800);
+  } catch (e) {
+    console.warn('[NUT] delete meal failed:', e);
+    const err = document.createElement('div');
+    err.style.cssText = 'position:fixed;bottom:90px;left:16px;right:16px;background:rgba(239,68,68,0.95);color:#fff;padding:10px 16px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;text-align:center;';
+    err.textContent = 'No se pudo eliminar. Probá de nuevo.';
+    document.body.appendChild(err);
+    setTimeout(() => { if (err.parentNode) err.remove(); }, 2200);
+  }
 }
 
 // --- HYDRATION ---
