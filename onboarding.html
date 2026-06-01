@@ -4551,10 +4551,13 @@ function goStep(n) {
   // Defensive: si estábamos en el scanner y vamos a OTRA pantalla, detener cámara
   // (excepción: ir a nut-barcode-result mantiene el state para mostrar el producto)
   if (prevStep === 'nut-barcode-scan' && n !== 'nut-barcode-scan' && n !== 'nut-barcode-result') {
-    if (typeof nutBcState !== 'undefined' && nutBcState.stream) {
-      try { nutBcState.stream.getTracks().forEach(t => t.stop()); } catch {}
-      nutBcState.stream = null;
+    if (typeof nutBcState !== 'undefined') {
       nutBcState.scanning = false;
+      if (nutBcState.reader) { try { nutBcState.reader.reset(); } catch {} nutBcState.reader = null; }
+      if (nutBcState.stream) {
+        try { nutBcState.stream.getTracks().forEach(t => t.stop()); } catch {}
+        nutBcState.stream = null;
+      }
     }
   }
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -6454,62 +6457,111 @@ const nutBcState = {
   portionG: 100,
 };
 
+// Carga lazy de ZXing (universal — funciona en Safari iOS donde BarcodeDetector no existe)
+function nutLoadZXing() {
+  if (window.ZXingBrowser || window.ZXing) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/umd/index.min.js';
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error('ZXing CDN load failed'));
+    document.head.appendChild(s);
+  });
+}
+
 async function nutStartBarcodeScan() {
   goStep('nut-barcode-scan');
   const video = document.getElementById('nut-bc-video');
   const hint = document.getElementById('nut-bc-hint');
   const status = document.getElementById('nut-bc-status');
   if (status) status.style.display = 'none';
+  if (hint) hint.textContent = 'Cargando scanner...';
+
+  // Estrategia: usar BarcodeDetector nativo si existe (Chrome Android, Safari 17+),
+  // fallback a ZXing en Safari iOS y otros browsers sin soporte nativo.
+  const useNative = 'BarcodeDetector' in window;
+  let nativeDetector = null;
+  if (useNative) {
+    try {
+      nativeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
+    } catch (e) { /* fallback a ZXing */ }
+  }
+  if (!nativeDetector) {
+    try {
+      await nutLoadZXing();
+    } catch (e) {
+      if (hint) hint.textContent = 'No se pudo cargar el scanner. Probá manual.';
+      return;
+    }
+  }
+
   if (hint) hint.textContent = 'Apuntá al código de barras del producto';
 
-  // Verificar soporte BarcodeDetector
-  if (!('BarcodeDetector' in window)) {
-    if (hint) hint.textContent = 'Tu navegador no soporta scanner. Usá manual.';
-    return;
-  }
-  try {
-    nutBcState.detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39'] });
-  } catch (e) {
-    if (hint) hint.textContent = 'No se pudo iniciar scanner. Usá manual.';
-    return;
-  }
   try {
     const stream = await navigator.mediaDevices.getUserMedia({
       video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 }, height: { ideal: 720 } },
     });
     nutBcState.stream = stream;
     video.srcObject = stream;
+    await video.play().catch(() => {});
     nutBcState.scanning = true;
-    nutBcLoop();
+
+    if (nativeDetector) {
+      nutBcState.detector = nativeDetector;
+      nutBcLoopNative();
+    } else {
+      // ZXing path — usa decodeFromVideoElement con callback continuo
+      const ZXingNS = window.ZXingBrowser || window.ZXing;
+      const Reader = ZXingNS.BrowserMultiFormatReader || ZXingNS.BrowserBarcodeReader;
+      const reader = new Reader();
+      nutBcState.reader = reader;
+      reader.decodeFromVideoElement(video, (result, err) => {
+        if (!nutBcState.scanning) return;
+        if (result) {
+          const code = result.getText ? result.getText() : (result.text || '');
+          if (code) {
+            console.log('[NUT] barcode detected (ZXing):', code);
+            nutStopBarcodeScan({ keepFlow: true });
+            nutLookupBarcode(code);
+          }
+        }
+        // err es normal (no detect yet) — ignorar
+      }).catch(e => console.warn('[NUT] ZXing decode error:', e));
+    }
   } catch (e) {
     console.warn('[NUT] camera access failed:', e);
     if (hint) hint.textContent = 'Necesitamos acceso a la cámara para escanear.';
   }
 }
 
-async function nutBcLoop() {
+// Loop para BarcodeDetector nativo (Chrome / Safari 17+)
+async function nutBcLoopNative() {
   if (!nutBcState.scanning) return;
   const video = document.getElementById('nut-bc-video');
   if (!video || video.readyState < 2) {
-    requestAnimationFrame(nutBcLoop);
+    setTimeout(nutBcLoopNative, 100);
     return;
   }
   try {
     const codes = await nutBcState.detector.detect(video);
     if (codes && codes.length > 0) {
       const code = codes[0].rawValue;
-      console.log('[NUT] barcode detected:', code);
+      console.log('[NUT] barcode detected (native):', code);
       nutStopBarcodeScan({ keepFlow: true });
       await nutLookupBarcode(code);
       return;
     }
-  } catch (e) { /* silent — sigue intentando */ }
-  // ~5fps de detección (más eficiente que rAF)
-  setTimeout(() => nutBcLoop(), 200);
+  } catch (e) { /* silent */ }
+  setTimeout(nutBcLoopNative, 200);
 }
 
 function nutStopBarcodeScan(opts) {
   nutBcState.scanning = false;
+  // Detener reader de ZXing si está activo
+  if (nutBcState.reader) {
+    try { nutBcState.reader.reset(); } catch {}
+    nutBcState.reader = null;
+  }
   if (nutBcState.stream) {
     nutBcState.stream.getTracks().forEach(t => t.stop());
     nutBcState.stream = null;
