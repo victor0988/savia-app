@@ -10,16 +10,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // VERY early: si venimos de OAuth callback (hash con access_token), oculta splash inmediatamente.
-  // También mantener oauth-loading durante el reload post-OAuth (cuando hash ya se limpió)
-  // para evitar splash flash entre el callback y el dashboard.
+  // VERY early: si venimos de OAuth callback (hash con access_token), añadir oauth-loading
+  // inmediatamente para mostrar fondo dark + pulse y ocultar splash hasta que routing termine.
+  // (Ya NO hacemos reload post-OAuth — routeamos directo, así que el flag sessionStorage no se necesita)
   try {
-    var hasHashTokens = window.location.hash.includes('access_token=');
-    var justCompletedOAuth = sessionStorage.getItem('savia_oauth_just_completed') === '1';
-    if (hasHashTokens || justCompletedOAuth) {
+    if (window.location.hash.includes('access_token=')) {
       document.documentElement.classList.add('oauth-loading');
     }
-    if (justCompletedOAuth) sessionStorage.removeItem('savia_oauth_just_completed');
   } catch (e) {}
 </script>
 <style>
@@ -7111,11 +7108,18 @@ async function _doRouteAuthenticatedUser(sessionHint) {
     return;
   }
 
+  // Helper: quitar oauth-loading con delay para que la fadeSlide del nuevo screen
+  // tenga tiempo de arrancar antes del fade-in del body. Mismo patrón que enterAppSimulation.
+  // Sin esto, body fade-in (350ms) race con screen fadeSlide (550ms) y se ve flicker.
+  const clearOauthLoadingSoon = () => setTimeout(() => {
+    document.documentElement.classList.remove('oauth-loading');
+  }, 400);
+
   if (saved) {
     if (saved.step === 'verify') {
       clearOnboardingState();
       goStep(8);
-      document.documentElement.classList.remove('oauth-loading');
+      clearOauthLoadingSoon();
       return;
     }
     // Ignorar saved steps que son screens de auth (no son progreso real de onboarding)
@@ -7123,12 +7127,12 @@ async function _doRouteAuthenticatedUser(sessionHint) {
     if (saved.step && !authSteps.includes(saved.step)) {
       goStep(saved.step);
       applyStateToUI();
-      document.documentElement.classList.remove('oauth-loading');
+      clearOauthLoadingSoon();
       return;
     }
   }
   goStep(1);
-  document.documentElement.classList.remove('oauth-loading');
+  clearOauthLoadingSoon();
 }
 
 // Debug banner removido — usamos console.log + Safari Web Inspector
@@ -7158,11 +7162,11 @@ function showDebugBanner() { /* no-op */ }
       goStep('change-password');
       return;
     }
-    // CRÍTICO: si todavía hay hash de OAuth en URL, NO routear.
-    // Estamos en el contexto cross-site que Safari ITP bloquea — cualquier query se cuelga.
-    // El init va a hacer reload limpio inmediatamente, y en el nuevo load (sin hash) routeamos.
+    // Si todavía hay hash de OAuth, init va a routear directo después de setSession + replaceState.
+    // El listener solo debería actuar como defensa-en-profundidad; el guard _routingInProgress
+    // evita ejecución duplicada si listener y init compiten.
     if (window.location.hash.includes('access_token=')) {
-      console.log('[SAVIA] Auth event durante OAuth callback, skip routing (reload pending)');
+      console.log('[SAVIA] Auth event durante OAuth callback, skip (init routea directo)');
       return;
     }
     // Si volvió de OAuth (Google), routear automáticamente
@@ -7283,27 +7287,28 @@ function showDebugBanner() { /* no-op */ }
     return;
   }
 
-  // Si venimos de OAuth callback (Google) — hash tiene access_token
-  // En Safari, las queries de Supabase se cuelgan durante el OAuth callback (ITP).
-  // Workaround: setSession (que persiste a localStorage) + reload limpio sin hash.
-  // En el reload, el SDK lee la session de localStorage y todo funciona normal.
+  // Si venimos de OAuth callback (Google) — hash tiene access_token.
+  // ESTRATEGIA: setSession + history.replaceState (sin reload) + routing directo.
+  // El reload causaba white flash en Safari iPhone entre unload/load. Ahora evitamos
+  // el reload completo. Los hangs SDK post-OAuth ya están solucionados via manual REST
+  // en loadCurrentProfile + escrituras fire-and-forget, así que routear directo es seguro.
   const hashHasTokens = window.location.hash.includes('access_token=');
   if (hashHasTokens) {
     const params = new URLSearchParams(window.location.hash.substring(1));
     const access_token = params.get('access_token');
     const refresh_token = params.get('refresh_token');
     if (access_token && refresh_token) {
-      console.log('[SAVIA] OAuth callback: setSession + reload limpio');
-      const { error } = await sb.auth.setSession({ access_token, refresh_token });
+      console.log('[SAVIA] OAuth callback: setSession + replaceState (no reload)');
+      const { data, error } = await sb.auth.setSession({ access_token, refresh_token });
       if (error) {
         console.error('[SAVIA] setSession ERROR:', error.message);
         document.documentElement.classList.remove('oauth-loading');
         return;
       }
-      // Marcador en sessionStorage para que el reload mantenga oauth-loading visible
-      try { sessionStorage.setItem('savia_oauth_just_completed', '1'); } catch {}
-      // Reload limpio: nueva navegación SIN hash → SDK toma session de localStorage normalmente
-      window.location.replace(window.location.pathname);
+      // Limpiar hash sin recargar la página — evita white flash de Safari entre navegaciones
+      try { history.replaceState(null, '', window.location.pathname); } catch {}
+      // Rutear directo con la session que recién obtuvimos (no necesitamos getSession otra vez)
+      await routeAuthenticatedUser(data.session);
       return;
     } else {
       console.error('[SAVIA] hash incompleto');

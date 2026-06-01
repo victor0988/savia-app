@@ -64,6 +64,15 @@ grep -oE "state\.[a-zA-Z_]+" onboarding.html | sort -u
 ```
 Cada una debe estar inicializada en `const state = {...}` o ser un campo conocido.
 
+### E. Routing path SDK audit (CRÍTICO — Safari hang)
+```bash
+# Buscar await sb.from() / sb.functions.invoke() DENTRO de _doRouteAuthenticatedUser
+awk '/async function _doRouteAuthenticatedUser/,/^}/' onboarding.html | grep -nE "await sb\.(from|functions)"
+```
+**Debe devolver 0 resultados**. Cualquier `await sb.from()` en el routing path se cuelga en Safari post-OAuth (bug conocido del SDK). Las escrituras DEBEN ser fire-and-forget vía `fetch()` manual al REST API (patrón en `loadCurrentProfile` y sync-name).
+
+**Por qué**: Safari ITP bloquea el SDK después del OAuth callback. Cualquier `await sb.from()` cuelga indefinidamente, dejando al user en pantalla negra. Reads ya están convertidos a manual REST; writes en el routing path deben ser fire-and-forget (no bloquean routing).
+
 ---
 
 ## 2. User Journey Mental Trace
@@ -106,6 +115,7 @@ Estos flows NO pueden romperse. Después de cualquier cambio significativo, ment
 | Flow | Pasos clave | Resultado esperado |
 |---|---|---|
 | **Google signup (nuevo)** | Comenzar → Google → autorizar | Pulse loading → step 1 (sexo) |
+| **Fresh Google re-signup (delete + signup)** | Borrar user en Supabase → Comenzar → Google → autorizar | Pulse loading → step 1. ⚠️ NO debe colgarse después de "profile loaded" — el profile fresh tiene name="" y eso disparaba sync-name SDK update que se cuelga en Safari. Si "Route decision" log NO aparece, hay regresión |
 | **Google login (existing)** | Comenzar → Google → autorizar | Pulse loading → app directo |
 | **Email OTP signup** | Comenzar → Email → tipear → recibir código → ingresar | Sesión activa → onboarding o app |
 | **Logout desde profile** | Profile → Cerrar sesión | Pulse loading → splash (sin calibrando flash) |
