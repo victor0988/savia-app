@@ -6571,13 +6571,27 @@ async function nutDoSearch(query) {
   const status = document.getElementById('nut-search-status');
   const results = document.getElementById('nut-search-results');
   try {
-    const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&page_size=20&json=1&fields=code,product_name,product_name_es,brands,nutriments,image_small_url`;
-    const resp = await fetch(url, { headers: { Accept: 'application/json' } });
+    // Search-a-licious (search.openfoodfacts.org) — endpoint estable.
+    // El legacy /cgi/search.pl devuelve 503 frecuente. Si search-a-licious falla,
+    // fallback a v2 search del dominio principal.
+    let json = null;
+    const primaryUrl = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&page_size=20&fields=code,product_name,product_name_es,brands,nutriments,image_small_url`;
+    try {
+      const r = await fetch(primaryUrl, { headers: { Accept: 'application/json' } });
+      if (r.ok) json = await r.json();
+    } catch {}
+    if (!json) {
+      const fallbackUrl = `https://world.openfoodfacts.org/api/v2/search?search_terms=${encodeURIComponent(query)}&page_size=20&json=1&fields=code,product_name,product_name_es,brands,nutriments,image_small_url`;
+      const r2 = await fetch(fallbackUrl, { headers: { Accept: 'application/json' } });
+      if (!r2.ok) throw new Error('Search HTTP ' + r2.status);
+      json = await r2.json();
+    }
     if (seq !== _nutSearchSeq) return; // outdated
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    const json = await resp.json();
-    const items = (json.products || []).filter(p => {
-      const kcal = (p.nutriments || {})['energy-kcal_100g'];
+    // Search-a-licious devuelve {hits:[...]} · v2 devuelve {products:[...]}
+    const rawItems = json.hits || json.products || [];
+    const items = rawItems.filter(p => {
+      const n = p.nutriments || {};
+      const kcal = n['energy-kcal_100g'] || (n.energy_100g ? n.energy_100g / 4.184 : 0);
       return p.code && (p.product_name || p.product_name_es) && kcal > 0;
     });
     if (seq !== _nutSearchSeq) return;
@@ -6596,7 +6610,7 @@ async function nutDoSearch(query) {
         const name = p.product_name_es || p.product_name || 'Sin nombre';
         const brand = p.brands || '';
         const n = p.nutriments || {};
-        const kcal = Math.round(n['energy-kcal_100g'] || 0);
+        const kcal = Math.round(n['energy-kcal_100g'] || (n.energy_100g ? n.energy_100g / 4.184 : 0));
         const img = p.image_small_url || '';
         // Usamos data-code (escapado como atributo) + delegation handler para evitar XSS via onclick
         return `
