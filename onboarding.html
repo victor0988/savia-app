@@ -4499,7 +4499,11 @@ function enterAppSimulation(source) {
     console.error('[SAVIA] goStep(app) failed:', e);
   }
   hideLoading();
-  document.documentElement.classList.remove('oauth-loading');
+  // Mantener oauth-loading hasta que la animación fadeSlide del app screen esté ~80% completa.
+  // Sin esto, hay un gap visual oscuro de ~200ms entre el pulse y la app visible.
+  setTimeout(() => {
+    document.documentElement.classList.remove('oauth-loading');
+  }, 450);
 
   // Decorar la UI con la data del user (cada bloque aislado en try/catch)
   const firstName = (state.name || 'usuario').split(' ')[0] || 'usuario';
