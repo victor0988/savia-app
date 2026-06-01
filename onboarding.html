@@ -4963,29 +4963,26 @@ function showDebugBanner() { /* no-op */ }
   }
 
   // Si venimos de OAuth callback (Google) — hash tiene access_token
-  // Parseamos manualmente y llamamos setSession (no esperamos al SDK)
+  // setSession dispara SIGNED_IN → el global listener routea + remueve oauth-loading.
+  // NO routeamos manualmente acá (evita race condition con el listener).
   const hashHasTokens = window.location.hash.includes('access_token=');
   if (hashHasTokens) {
-    showDebugBanner('DBG: parseando tokens del hash...', '#F59E0B');
     const params = new URLSearchParams(window.location.hash.substring(1));
     const access_token = params.get('access_token');
     const refresh_token = params.get('refresh_token');
     if (access_token && refresh_token) {
-      showDebugBanner('DBG: setSession()...', '#8B5CF6');
-      const { data, error } = await sb.auth.setSession({ access_token, refresh_token });
+      const { error } = await sb.auth.setSession({ access_token, refresh_token });
       if (error) {
-        showDebugBanner('DBG setSession ERROR: ' + error.message, '#EF4444');
-      } else if (data.session) {
-        showDebugBanner('DBG setSession OK, routing...', '#10B981');
-        try { window.history.replaceState(null, '', window.location.pathname); } catch {}
-        await routeAuthenticatedUser();
+        console.error('[SAVIA] setSession ERROR:', error.message);
         document.documentElement.classList.remove('oauth-loading');
-        return;
       } else {
-        showDebugBanner('DBG setSession sin error pero sin session', '#EF4444');
+        // Sesión seteada. El listener SIGNED_IN routea + remueve oauth-loading.
+        try { window.history.replaceState(null, '', window.location.pathname); } catch {}
       }
+      return;
     } else {
-      showDebugBanner('DBG hash incompleto: at=' + !!access_token + ' rt=' + !!refresh_token, '#EF4444');
+      console.error('[SAVIA] hash incompleto');
+      document.documentElement.classList.remove('oauth-loading');
     }
   }
 
