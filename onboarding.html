@@ -10,11 +10,17 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  // VERY early: si venimos de OAuth callback (hash con access_token), oculta splash inmediatamente
-  // para evitar el flash visual antes de que init() routee.
-  if (window.location.hash.includes('access_token=')) {
-    document.documentElement.classList.add('oauth-loading');
-  }
+  // VERY early: si venimos de OAuth callback (hash con access_token), oculta splash inmediatamente.
+  // También mantener oauth-loading durante el reload post-OAuth (cuando hash ya se limpió)
+  // para evitar splash flash entre el callback y el dashboard.
+  try {
+    var hasHashTokens = window.location.hash.includes('access_token=');
+    var justCompletedOAuth = sessionStorage.getItem('savia_oauth_just_completed') === '1';
+    if (hasHashTokens || justCompletedOAuth) {
+      document.documentElement.classList.add('oauth-loading');
+    }
+    if (justCompletedOAuth) sessionStorage.removeItem('savia_oauth_just_completed');
+  } catch (e) {}
 </script>
 <style>
   /* Pantalla negra premium mientras procesamos OAuth callback */
@@ -5694,22 +5700,26 @@ function showDebugBanner() { /* no-op */ }
   }
 
   // Si venimos de OAuth callback (Google) — hash tiene access_token
-  // setSession dispara SIGNED_IN → el global listener routea + remueve oauth-loading.
-  // NO routeamos manualmente acá (evita race condition con el listener).
+  // En Safari, las queries de Supabase se cuelgan durante el OAuth callback (ITP).
+  // Workaround: setSession (que persiste a localStorage) + reload limpio sin hash.
+  // En el reload, el SDK lee la session de localStorage y todo funciona normal.
   const hashHasTokens = window.location.hash.includes('access_token=');
   if (hashHasTokens) {
     const params = new URLSearchParams(window.location.hash.substring(1));
     const access_token = params.get('access_token');
     const refresh_token = params.get('refresh_token');
     if (access_token && refresh_token) {
+      console.log('[SAVIA] OAuth callback: setSession + reload limpio');
       const { error } = await sb.auth.setSession({ access_token, refresh_token });
       if (error) {
         console.error('[SAVIA] setSession ERROR:', error.message);
         document.documentElement.classList.remove('oauth-loading');
-      } else {
-        // Sesión seteada. El listener SIGNED_IN routea + remueve oauth-loading.
-        try { window.history.replaceState(null, '', window.location.pathname); } catch {}
+        return;
       }
+      // Marcador en sessionStorage para que el reload mantenga oauth-loading visible
+      try { sessionStorage.setItem('savia_oauth_just_completed', '1'); } catch {}
+      // Reload limpio: nueva navegación SIN hash → SDK toma session de localStorage normalmente
+      window.location.replace(window.location.pathname);
       return;
     } else {
       console.error('[SAVIA] hash incompleto');
@@ -5724,6 +5734,9 @@ function showDebugBanner() { /* no-op */ }
     await routeAuthenticatedUser();
     return;
   }
+
+  // Cold start sin session: remover oauth-loading inmediatamente (no esperar safety net 6s)
+  document.documentElement.classList.remove('oauth-loading');
 
   // Estado inicial del botón Face ID
   updateFaceIDButtonVisibility();
