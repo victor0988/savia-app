@@ -6478,93 +6478,96 @@ async function nutStartBarcodeScan() {
   if (status) status.style.display = 'none';
   if (hint) hint.textContent = 'Cargando scanner...';
 
-  // Estrategia: usar BarcodeDetector nativo si existe (Chrome Android, Safari 17+),
-  // fallback a ZXing en Safari iOS y otros browsers sin soporte nativo.
-  const useNative = 'BarcodeDetector' in window;
+  // Estrategia: BarcodeDetector nativo si existe (Chrome Android), fallback a ZXing (Safari iOS).
+  const nativeAvailable = 'BarcodeDetector' in window;
   let nativeDetector = null;
-  if (useNative) {
+  if (nativeAvailable) {
     try {
       nativeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e'] });
-    } catch (e) { /* fallback a ZXing */ }
+    } catch (e) {}
   }
-  if (!nativeDetector) {
+
+  const constraints = {
+    video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+  };
+
+  if (nativeDetector) {
+    // PATH NATIVO — yo manejo el stream + loop manual
     try {
-      await nutLoadZXing();
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      nutBcState.stream = stream;
+      video.srcObject = stream;
+      nutApplyContinuousFocus(stream);
+      nutBcState.detector = nativeDetector;
+      nutBcState.scanning = true;
+      if (hint) hint.textContent = 'Apuntá al código a 10-15 cm · tap para enfocar';
+      nutBcLoopNative();
     } catch (e) {
-      if (hint) hint.textContent = 'No se pudo cargar el scanner. Probá manual.';
-      return;
+      if (hint) hint.textContent = 'Necesitamos acceso a la cámara.';
     }
+    return;
   }
 
-  if (hint) hint.textContent = 'Apuntá al código a 10-15 cm · tap para enfocar';
-
+  // PATH ZXing — usar decodeFromConstraints para que ZXing maneje stream + play + decode loop
+  // (decodeFromVideoElement falla si el video ya tiene un stream activo)
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: {
-        facingMode: { ideal: 'environment' },
-        width: { ideal: 1920 },
-        height: { ideal: 1080 },
-      },
+    await nutLoadZXing();
+  } catch (e) {
+    if (hint) hint.textContent = 'No se pudo cargar el scanner. Probá manual.';
+    return;
+  }
+  if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
+    if (hint) hint.textContent = 'Scanner no disponible. Probá manual.';
+    return;
+  }
+  try {
+    const reader = new window.ZXing.BrowserMultiFormatReader();
+    nutBcState.reader = reader;
+    nutBcState.scanning = true;
+    reader.decodeFromConstraints(constraints, video, (result, err) => {
+      if (!nutBcState.scanning) return;
+      if (result) {
+        const code = result.getText ? result.getText() : (result.text || '');
+        if (code) {
+          console.log('[NUT] barcode detected (ZXing):', code);
+          nutStopBarcodeScan({ keepFlow: true });
+          nutLookupBarcode(code);
+        }
+      }
+    }).then(() => {
+      // Stream now activo bajo control de ZXing — aplicar focus continuo
+      setTimeout(() => nutApplyContinuousFocus(video.srcObject), 600);
+      if (hint) hint.textContent = 'Apuntá al código a 10-15 cm · tap para enfocar';
+    }).catch(e => {
+      console.error('[NUT] ZXing decodeFromConstraints failed:', e);
+      if (hint) hint.textContent = 'No se pudo iniciar cámara. Probá manual.';
     });
-    nutBcState.stream = stream;
-    video.srcObject = stream;
-    // NO llamar video.play() — el atributo autoplay + ZXing manejan el play.
-    // Llamarlo manualmente causa el warning "video already playing" y puede romper el decode.
 
-    // Autofocus continuo (Safari por default usa single-shot, lo cual pierde focus al mover el celu)
-    const track = stream.getVideoTracks()[0];
-    if (track && track.getCapabilities) {
-      try {
-        const caps = track.getCapabilities();
-        const advanced = [];
-        if (caps.focusMode && caps.focusMode.includes('continuous')) {
-          advanced.push({ focusMode: 'continuous' });
-        }
-        if (advanced.length > 0) {
-          await track.applyConstraints({ advanced }).catch(() => {});
-        }
-      } catch {}
-    }
-
-    // Tap en video → re-focus manual (útil si el autofocus no agarra el barcode)
+    // Tap en video → re-focus manual
     video.onclick = () => {
+      const s = video.srcObject;
+      if (!s) return;
+      const track = s.getVideoTracks && s.getVideoTracks()[0];
       if (!track || !track.applyConstraints) return;
       track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
-      const hintEl = document.getElementById('nut-bc-hint');
-      if (hintEl) { hintEl.textContent = 'Reajustando enfoque...'; setTimeout(() => { hintEl.textContent = 'Apuntá al código a 10-15 cm'; }, 800); }
+      if (hint) { hint.textContent = 'Reajustando enfoque...'; setTimeout(() => { hint.textContent = 'Apuntá al código a 10-15 cm · tap para enfocar'; }, 800); }
     };
-
-    nutBcState.scanning = true;
-
-    if (nativeDetector) {
-      nutBcState.detector = nativeDetector;
-      nutBcLoopNative();
-    } else {
-      // ZXing path — BrowserMultiFormatReader del paquete @zxing/library (global window.ZXing)
-      if (!window.ZXing || !window.ZXing.BrowserMultiFormatReader) {
-        if (hint) hint.textContent = 'Scanner no disponible. Probá manual.';
-        return;
-      }
-      const reader = new window.ZXing.BrowserMultiFormatReader();
-      nutBcState.reader = reader;
-      // decodeFromVideoElement toma el video element y callback continuo (result, err)
-      reader.decodeFromVideoElement(video, (result, err) => {
-        if (!nutBcState.scanning) return;
-        if (result) {
-          const code = result.getText ? result.getText() : (result.text || '');
-          if (code) {
-            console.log('[NUT] barcode detected (ZXing):', code);
-            nutStopBarcodeScan({ keepFlow: true });
-            nutLookupBarcode(code);
-          }
-        }
-        // err normal cuando no detecta nada — ignorar (es NotFoundException continuo)
-      });
-    }
   } catch (e) {
-    console.warn('[NUT] camera access failed:', e);
-    if (hint) hint.textContent = 'Necesitamos acceso a la cámara para escanear.';
+    console.error('[NUT] ZXing init failed:', e);
+    if (hint) hint.textContent = 'Error iniciando scanner. Probá manual.';
   }
+}
+
+function nutApplyContinuousFocus(stream) {
+  if (!stream || !stream.getVideoTracks) return;
+  const track = stream.getVideoTracks()[0];
+  if (!track || !track.applyConstraints || !track.getCapabilities) return;
+  try {
+    const caps = track.getCapabilities();
+    if (caps.focusMode && caps.focusMode.includes('continuous')) {
+      track.applyConstraints({ advanced: [{ focusMode: 'continuous' }] }).catch(() => {});
+    }
+  } catch {}
 }
 
 // Loop para BarcodeDetector nativo (Chrome / Safari 17+)
