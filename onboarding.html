@@ -23,15 +23,21 @@
   } catch (e) {}
 </script>
 <style>
-  /* Pantalla negra premium mientras procesamos OAuth callback */
-  html.oauth-loading body::before {
+  /* Fondo dark SIEMPRE en html — evita flash blanco entre page loads (OAuth callback reload) */
+  html { background: #050810; }
+  /* Pantalla con gradient durante OAuth (visible incluso antes de que body parsee) */
+  html.oauth-loading {
+    background: radial-gradient(ellipse at 50% 50%, #0F2A1E 0%, #050810 70%);
+  }
+  /* Pulse verde visible AUN ANTES de que body parsee (usa pseudo de html, no de body) */
+  html.oauth-loading::before {
     content: '';
     position: fixed;
     inset: 0;
     background: radial-gradient(ellipse at 50% 50%, #0F2A1E 0%, #050810 70%);
     z-index: 9998;
   }
-  html.oauth-loading body::after {
+  html.oauth-loading::after {
     content: '';
     position: fixed;
     top: 50%; left: 50%;
