@@ -2126,6 +2126,52 @@
   .nut-meal-swipe-underlay svg { width: 18px; height: 18px; }
   .nut-meal-swipe-underlay:active { background: #DC2626; }
 
+  /* Photo analyzing spinner */
+  .nut-photo-spinner {
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    border: 3px solid rgba(132,204,22,0.25);
+    border-top-color: #BEF264;
+    animation: nutSpin 1s linear infinite;
+  }
+  @keyframes nutSpin { to { transform: rotate(360deg); } }
+
+  /* Photo items list */
+  .nut-photo-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .nut-photo-item-conf {
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .nut-photo-item-name {
+    flex: 1; font-size: 13px; font-weight: 600; color: #F8FAFC;
+    line-height: 1.3; min-width: 0; text-transform: capitalize;
+  }
+  .nut-photo-item-grams {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    width: 64px; padding: 6px 8px;
+    color: #F8FAFC; font-size: 13px; font-weight: 600;
+    text-align: right;
+    outline: none;
+  }
+  .nut-photo-item-grams:focus { border-color: rgba(132,204,22,0.5); }
+  .nut-photo-item-unit { font-size: 11px; color: #94A3B8; }
+  .nut-photo-item-remove {
+    background: transparent; border: none; color: #64748B;
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .nut-photo-item-remove svg { width: 14px; height: 14px; }
+  .nut-photo-item-remove:active { background: rgba(239,68,68,0.15); color: #FCA5A5; }
+
   /* Group headers (Desayuno · 550 kcal) */
   .nut-meal-group { margin-bottom: 14px; }
   .nut-meal-group:last-child { margin-bottom: 0; }
@@ -4332,15 +4378,16 @@
       <div class="nut-onb-title">¿Cómo querés registrar?</div>
       <div class="nut-onb-hint">Tres formas de loguear: rápido, preciso o manual.</div>
 
-      <button class="nut-method-option" onclick="nutMethodSoon('foto')" style="opacity:0.5;">
+      <button class="nut-method-option" onclick="nutStartPhotoFlow()">
         <div class="nut-method-icon" style="background:rgba(132,204,22,0.16); border-color:rgba(132,204,22,0.4); color:#BEF264;">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
         </div>
         <div class="nut-method-text">
-          <div class="nut-method-title">Tomar foto <span style="font-size:10px;color:#94A3B8;background:rgba(255,255,255,0.06);border-radius:6px;padding:2px 6px;margin-left:6px;letter-spacing:0.5px;">PRONTO</span></div>
+          <div class="nut-method-title">Tomar foto</div>
           <div class="nut-method-sub">IA identifica el plato y los macros</div>
         </div>
       </button>
+      <input type="file" id="nut-photo-input" accept="image/*" capture="environment" style="display:none;" onchange="nutOnPhotoSelected(this)"/>
 
       <button class="nut-method-option" onclick="nutStartBarcodeScan()">
         <div class="nut-method-icon" style="background:rgba(96,165,250,0.16); border-color:rgba(96,165,250,0.4); color:#60A5FA;">
@@ -4398,6 +4445,61 @@
         <span style="color:#94A3B8;">Funciona mejor en español: "yogurt", "atún", "leche".</span>
       </div>
     </div>
+  </div>
+
+  <!-- ============== NUTRITION — Photo: analyzing ============== -->
+  <div class="screen nut-screen" data-step="nut-photo-analyzing">
+    <div class="nut-topbar">
+      <div style="width:56px;"></div>
+      <div class="nut-title">Analizando</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;">
+      <div style="position:relative; width:240px; height:240px; margin-bottom:24px;">
+        <img id="nut-photo-preview" alt="" style="width:100%; height:100%; object-fit:cover; border-radius:18px; border:1px solid rgba(255,255,255,0.08);"/>
+        <div style="position:absolute; inset:0; background:rgba(5,8,16,0.5); border-radius:18px; display:flex; align-items:center; justify-content:center;">
+          <div class="nut-photo-spinner"></div>
+        </div>
+      </div>
+      <div style="font-size:14px; font-weight:600; color:#F8FAFC; margin-bottom:4px;">SAVIA está identificando</div>
+      <div id="nut-photo-status" style="font-size:12px; color:#94A3B8;">Esto toma 3-5 segundos…</div>
+    </div>
+  </div>
+
+  <!-- ============== NUTRITION — Photo: result confirm ============== -->
+  <div class="screen nut-screen" data-step="nut-photo-result">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('nut-meal-method')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title">Confirmá</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <img id="nut-photo-result-img" alt="" style="width:100%; height:160px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.08); margin-bottom:16px;"/>
+
+      <div class="nut-onb-field-label">Categoría</div>
+      <div class="nut-onb-pills" style="margin-bottom:18px;">
+        <div class="nut-onb-pill" data-photo-cat="breakfast" onclick="nutPhotoSelectCategory('breakfast', this)">Desayuno</div>
+        <div class="nut-onb-pill" data-photo-cat="snack_am" onclick="nutPhotoSelectCategory('snack_am', this)">Snack AM</div>
+        <div class="nut-onb-pill" data-photo-cat="lunch" onclick="nutPhotoSelectCategory('lunch', this)">Almuerzo</div>
+        <div class="nut-onb-pill" data-photo-cat="snack_pm" onclick="nutPhotoSelectCategory('snack_pm', this)">Snack PM</div>
+        <div class="nut-onb-pill" data-photo-cat="dinner" onclick="nutPhotoSelectCategory('dinner', this)">Cena</div>
+        <div class="nut-onb-pill" data-photo-cat="post_workout" onclick="nutPhotoSelectCategory('post_workout', this)">Post-WO</div>
+      </div>
+
+      <div class="nut-onb-field-label">Items detectados <span id="nut-photo-items-count" style="color:#64748B; font-weight:500; text-transform:none; letter-spacing:0;"></span></div>
+      <div id="nut-photo-items" style="margin-bottom:14px;"></div>
+
+      <div style="font-size:11px; color:#64748B; line-height:1.5; margin-bottom:10px;">Ajustá los gramos si la IA se equivocó. Podés quitar items con el botón ×.</div>
+
+      <div style="padding:14px; background:rgba(132,204,22,0.06); border:1px solid rgba(132,204,22,0.18); border-radius:14px;">
+        <div style="font-size:11px; color:#94A3B8; letter-spacing:1px; text-transform:uppercase; margin-bottom:8px;">Total de la comida</div>
+        <div id="nut-photo-totals" style="font-size:14px; font-weight:600; color:#F8FAFC;">—</div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-photo-save-btn" onclick="nutPhotoSaveMeal()">Guardar comida</button>
   </div>
 
   <!-- ============== NUTRITION — Barcode scanner ============== -->
@@ -4870,7 +4972,8 @@ function goStep(n) {
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
-    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion', 0];
+    'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
+    'nut-photo-analyzing', 'nut-photo-result', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -6860,14 +6963,269 @@ function escapeHtml(s) {
 }
 function escapeAttr(s) { return escapeHtml(s); }
 
-function nutMethodSoon(method) {
-  // Foto pendiente de Sprint B (Claude Vision Edge Function).
-  // Mensaje suave para no romper el flow.
-  const banner = document.createElement('div');
-  banner.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(255,255,255,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
-  banner.textContent = 'Foto IA — próximamente. Probá barcode o manual por ahora.';
-  document.body.appendChild(banner);
-  setTimeout(() => { if (banner.parentNode) banner.remove(); }, 2200);
+// ============================================================
+//  PHOTO IA (Claude Vision via Edge Function analyze-food-image)
+// ============================================================
+const nutPhotoState = {
+  items: [],
+  imageDataUrl: null,
+  imageBase64: null,
+  category: null,
+};
+
+function nutStartPhotoFlow() {
+  // Trigger el input[type=file] hidden — abre cámara nativa en iOS
+  const input = document.getElementById('nut-photo-input');
+  if (input) {
+    input.value = ''; // reset por si reusa
+    input.click();
+  }
+}
+
+async function nutOnPhotoSelected(input) {
+  const file = input.files && input.files[0];
+  if (!file) return;
+  // Validar tamaño antes de procesar
+  if (file.size > 15_000_000) {
+    alert('La foto es demasiado grande (máx 15 MB). Probá otra.');
+    return;
+  }
+  try {
+    const { dataUrl, base64 } = await nutCompressImage(file, 1024, 0.85);
+    nutPhotoState.imageDataUrl = dataUrl;
+    nutPhotoState.imageBase64 = base64;
+    document.getElementById('nut-photo-preview').src = dataUrl;
+    goStep('nut-photo-analyzing');
+    document.getElementById('nut-photo-status').textContent = 'Esto toma 3-5 segundos…';
+    await nutAnalyzePhoto(base64);
+  } catch (e) {
+    console.warn('[NUT] photo flow failed:', e);
+    alert('No se pudo procesar la foto. Probá de nuevo.');
+    goStep('nut-meal-method');
+  }
+}
+
+// Comprime imagen a maxDim px en lado largo, JPEG quality 0.85.
+// Retorna { dataUrl, base64 (sin prefix data:..) }
+function nutCompressImage(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const blobUrl = URL.createObjectURL(file);
+    img.onload = () => {
+      const ratio = Math.min(1, maxDim / Math.max(img.width, img.height));
+      const w = Math.round(img.width * ratio);
+      const h = Math.round(img.height * ratio);
+      const canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      const base64 = dataUrl.split(',')[1] || '';
+      URL.revokeObjectURL(blobUrl);
+      resolve({ dataUrl, base64 });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(blobUrl); // evitar leak si la imagen falla en cargar
+      reject(new Error('image_load_failed'));
+    };
+    img.src = blobUrl;
+  });
+}
+
+async function nutAnalyzePhoto(base64) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/analyze-food-image`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: base64, mime: 'image/jpeg' }),
+    });
+    if (!resp.ok) {
+      const t = await resp.text();
+      throw new Error('analyze HTTP ' + resp.status + ' ' + t);
+    }
+    const json = await resp.json();
+    const items = Array.isArray(json.items) ? json.items : [];
+    if (items.length === 0) {
+      alert('No identificamos comida en la foto. Probá otra o usá manual.');
+      goStep('nut-meal-method');
+      return;
+    }
+    nutPhotoState.items = items;
+    nutPhotoState.category = nutGuessCategoryByHour();
+    nutRenderPhotoResult();
+    goStep('nut-photo-result');
+  } catch (e) {
+    console.warn('[NUT] analyze failed:', e);
+    alert('No se pudo analizar la foto. Probá de nuevo en un momento.');
+    goStep('nut-meal-method');
+  }
+}
+
+function nutRenderPhotoResult() {
+  const img = document.getElementById('nut-photo-result-img');
+  if (img && nutPhotoState.imageDataUrl) img.src = nutPhotoState.imageDataUrl;
+  // Marcar categoría default
+  document.querySelectorAll('[data-step="nut-photo-result"] [data-photo-cat]').forEach(el => {
+    el.classList.toggle('selected', el.dataset.photoCat === nutPhotoState.category);
+  });
+  nutRenderPhotoItems();
+}
+
+function nutRenderPhotoItems() {
+  const container = document.getElementById('nut-photo-items');
+  const countEl = document.getElementById('nut-photo-items-count');
+  if (countEl) countEl.textContent = `· ${nutPhotoState.items.length} item${nutPhotoState.items.length === 1 ? '' : 's'}`;
+  if (!container) return;
+  if (nutPhotoState.items.length === 0) {
+    container.innerHTML = '<div style="color:#94A3B8;font-size:12px;text-align:center;padding:16px;">Sin items. Tap atrás para tomar otra foto.</div>';
+    nutUpdatePhotoTotals();
+    return;
+  }
+  // Confidence color: verde >=0.75, ámbar 0.5-0.75, rojo <0.5
+  const confColor = (c) => c >= 0.75 ? '#84CC16' : c >= 0.5 ? '#F59E0B' : '#EF4444';
+  container.innerHTML = nutPhotoState.items.map((it, idx) => `
+    <div class="nut-photo-item">
+      <div class="nut-photo-item-conf" style="background:${confColor(it.confidence)};" title="Confianza: ${Math.round(it.confidence * 100)}%"></div>
+      <div class="nut-photo-item-name">${escapeHtml(it.food)}</div>
+      <input type="number" inputmode="decimal" class="nut-photo-item-grams" data-photo-idx="${idx}" value="${Math.round(it.grams)}" min="0" max="2000"/>
+      <span class="nut-photo-item-unit">g</span>
+      <button class="nut-photo-item-remove" data-photo-remove="${idx}" aria-label="Quitar item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+    </div>
+  `).join('');
+  // Wire input changes (recalcula macros por ítem proporcionalmente al gramaje original) y remove buttons
+  container.oninput = (e) => {
+    const inp = e.target.closest('[data-photo-idx]');
+    if (!inp) return;
+    const idx = parseInt(inp.dataset.photoIdx, 10);
+    const item = nutPhotoState.items[idx];
+    if (!item) return;
+    const newGrams = parseFloat(String(inp.value || '').replace(',', '.'));
+    if (newGrams > 0 && newGrams < 5000) {
+      const ratio = newGrams / (item._origGrams || item.grams || newGrams);
+      if (!item._origGrams) {
+        // Snapshot original (kcal/macros base) — primer change
+        item._origGrams = item.grams;
+        item._origKcal = item.kcal;
+        item._origP = item.protein_g;
+        item._origC = item.carbs_g;
+        item._origF = item.fat_g;
+      }
+      const r = newGrams / item._origGrams;
+      item.grams = newGrams;
+      item.kcal = Math.round(item._origKcal * r);
+      item.protein_g = parseFloat((item._origP * r).toFixed(1));
+      item.carbs_g = parseFloat((item._origC * r).toFixed(1));
+      item.fat_g = parseFloat((item._origF * r).toFixed(1));
+      nutUpdatePhotoTotals();
+    }
+  };
+  container.onclick = (e) => {
+    const btn = e.target.closest('[data-photo-remove]');
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.photoRemove, 10);
+    nutPhotoState.items.splice(idx, 1);
+    nutRenderPhotoItems();
+  };
+  nutUpdatePhotoTotals();
+}
+
+function nutUpdatePhotoTotals() {
+  const totals = nutPhotoState.items.reduce((a, i) => ({
+    kcal: a.kcal + (i.kcal || 0),
+    p: a.p + (i.protein_g || 0),
+    c: a.c + (i.carbs_g || 0),
+    f: a.f + (i.fat_g || 0),
+  }), { kcal: 0, p: 0, c: 0, f: 0 });
+  const el = document.getElementById('nut-photo-totals');
+  if (el) el.textContent = `${totals.kcal} kcal · ${totals.p.toFixed(1)}P · ${totals.c.toFixed(1)}C · ${totals.f.toFixed(1)}F`;
+}
+
+function nutPhotoSelectCategory(cat, el) {
+  nutPhotoState.category = cat;
+  document.querySelectorAll('[data-step="nut-photo-result"] [data-photo-cat]').forEach(p => {
+    p.classList.toggle('selected', p === el);
+  });
+}
+
+async function nutPhotoSaveMeal() {
+  if (!nutPhotoState.items.length) return;
+  const totals = nutPhotoState.items.reduce((a, i) => ({
+    kcal: a.kcal + (i.kcal || 0),
+    p: a.p + (i.protein_g || 0),
+    c: a.c + (i.carbs_g || 0),
+    f: a.f + (i.fat_g || 0),
+  }), { kcal: 0, p: 0, c: 0, f: 0 });
+  const cat = nutPhotoState.category || nutGuessCategoryByHour();
+  const summary = nutPhotoState.items.map(i => `${i.food} (${Math.round(i.grams)}g)`).join(', ').slice(0, 200);
+
+  const btn = document.getElementById('nut-photo-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+
+  try {
+    const { data: { user, session } } = { data: { user: (await sb.auth.getUser()).data.user, session: (await sb.auth.getSession()).data.session } };
+    if (!user || !session) throw new Error('no_session');
+
+    // 1) Upload de la foto a Storage (path: {user_id}/timestamp.jpg)
+    let photoUrl = null;
+    if (nutPhotoState.imageBase64) {
+      try {
+        const path = `${user.id}/${Date.now()}.jpg`;
+        const binary = Uint8Array.from(atob(nutPhotoState.imageBase64), c => c.charCodeAt(0));
+        const upResp = await fetch(`${SUPABASE_URL}/storage/v1/object/food-photos/${path}`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'image/jpeg',
+            'x-upsert': 'true',
+          },
+          body: binary,
+        });
+        if (upResp.ok) photoUrl = path; // guardamos path, no URL pública (bucket es privado)
+        else console.warn('[NUT] photo upload failed:', upResp.status);
+      } catch (e) { console.warn('[NUT] storage upload exception:', e); }
+    }
+
+    // 2) Insert meal_log
+    const metadata = {
+      v: 1,
+      source: 'photo',
+      items: nutPhotoState.items.map(i => ({ food: i.food, grams: Math.round(i.grams), kcal: i.kcal, p: i.protein_g, c: i.carbs_g, f: i.fat_g, confidence: i.confidence })),
+      photo_path: photoUrl,
+    };
+    const payload = {
+      user_id: user.id,
+      meal_category: cat,
+      source: 'photo',
+      items_text: summary,
+      total_kcal: totals.kcal,
+      total_protein_g: parseFloat(totals.p.toFixed(1)),
+      total_carbs_g: parseFloat(totals.c.toFixed(1)),
+      total_fat_g: parseFloat(totals.f.toFixed(1)),
+      notes: JSON.stringify(metadata),
+    };
+    if (photoUrl) payload.photo_url = photoUrl;
+    await sb.from('meal_logs').insert(payload);
+  } catch (e) {
+    console.warn('[NUT] photo save failed:', e);
+  }
+
+  await nutLoadTodayData();
+  nutRenderDashboard();
+  // Reset state + volver al dashboard
+  nutPhotoState.items = [];
+  nutPhotoState.imageDataUrl = null;
+  nutPhotoState.imageBase64 = null;
+  goStep('nutrition');
+  if (btn) { btn.disabled = false; btn.textContent = 'Guardar comida'; }
 }
 
 // Estado del scanner
