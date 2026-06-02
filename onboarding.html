@@ -5097,7 +5097,8 @@ async function loadCurrentProfile(userHint, sessionHint) {
       wearables: profile.wearables || [],
       photo: profile.photo_url || null,
       isOnboarded: profile.is_onboarded,
-    } : { email: user.email };
+      createdAt: profile.created_at || user.created_at || null,
+    } : { email: user.email, createdAt: user.created_at || null };
     return cachedAccount;
   } catch (e) {
     console.error('[SAVIA] profile manual fetch failed:', e);
@@ -6056,10 +6057,24 @@ function enterAppSimulation(source) {
   console.log('[SAVIA] enterAppSimulation done');
 }
 
+// Días desde signup (1-indexed, mismo día = Día 1).
+// Usa el created_at del profile (cacheado). Si no hay, fallback Día 1.
+function getDaysSinceSignup() {
+  const acc = cachedAccount;
+  if (!acc || !acc.createdAt) return 1;
+  const created = new Date(acc.createdAt);
+  if (isNaN(created.getTime())) return 1;
+  // Normalizar a medianoche local para comparar días calendario
+  const startOfCreated = new Date(created.getFullYear(), created.getMonth(), created.getDate());
+  const now = new Date();
+  const startOfNow = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const diffMs = startOfNow - startOfCreated;
+  const diffDays = Math.floor(diffMs / 86400000);
+  return Math.max(1, diffDays + 1); // Día 1 = mismo día del signup
+}
+
 function getDayContext() {
-  // Día desde el signup (calculado del created_at del user si existe; fallback Día 1)
-  // Placeholder por ahora — Sprint posterior conecta con profile.created_at
-  return 'Día 1';
+  return 'Día ' + getDaysSinceSignup();
 }
 
 // =============================================
@@ -6200,9 +6215,8 @@ function applyPulseScore(score) {
 }
 
 function getCalibrationDay() {
-  // Placeholder: por ahora día 1. Eventualmente: calcular desde profile.created_at
-  // (días desde signup, cap a 7)
-  return 1;
+  // Día de calibración: 1-7. Después de 7 días, calibración termina (devuelve 7 = full).
+  return Math.min(7, getDaysSinceSignup());
 }
 
 function setKpi(id, value) {
