@@ -3913,6 +3913,20 @@
       </div>
     </div>
 
+    <!-- Composición corporal (InBody) -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <div class="profile-section-title">Composición corporal</div>
+        <button class="profile-section-action" onclick="nutInBodyOpenUpload()">+ Subir InBody</button>
+      </div>
+      <div class="profile-card" id="profile-bodycomp-card">
+        <div class="profile-row" id="profile-bodycomp-empty">
+          <div class="profile-row-label" style="font-size:12px; color:#94A3B8; line-height:1.5;">Subí tu último InBody (PDF o foto) y SAVIA recalcula tus macros con tu masa magra real.</div>
+        </div>
+      </div>
+      <input type="file" id="profile-inbody-input" accept="image/*,application/pdf" style="display:none;" onchange="nutInBodyOnSelected(event)"/>
+    </div>
+
     <!-- Wearables -->
     <div class="profile-section">
       <div class="profile-section-header">
@@ -4502,6 +4516,85 @@
     <button class="nut-onb-continue" id="nut-photo-save-btn" onclick="nutPhotoSaveMeal()">Guardar comida</button>
   </div>
 
+  <!-- ============== InBody: analyzing ============== -->
+  <div class="screen nut-screen" data-step="nut-inbody-analyzing">
+    <div class="nut-topbar">
+      <div style="width:56px;"></div>
+      <div class="nut-title">Leyendo InBody</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:24px;">
+      <div style="position:relative; width:200px; height:240px; margin-bottom:24px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; display:flex; align-items:center; justify-content:center;">
+        <svg id="nut-inbody-doc-icon" style="width:60px; height:60px; color:#94A3B8;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <img id="nut-inbody-preview" alt="" style="position:absolute; inset:0; width:100%; height:100%; object-fit:cover; border-radius:14px; display:none;"/>
+        <div style="position:absolute; inset:0; background:rgba(5,8,16,0.5); border-radius:14px; display:flex; align-items:center; justify-content:center;">
+          <div class="nut-photo-spinner"></div>
+        </div>
+      </div>
+      <div style="font-size:14px; font-weight:600; color:#F8FAFC; margin-bottom:4px;">Extrayendo métricas</div>
+      <div id="nut-inbody-status" style="font-size:12px; color:#94A3B8;">Esto toma 5-10 segundos…</div>
+    </div>
+  </div>
+
+  <!-- ============== InBody: confirm result ============== -->
+  <div class="screen nut-screen" data-step="nut-inbody-confirm">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('profile')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title">Confirmá datos</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div style="font-size:12px; color:#94A3B8; line-height:1.5; margin-bottom:14px;">
+        Revisá y ajustá si algo está mal. Lo que dejes va a recalcular tus macros automáticamente.
+      </div>
+
+      <div class="nut-onb-field-label">Fecha de medición</div>
+      <input type="date" class="nut-onb-field-input" id="nut-inbody-date"/>
+
+      <div class="nut-onb-field-row" style="margin-top:12px;">
+        <div class="nut-onb-field">
+          <div style="font-size:10px; color:#94A3B8; margin-bottom:4px;">Peso (kg)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-inbody-weight" placeholder="—"/>
+        </div>
+        <div class="nut-onb-field">
+          <div style="font-size:10px; color:#94A3B8; margin-bottom:4px;">% Grasa corporal</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-inbody-bf" placeholder="—"/>
+        </div>
+      </div>
+
+      <div class="nut-onb-field-row" style="margin-top:8px;">
+        <div class="nut-onb-field">
+          <div style="font-size:10px; color:#94A3B8; margin-bottom:4px;">Masa muscular (kg)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-inbody-muscle" placeholder="—"/>
+        </div>
+        <div class="nut-onb-field">
+          <div style="font-size:10px; color:#94A3B8; margin-bottom:4px;">Masa magra LBM (kg)</div>
+          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-inbody-lbm" placeholder="—"/>
+        </div>
+      </div>
+
+      <div class="nut-onb-field-row" style="margin-top:8px;">
+        <div class="nut-onb-field">
+          <div style="font-size:10px; color:#94A3B8; margin-bottom:4px;">Grasa visceral</div>
+          <input type="number" inputmode="numeric" class="nut-onb-field-input" id="nut-inbody-visceral" placeholder="—"/>
+        </div>
+        <div class="nut-onb-field">
+          <div style="font-size:10px; color:#94A3B8; margin-bottom:4px;">BMR (kcal)</div>
+          <input type="number" inputmode="numeric" class="nut-onb-field-input" id="nut-inbody-bmr" placeholder="—"/>
+        </div>
+      </div>
+
+      <div style="margin-top:14px; padding:10px 12px; background:rgba(132,204,22,0.06); border:1px solid rgba(132,204,22,0.18); border-radius:10px;">
+        <div style="font-size:11px; color:#BEF264; font-weight:600; margin-bottom:4px;">¿Por qué importa la LBM?</div>
+        <div style="font-size:11px; color:#CBD5E1; line-height:1.5;">Tu proteína se calcula sobre masa magra. Con tu LBM real, tus targets de macros serán mucho más precisos.</div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="nut-inbody-save-btn" onclick="nutInBodySave()">Guardar y recalcular macros</button>
+  </div>
+
   <!-- ============== NUTRITION — Barcode scanner ============== -->
   <div class="screen nut-screen" data-step="nut-barcode-scan" style="padding:0;">
     <div class="nut-topbar" style="position:absolute; top:0; left:0; right:0; z-index:10; background:rgba(5,8,16,0.7); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);">
@@ -4973,7 +5066,7 @@ function goStep(n) {
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
-    'nut-photo-analyzing', 'nut-photo-result', 0];
+    'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -7169,6 +7262,292 @@ function nutPhotoSelectCategory(cat, el) {
   });
 }
 
+// ============================================================
+//  IN BODY UPLOAD (PDF o foto → Claude Vision/Document → confirm → save)
+// ============================================================
+const nutInBodyState = {
+  fileBase64: null,
+  fileMime: null,
+  parsed: null,
+};
+
+function nutInBodyOpenUpload() {
+  const input = document.getElementById('profile-inbody-input');
+  if (input) { input.value = ''; input.click(); }
+}
+
+async function nutInBodyOnSelected(e) {
+  const file = e.target.files && e.target.files[0];
+  if (!file) return;
+  if (file.size > 5_000_000) {
+    alert('El archivo es demasiado grande (máx 5 MB). Probá comprimirlo o usar una foto en JPEG.');
+    return;
+  }
+  try {
+    const isPdf = file.type === 'application/pdf';
+    let base64, mime, previewSrc = null;
+    if (isPdf) {
+      base64 = await nutFileToBase64(file);
+      mime = 'application/pdf';
+    } else {
+      const { dataUrl, base64: imgB64 } = await nutCompressImage(file, 1600, 0.85);
+      base64 = imgB64;
+      mime = 'image/jpeg';
+      previewSrc = dataUrl;
+    }
+    nutInBodyState.fileBase64 = base64;
+    nutInBodyState.fileMime = mime;
+    goStep('nut-inbody-analyzing');
+    const preview = document.getElementById('nut-inbody-preview');
+    const icon = document.getElementById('nut-inbody-doc-icon');
+    if (previewSrc && preview) {
+      preview.src = previewSrc;
+      preview.style.display = '';
+      if (icon) icon.style.display = 'none';
+    } else if (preview) {
+      preview.style.display = 'none';
+      if (icon) icon.style.display = '';
+    }
+    document.getElementById('nut-inbody-status').textContent = isPdf ? 'Procesando PDF...' : 'Procesando imagen...';
+    await nutInBodyParse(base64, mime);
+  } catch (err) {
+    console.warn('[NUT] inbody upload failed:', err);
+    alert('No se pudo procesar el archivo. Probá de nuevo.');
+    goStep('profile');
+  }
+}
+
+function nutFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result || '';
+      const idx = String(result).indexOf(',');
+      resolve(idx >= 0 ? String(result).slice(idx + 1) : '');
+    };
+    reader.onerror = () => reject(new Error('file_read_failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
+async function nutInBodyParse(base64, mime) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/parse-inbody-document`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ file: base64, mime }),
+    });
+    if (!resp.ok) {
+      const txt = await resp.text();
+      throw new Error('parse HTTP ' + resp.status + ' ' + txt.slice(0, 200));
+    }
+    const json = await resp.json();
+    if (json.error === 'not_inbody') {
+      alert('No detectamos un InBody en el archivo. Probá con otro PDF o foto del print.');
+      goStep('profile');
+      return;
+    }
+    if (json.error) {
+      alert('No pudimos leer las métricas. Probá otra foto/PDF más claro.');
+      goStep('profile');
+      return;
+    }
+    nutInBodyState.parsed = json;
+    nutInBodyRenderConfirm(json);
+    goStep('nut-inbody-confirm');
+  } catch (e) {
+    console.warn('[NUT] inbody parse failed:', e);
+    alert('No se pudo analizar el archivo. Intentá de nuevo.');
+    goStep('profile');
+  }
+}
+
+function nutInBodyRenderConfirm(p) {
+  const todayISO = new Date().toISOString().slice(0, 10);
+  document.getElementById('nut-inbody-date').value = todayISO;
+  document.getElementById('nut-inbody-weight').value = p.weight_kg != null ? p.weight_kg : '';
+  document.getElementById('nut-inbody-bf').value = p.body_fat_pct != null ? p.body_fat_pct : '';
+  document.getElementById('nut-inbody-muscle').value = p.muscle_mass_kg != null ? p.muscle_mass_kg : '';
+  document.getElementById('nut-inbody-lbm').value = p.lean_body_mass_kg != null ? p.lean_body_mass_kg : '';
+  document.getElementById('nut-inbody-visceral').value = p.visceral_fat_level != null ? p.visceral_fat_level : '';
+  document.getElementById('nut-inbody-bmr').value = p.bmr_kcal != null ? p.bmr_kcal : '';
+}
+
+function _parseDec(id) {
+  const raw = document.getElementById(id)?.value || '';
+  const v = parseFloat(String(raw).replace(',', '.'));
+  return isFinite(v) ? v : null;
+}
+function _parseInt(id) {
+  const v = parseInt(document.getElementById(id)?.value || '', 10);
+  return isFinite(v) ? v : null;
+}
+
+async function nutInBodySave() {
+  const btn = document.getElementById('nut-inbody-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  const measuredAtStr = document.getElementById('nut-inbody-date').value || new Date().toISOString().slice(0, 10);
+  const data = {
+    weight_kg: _parseDec('nut-inbody-weight'),
+    body_fat_pct: _parseDec('nut-inbody-bf'),
+    muscle_mass_kg: _parseDec('nut-inbody-muscle'),
+    lean_body_mass_kg: _parseDec('nut-inbody-lbm'),
+    visceral_fat_level: _parseInt('nut-inbody-visceral'),
+    bmr_kcal: _parseInt('nut-inbody-bmr'),
+  };
+  // Necesitamos al menos peso o body_fat
+  if (data.weight_kg == null && data.body_fat_pct == null) {
+    alert('Ingresá al menos peso o % grasa.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar y recalcular macros'; }
+    return;
+  }
+
+  try {
+    const { data: { user, session } } = { data: { user: (await sb.auth.getUser()).data.user, session: (await sb.auth.getSession()).data.session } };
+    if (!user || !session) throw new Error('no_session');
+
+    // 1) Upload del archivo original a Storage
+    let storagePath = null;
+    if (nutInBodyState.fileBase64) {
+      try {
+        const ext = nutInBodyState.fileMime === 'application/pdf' ? 'pdf' : 'jpg';
+        storagePath = `${user.id}/${Date.now()}.${ext}`;
+        const binary = Uint8Array.from(atob(nutInBodyState.fileBase64), c => c.charCodeAt(0));
+        const upResp = await fetch(`${SUPABASE_URL}/storage/v1/object/body-comps/${storagePath}`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': nutInBodyState.fileMime || 'application/octet-stream',
+            'x-upsert': 'true',
+          },
+          body: binary,
+        });
+        if (!upResp.ok) { console.warn('[NUT] inbody storage upload failed:', upResp.status); storagePath = null; }
+      } catch (e) { console.warn('[NUT] inbody upload exception:', e); storagePath = null; }
+    }
+
+    // 2) Insert body_compositions
+    const insertPayload = {
+      patient_user_id: user.id,
+      uploaded_by_user_id: user.id,
+      source: 'self',
+      method: 'inbody',
+      measured_at: measuredAtStr + 'T00:00:00Z',
+      weight_kg: data.weight_kg,
+      body_fat_pct: data.body_fat_pct,
+      muscle_mass_kg: data.muscle_mass_kg,
+      lean_body_mass_kg: data.lean_body_mass_kg,
+      visceral_fat_level: data.visceral_fat_level,
+      bmr_kcal: data.bmr_kcal,
+      photo_url: storagePath,
+      raw_data: (nutInBodyState.parsed && nutInBodyState.parsed.raw_fields) || {},
+    };
+    const insertResp = await fetch(`${SUPABASE_URL}/rest/v1/body_compositions`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'return=representation',
+      },
+      body: JSON.stringify(insertPayload),
+    });
+    if (!insertResp.ok) {
+      const t = await insertResp.text();
+      throw new Error('insert HTTP ' + insertResp.status + ' ' + t);
+    }
+    const rows = await insertResp.json();
+    const saved = rows && rows[0];
+
+    // 3) Sync con profiles + actualizar nutState in-memory
+    // para que nutCalculateTargets use estos valores en la sesión actual (sin reload)
+    const profilePayload = {};
+    if (data.weight_kg != null) {
+      profilePayload.weight_kg = data.weight_kg;
+      nutState.weight = data.weight_kg;
+    }
+    if (data.body_fat_pct != null) {
+      profilePayload.body_fat_pct = data.body_fat_pct;
+      nutState.bodyFat = data.body_fat_pct;
+    }
+    if (Object.keys(profilePayload).length > 0) {
+      fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${user.id}`, {
+        method: 'PATCH',
+        headers: {
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${session.access_token}`,
+          'Content-Type': 'application/json',
+          Prefer: 'return=minimal',
+        },
+        body: JSON.stringify(profilePayload),
+      }).catch(e => console.warn('[NUT] profile sync failed:', e));
+    }
+
+    // 4) Actualizar UI: render sección Profile con la nueva medición
+    nutInBodyRenderProfileSection(saved);
+
+    // 5) Reset + back to Profile
+    nutInBodyState.fileBase64 = null;
+    nutInBodyState.fileMime = null;
+    nutInBodyState.parsed = null;
+
+    const ok = document.createElement('div');
+    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+    ok.textContent = 'InBody guardado · macros recalculados';
+    document.body.appendChild(ok);
+    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 2200);
+    goStep('profile');
+  } catch (e) {
+    console.warn('[NUT] inbody save failed:', e);
+    alert('No se pudo guardar. Probá de nuevo.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar y recalcular macros'; }
+  }
+}
+
+// Cargar último InBody y renderizar la sección del Profile
+async function nutInBodyLoadLatest() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const url = `${SUPABASE_URL}/rest/v1/body_compositions?patient_user_id=eq.${session.user.id}&method=eq.inbody&order=measured_at.desc&limit=1`;
+    const resp = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!resp.ok) return;
+    const rows = await resp.json();
+    if (rows && rows[0]) nutInBodyRenderProfileSection(rows[0]);
+  } catch (e) { console.warn('[NUT] inbody load latest failed:', e); }
+}
+
+function nutInBodyRenderProfileSection(comp) {
+  const card = document.getElementById('profile-bodycomp-card');
+  if (!card || !comp) return;
+  const d = new Date(comp.measured_at);
+  const dStr = d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' });
+  const rows = [];
+  if (comp.weight_kg != null) rows.push(`<div><span style="color:#94A3B8;">Peso</span> <strong style="color:#F8FAFC;">${comp.weight_kg} kg</strong></div>`);
+  if (comp.body_fat_pct != null) rows.push(`<div><span style="color:#94A3B8;">Grasa</span> <strong style="color:#FCA5A5;">${comp.body_fat_pct}%</strong></div>`);
+  if (comp.muscle_mass_kg != null) rows.push(`<div><span style="color:#94A3B8;">Músculo</span> <strong style="color:#BEF264;">${comp.muscle_mass_kg} kg</strong></div>`);
+  if (comp.lean_body_mass_kg != null) rows.push(`<div><span style="color:#94A3B8;">LBM</span> <strong style="color:#F8FAFC;">${comp.lean_body_mass_kg} kg</strong></div>`);
+  card.innerHTML = `
+    <div style="padding:14px 16px;">
+      <div style="font-size:11px; color:#94A3B8; letter-spacing:0.5px; margin-bottom:8px;">Última medición · ${dStr}</div>
+      <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:8px; font-size:13px; line-height:1.5;">
+        ${rows.join('')}
+      </div>
+    </div>
+  `;
+}
+
 async function nutPhotoSaveMeal() {
   if (!nutPhotoState.items.length) return;
   const totals = nutPhotoState.items.reduce((a, i) => ({
@@ -8598,6 +8977,10 @@ function formatBirthdate(birthdate) {
 
 function openProfile() {
   renderProfile();
+  // Cargar y renderizar la sección de composición corporal (async, no bloquea)
+  if (typeof nutInBodyLoadLatest === 'function') {
+    nutInBodyLoadLatest().catch(e => console.warn('inbody load:', e));
+  }
   goStep('profile');
 }
 
