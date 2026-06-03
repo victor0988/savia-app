@@ -2126,6 +2126,216 @@
   .nut-meal-swipe-underlay svg { width: 18px; height: 18px; }
   .nut-meal-swipe-underlay:active { background: #DC2626; }
 
+  /* =============================================
+     HOY REDESIGN — Balance + Pillars + AI Insight
+     ============================================= */
+  .hoy-balance-hero {
+    background: linear-gradient(135deg, rgba(132,204,22,0.06), rgba(96,165,250,0.03));
+    border: 1px solid rgba(132,204,22,0.18);
+    border-radius: 18px;
+    padding: 18px;
+    margin-bottom: 14px;
+  }
+  .hoy-balance-label {
+    font-size: 10px; font-weight: 700; color: #BEF264;
+    letter-spacing: 1.5px; margin-bottom: 14px;
+  }
+  .hoy-balance-row {
+    display: flex; align-items: center; gap: 18px;
+  }
+  .hoy-balance-ring-wrap {
+    position: relative; width: 120px; height: 120px; flex-shrink: 0;
+  }
+  .hoy-balance-ring-wrap svg { width: 100%; height: 100%; }
+  .hoy-balance-center {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    pointer-events: none;
+  }
+  .hoy-balance-num {
+    font-size: 22px; font-weight: 700; color: #FCA5A5;
+    line-height: 1;
+  }
+  .hoy-balance-num.positive { color: #FBBF24; }
+  .hoy-balance-num.neutral { color: #94A3B8; }
+  .hoy-balance-sub {
+    font-size: 9px; color: #94A3B8;
+    letter-spacing: 1px; margin-top: 4px;
+  }
+  .hoy-balance-stats {
+    flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0;
+  }
+  .hoy-balance-stat-label {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 10px; color: #94A3B8; font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .hoy-balance-stat-label .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .hoy-balance-stat-label .dot.lima { background: #BEF264; }
+  .hoy-balance-stat-label .dot.blue { background: #60A5FA; }
+  .hoy-balance-stat-val {
+    font-size: 17px; color: #F8FAFC; font-weight: 700;
+  }
+  .hoy-balance-stat-val .unit { font-size: 10px; color: #94A3B8; font-weight: 500; }
+  .hoy-balance-stat-hint {
+    font-size: 12px; color: #BEF264; font-weight: 600;
+  }
+  .hoy-balance-stat-hint.warning { color: #FBBF24; }
+  .hoy-balance-stat-hint.danger { color: #FCA5A5; }
+
+  .hoy-balance-macros {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 8px;
+    margin-top: 14px; padding-top: 14px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .hoy-balance-macro { text-align: center; }
+  .hoy-balance-macro svg { display: block; margin: 0 auto; }
+  .hoy-balance-macro-val {
+    font-size: 11px; color: #CBD5E1; font-weight: 600; margin-top: 2px;
+  }
+  .hoy-balance-macro-pct {
+    font-size: 9px; color: #94A3B8;
+  }
+
+  /* AI Insight Card */
+  .hoy-ai-card {
+    background: linear-gradient(135deg, rgba(168,85,247,0.10), rgba(96,165,250,0.06));
+    border: 1px solid rgba(168,85,247,0.3);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .hoy-ai-icon {
+    width: 30px; height: 30px; border-radius: 50%;
+    background: rgba(168,85,247,0.2);
+    border: 1px solid rgba(168,85,247,0.5);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: #C4B5FD;
+  }
+  .hoy-ai-icon svg { width: 14px; height: 14px; }
+  .hoy-ai-body { flex: 1; min-width: 0; }
+  .hoy-ai-label {
+    font-size: 10px; font-weight: 700; color: #C4B5FD;
+    letter-spacing: 1.2px; margin-bottom: 4px;
+  }
+  .hoy-ai-text {
+    font-size: 13px; color: #F8FAFC; font-weight: 500;
+    line-height: 1.45; margin-bottom: 8px;
+  }
+  .hoy-ai-actions {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+  .hoy-ai-chip {
+    background: rgba(239,68,68,0.12); color: #FCA5A5;
+    padding: 4px 9px; border-radius: 8px;
+    font-size: 11px; font-weight: 600;
+    border: none; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hoy-ai-chip:active { transform: scale(0.95); }
+
+  /* Pillars Grid */
+  .hoy-pillars {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .hoy-pillar {
+    padding: 12px;
+    border-radius: 12px; border: 1px solid;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.1s ease;
+  }
+  .hoy-pillar:active { transform: scale(0.97); }
+  .hoy-pillar.pillar-recovery, .hoy-pillar.pillar-fatigue { cursor: default; opacity: 0.6; }
+  .hoy-pillar.pillar-recovery:active, .hoy-pillar.pillar-fatigue:active { transform: none; }
+
+  .pillar-workout { background: rgba(251,191,36,0.06); border-color: rgba(251,191,36,0.18); }
+  .pillar-workout .pillar-header svg { color: #FBBF24; }
+  .pillar-steps { background: rgba(96,165,250,0.06); border-color: rgba(96,165,250,0.18); }
+  .pillar-steps .pillar-header svg { color: #60A5FA; }
+  .pillar-sleep { background: rgba(99,102,241,0.06); border-color: rgba(99,102,241,0.18); }
+  .pillar-sleep .pillar-header svg { color: #A5B4FC; }
+  .pillar-hydration { background: rgba(96,165,250,0.06); border-color: rgba(96,165,250,0.18); }
+  .pillar-hydration .pillar-header svg { color: #60A5FA; }
+  .pillar-recovery { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.18); }
+  .pillar-recovery .pillar-header svg { color: #34D399; }
+  .pillar-fatigue { background: rgba(244,114,182,0.06); border-color: rgba(244,114,182,0.18); }
+  .pillar-fatigue .pillar-header svg { color: #F472B6; }
+
+  .pillar-header {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 6px;
+  }
+  .pillar-header svg { width: 14px; height: 14px; }
+  .pillar-header span {
+    font-size: 10px; color: #94A3B8;
+    font-weight: 700; letter-spacing: 0.5px;
+  }
+  .pillar-value {
+    font-size: 18px; color: #F8FAFC; font-weight: 700; line-height: 1;
+  }
+  .pillar-value .unit { font-size: 11px; color: #94A3B8; font-weight: 500; }
+  .pillar-value.pillar-locked { color: #64748B; }
+  .pillar-meta { font-size: 10px; color: #94A3B8; margin-top: 8px; }
+  .pillar-bar {
+    height: 3px; background: rgba(255,255,255,0.06);
+    border-radius: 2px; margin-top: 8px; overflow: hidden;
+  }
+  .pillar-bar-fill { height: 100%; transition: width 0.4s ease; }
+
+  /* Next Action */
+  .hoy-next-action {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hoy-next-action:active { transform: scale(0.99); }
+  .hoy-next-label {
+    font-size: 10px; color: #94A3B8;
+    font-weight: 700; letter-spacing: 0.5px; margin-bottom: 2px;
+  }
+  .hoy-next-text {
+    font-size: 13px; color: #F8FAFC; font-weight: 600;
+  }
+  .hoy-next-btn {
+    background: #BEF264; color: #0a0e1a;
+    border: none; padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 11px; font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Daily log: sleep rating buttons */
+  .dl-rating-btn {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 4px;
+    font-size: 20px; line-height: 1;
+    color: inherit; cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 4px;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+  .dl-rating-btn:active { transform: scale(0.92); }
+  .dl-rating-btn.selected {
+    background: rgba(99,102,241,0.15);
+    border-color: rgba(99,102,241,0.5);
+  }
+  .dl-rating-btn div { font-size: 10px; font-weight: 600; color: #94A3B8; }
+  .dl-rating-btn.selected div { color: #A5B4FC; }
+
   /* Workout type cards */
   .wk-type-card {
     display: flex; flex-direction: column; align-items: center; gap: 4px;
@@ -3812,110 +4022,146 @@
 
     <!-- Scrollable content -->
     <div class="hoy-content" id="hoy-tab-content">
-      <!-- HERO: Daily Pulse -->
-      <div class="hoy-pulse-card">
-        <div class="hoy-pulse-meta">
-          <span id="hoy-pulse-date">—</span> · <strong id="hoy-pulse-day">Día —</strong>
-        </div>
-
-        <div class="hoy-pulse-ring-wrap">
-          <svg class="hoy-pulse-ring" viewBox="0 0 120 120" aria-hidden="true">
-            <defs>
-              <linearGradient id="hoyPulseGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#34D399"/>
-                <stop offset="100%" stop-color="#10B981"/>
-              </linearGradient>
-            </defs>
-            <circle class="hoy-pulse-ring-bg" cx="60" cy="60" r="52"/>
-            <circle class="hoy-pulse-ring-fg calibrating" cx="60" cy="60" r="52" id="hoy-pulse-ring-fg"/>
-          </svg>
-          <div class="hoy-pulse-ring-center">
-            <div class="hoy-pulse-score calibrating" id="hoy-pulse-score">—</div>
-            <div class="hoy-pulse-score-label" id="hoy-pulse-score-label">CALIBRANDO</div>
-          </div>
-        </div>
-
-        <div class="hoy-pulse-kpis">
-          <div class="hoy-pulse-kpi">
-            <div class="hoy-pulse-kpi-icon-row">
-              <svg class="hoy-pulse-kpi-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-              <span class="hoy-pulse-kpi-value empty" id="hoy-pulse-sleep">—</span>
+      <!-- HERO: Balance Energético -->
+      <div class="hoy-balance-hero">
+        <div class="hoy-balance-label">BALANCE ENERGÉTICO HOY</div>
+        <div class="hoy-balance-row">
+          <div class="hoy-balance-ring-wrap">
+            <svg viewBox="0 0 120 120" aria-hidden="true">
+              <circle cx="60" cy="60" r="52" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="10"/>
+              <circle id="hoy-balance-out-ring" cx="60" cy="60" r="52" fill="none" stroke="rgba(96,165,250,0.6)" stroke-width="10" stroke-dasharray="0 327" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+              <circle cx="60" cy="60" r="38" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"/>
+              <circle id="hoy-balance-in-ring" cx="60" cy="60" r="38" fill="none" stroke="#BEF264" stroke-width="8" stroke-dasharray="0 240" stroke-linecap="round" transform="rotate(-90 60 60)"/>
+            </svg>
+            <div class="hoy-balance-center">
+              <div class="hoy-balance-num" id="hoy-balance-num">—</div>
+              <div class="hoy-balance-sub">kcal balance</div>
             </div>
-            <div class="hoy-pulse-kpi-label">Sueño</div>
           </div>
-          <span class="hoy-pulse-kpi-sep">·</span>
-          <div class="hoy-pulse-kpi" onclick="openModule('nutrition')" style="cursor:pointer;-webkit-tap-highlight-color:transparent;">
-            <div class="hoy-pulse-kpi-icon-row">
-              <svg class="hoy-pulse-kpi-donut" width="22" height="22" viewBox="0 0 22 22">
-                <circle cx="11" cy="11" r="8" fill="none" stroke="rgba(132,204,22,0.18)" stroke-width="3"/>
-                <circle id="hoy-pulse-macros-ring" cx="11" cy="11" r="8" fill="none" stroke="#84CC16" stroke-width="3" stroke-dasharray="0 50.27" stroke-linecap="round" transform="rotate(-90 11 11)"/>
-              </svg>
-              <span class="hoy-pulse-kpi-value empty" id="hoy-pulse-macros">—</span>
+          <div class="hoy-balance-stats">
+            <div class="hoy-balance-stat">
+              <div class="hoy-balance-stat-label"><span class="dot lima"></span>CONSUMIDO</div>
+              <div class="hoy-balance-stat-val"><span id="hoy-balance-in">0</span> <span class="unit">kcal</span></div>
             </div>
-            <div class="hoy-pulse-kpi-label">Macros</div>
-          </div>
-          <span class="hoy-pulse-kpi-sep">·</span>
-          <div class="hoy-pulse-kpi">
-            <div class="hoy-pulse-kpi-icon-row">
-              <svg class="hoy-pulse-kpi-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-              <span class="hoy-pulse-kpi-value empty" id="hoy-pulse-strain">—</span>
+            <div class="hoy-balance-stat">
+              <div class="hoy-balance-stat-label"><span class="dot blue"></span>GASTADO</div>
+              <div class="hoy-balance-stat-val"><span id="hoy-balance-out">0</span> <span class="unit">kcal</span></div>
             </div>
-            <div class="hoy-pulse-kpi-label">Strain</div>
+            <div class="hoy-balance-stat" style="border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
+              <div class="hoy-balance-stat-label">META</div>
+              <div class="hoy-balance-stat-hint" id="hoy-balance-hint">Configurá tu nutrición primero</div>
+            </div>
           </div>
         </div>
-
-        <button class="hoy-pulse-action" id="hoy-pulse-action" onclick="onPulseActionClick()">
-          <div class="hoy-pulse-action-body">
-            <div class="hoy-pulse-action-eyebrow" id="hoy-pulse-action-eyebrow">⚡ EMPECEMOS</div>
-            <div class="hoy-pulse-action-text" id="hoy-pulse-action-text">Configurá tu primer wearable · 30 seg</div>
+        <!-- Mini-rings P / C / F -->
+        <div class="hoy-balance-macros">
+          <div class="hoy-balance-macro">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(239,68,68,0.18)" stroke-width="4"/>
+              <circle id="hoy-pmac-p" cx="18" cy="18" r="14" fill="none" stroke="#EF4444" stroke-width="4" stroke-dasharray="0 88" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+              <text x="18" y="22" text-anchor="middle" fill="#FCA5A5" font-size="11" font-weight="700">P</text>
+            </svg>
+            <div class="hoy-balance-macro-val" id="hoy-pmac-p-val">— / —</div>
+            <div class="hoy-balance-macro-pct" id="hoy-pmac-p-pct">—</div>
           </div>
-          <span class="hoy-pulse-action-arrow">→</span>
-        </button>
+          <div class="hoy-balance-macro">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(245,158,11,0.18)" stroke-width="4"/>
+              <circle id="hoy-pmac-c" cx="18" cy="18" r="14" fill="none" stroke="#F59E0B" stroke-width="4" stroke-dasharray="0 88" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+              <text x="18" y="22" text-anchor="middle" fill="#FDE68A" font-size="11" font-weight="700">C</text>
+            </svg>
+            <div class="hoy-balance-macro-val" id="hoy-pmac-c-val">— / —</div>
+            <div class="hoy-balance-macro-pct" id="hoy-pmac-c-pct">—</div>
+          </div>
+          <div class="hoy-balance-macro">
+            <svg width="36" height="36" viewBox="0 0 36 36">
+              <circle cx="18" cy="18" r="14" fill="none" stroke="rgba(132,204,22,0.18)" stroke-width="4"/>
+              <circle id="hoy-pmac-f" cx="18" cy="18" r="14" fill="none" stroke="#84CC16" stroke-width="4" stroke-dasharray="0 88" stroke-linecap="round" transform="rotate(-90 18 18)"/>
+              <text x="18" y="22" text-anchor="middle" fill="#BEF264" font-size="11" font-weight="700">F</text>
+            </svg>
+            <div class="hoy-balance-macro-val" id="hoy-pmac-f-val">— / —</div>
+            <div class="hoy-balance-macro-pct" id="hoy-pmac-f-pct">—</div>
+          </div>
+        </div>
       </div>
 
-      <!-- Nutrition (prioridad — módulo activo) -->
-      <div class="hoy-card" onclick="openModule('nutrition')">
-        <div class="hoy-card-header">
-          <div class="hoy-card-title"><span class="accent" style="color:#84CC16;">🍃</span> NUTRITION</div>
-          <div class="hoy-card-meta" style="color:#BEF264;">Activo</div>
+      <!-- AI Insight Card -->
+      <div class="hoy-ai-card" id="hoy-ai-card">
+        <div class="hoy-ai-icon">
+          <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </div>
-        <div class="hoy-card-empty" style="margin-top:6px;">Logear comida con foto · macros + hidratación</div>
+        <div class="hoy-ai-body">
+          <div class="hoy-ai-label">SAVIA AI · INSIGHT DEL DÍA</div>
+          <div class="hoy-ai-text" id="hoy-ai-text">Analizando tu día...</div>
+          <div class="hoy-ai-actions" id="hoy-ai-actions"></div>
+        </div>
       </div>
 
-      <!-- Readiness / Recovery -->
-      <div class="hoy-card" onclick="openModule('readiness')">
-        <div class="hoy-card-header">
-          <div class="hoy-card-title"><span class="accent" style="color:#10B981;">⚡</span> READINESS</div>
-          <div class="hoy-card-meta next">Próximo</div>
+      <!-- Pillars Grid 2x3 -->
+      <div class="hoy-pillars">
+        <div class="hoy-pillar pillar-workout" onclick="openModule('workout')">
+          <div class="pillar-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            <span>WORKOUT</span>
+          </div>
+          <div class="pillar-value"><span id="hoy-pillar-wk-kcal">0</span> <span class="unit">kcal</span></div>
+          <div class="pillar-meta" id="hoy-pillar-wk-meta">Sin actividad hoy</div>
         </div>
-        <div class="hoy-card-value-row">
-          <div class="hoy-card-value">—</div>
-          <div class="hoy-card-value-sub">de 100</div>
+        <div class="hoy-pillar pillar-steps" onclick="openSleepStepsLog('steps')">
+          <div class="pillar-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M13 5a2 2 0 100-4 2 2 0 000 4zm-3 7l3-3 4 2v6m-7-2l3-3M5 21l4-4m4 0l3 4"/></svg>
+            <span>PASOS</span>
+          </div>
+          <div class="pillar-value" id="hoy-pillar-steps">0</div>
+          <div class="pillar-bar"><div class="pillar-bar-fill" id="hoy-pillar-steps-bar" style="width:0%; background:#60A5FA;"></div></div>
+          <div class="pillar-meta" id="hoy-pillar-steps-meta">Tap para registrar</div>
         </div>
-        <div class="hoy-card-empty">Conectá un wearable para tu readiness real. Por ahora calculamos desde tu check-in.</div>
+        <div class="hoy-pillar pillar-sleep" onclick="openSleepStepsLog('sleep')">
+          <div class="pillar-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            <span>SUEÑO</span>
+          </div>
+          <div class="pillar-value" id="hoy-pillar-sleep">—</div>
+          <div class="pillar-meta" id="hoy-pillar-sleep-meta">Tap para registrar</div>
+        </div>
+        <div class="hoy-pillar pillar-hydration" onclick="openModule('nutrition')">
+          <div class="pillar-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 3.5c1.5 2 5 6.5 5 10a5 5 0 01-10 0c0-3.5 3.5-8 5-10z"/></svg>
+            <span>HIDRATACIÓN</span>
+          </div>
+          <div class="pillar-value"><span id="hoy-pillar-hyd-ml">0</span><span class="unit">ml</span></div>
+          <div class="pillar-bar"><div class="pillar-bar-fill" id="hoy-pillar-hyd-bar" style="width:0%; background:#60A5FA;"></div></div>
+          <div class="pillar-meta" id="hoy-pillar-hyd-meta">— de —</div>
+        </div>
+        <div class="hoy-pillar pillar-recovery">
+          <div class="pillar-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+            <span>RECOVERY</span>
+          </div>
+          <div class="pillar-value pillar-locked">—</div>
+          <div class="pillar-meta">Conectá un wearable</div>
+        </div>
+        <div class="hoy-pillar pillar-fatigue">
+          <div class="pillar-header">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
+            <span>FATIGA</span>
+          </div>
+          <div class="pillar-value pillar-locked">—</div>
+          <div class="pillar-meta">Requiere HRV</div>
+        </div>
       </div>
 
-      <!-- Workout · Sleep -->
-      <div class="hoy-row cols-2">
-        <div class="hoy-card" onclick="openModule('workout')">
-          <div class="hoy-card-header">
-            <div class="hoy-card-title"><span class="accent" style="color:#F59E0B;">💪</span> WORKOUT</div>
-            <div class="hoy-card-meta" style="color:#FBBF24;">Activo</div>
-          </div>
-          <div class="hoy-card-body" style="margin-top:4px;"><span id="hoy-wk-today-kcal">0</span> kcal hoy</div>
-          <div class="hoy-card-empty" style="margin-top:6px;">Log workouts y mide tu gasto</div>
+      <!-- Next Action -->
+      <div class="hoy-next-action" onclick="openModule('nutrition')">
+        <div>
+          <div class="hoy-next-label">PRÓXIMO</div>
+          <div class="hoy-next-text" id="hoy-next-text">Configurá tu nutrición →</div>
         </div>
-        <div class="hoy-card" onclick="openModule('sleep')">
-          <div class="hoy-card-header">
-            <div class="hoy-card-title"><span class="accent" style="color:#6366F1;">🌙</span> SLEEP</div>
-          </div>
-          <div class="hoy-card-body" style="margin-top:4px;">Próximo</div>
-          <div class="hoy-card-empty" style="margin-top:6px;">Score y tendencias</div>
-        </div>
+        <button class="hoy-next-btn">Log →</button>
       </div>
 
       <!-- Women's Health (solo si sex=f) -->
-      <div class="hoy-card" id="hoy-cycle-card" style="display:none;" onclick="openModule('cycle')">
+      <div class="hoy-card" id="hoy-cycle-card" style="display:none; margin-top:14px;" onclick="openModule('cycle')">
         <div class="hoy-card-header">
           <div class="hoy-card-title"><span class="accent" style="color:#EC4899;">🌸</span> CICLO</div>
           <div class="hoy-card-meta next">Próximo</div>
@@ -4406,6 +4652,60 @@
   </div>
 
   <!-- ============== NUTRITION — Main dashboard ============== -->
+  <!-- ============== DAILY LOG — Sleep + Steps ============== -->
+  <div class="screen nut-screen" data-step="daily-log">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('app')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title" id="daily-log-title">Registrar</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div id="daily-log-sleep-section" style="display:none;">
+        <div class="nut-onb-field-label">Horas que dormiste</div>
+        <div class="nut-onb-pills" style="margin-bottom:14px;">
+          <div class="nut-onb-pill" data-sleep-h="5" onclick="dlSelectSleepHours(5, this)">5h</div>
+          <div class="nut-onb-pill" data-sleep-h="6" onclick="dlSelectSleepHours(6, this)">6h</div>
+          <div class="nut-onb-pill" data-sleep-h="7" onclick="dlSelectSleepHours(7, this)">7h</div>
+          <div class="nut-onb-pill selected" data-sleep-h="8" onclick="dlSelectSleepHours(8, this)">8h</div>
+          <div class="nut-onb-pill" data-sleep-h="9" onclick="dlSelectSleepHours(9, this)">9h</div>
+        </div>
+        <input type="number" inputmode="decimal" class="nut-onb-field-input" id="dl-sleep-hours-custom" placeholder="o ingresá las horas exactas (ej: 7.5)" oninput="dlSelectSleepHoursCustom(this.value)"/>
+
+        <div class="nut-onb-field-label" style="margin-top:14px;">¿Cómo dormiste?</div>
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin-bottom:14px;">
+          <button class="dl-rating-btn" data-sleep-rating="1" onclick="dlSelectSleepRating(1, this)">😩<div>Mal</div></button>
+          <button class="dl-rating-btn" data-sleep-rating="2" onclick="dlSelectSleepRating(2, this)">😕<div>Poco</div></button>
+          <button class="dl-rating-btn" data-sleep-rating="3" onclick="dlSelectSleepRating(3, this)">😐<div>OK</div></button>
+          <button class="dl-rating-btn" data-sleep-rating="4" onclick="dlSelectSleepRating(4, this)">🙂<div>Bien</div></button>
+          <button class="dl-rating-btn" data-sleep-rating="5" onclick="dlSelectSleepRating(5, this)">😴<div>Genial</div></button>
+        </div>
+
+        <div class="nut-onb-field-label">Notas (opcional)</div>
+        <input type="text" class="nut-onb-field-input" id="dl-sleep-notes" placeholder="Ej: me costó dormirme, desperté 2 veces..."/>
+      </div>
+
+      <div id="daily-log-steps-section" style="display:none;">
+        <div class="nut-onb-field-label">Pasos hoy</div>
+        <div class="nut-onb-pills" style="margin-bottom:14px;">
+          <div class="nut-onb-pill" data-steps="3000" onclick="dlSelectSteps(3000, this)">3k</div>
+          <div class="nut-onb-pill" data-steps="5000" onclick="dlSelectSteps(5000, this)">5k</div>
+          <div class="nut-onb-pill" data-steps="8000" onclick="dlSelectSteps(8000, this)">8k</div>
+          <div class="nut-onb-pill selected" data-steps="10000" onclick="dlSelectSteps(10000, this)">10k</div>
+          <div class="nut-onb-pill" data-steps="15000" onclick="dlSelectSteps(15000, this)">15k</div>
+        </div>
+        <input type="number" inputmode="numeric" class="nut-onb-field-input" id="dl-steps-custom" placeholder="o ingresá los pasos exactos" oninput="dlSelectStepsCustom(this.value)"/>
+
+        <div style="margin-top:14px; padding:12px 14px; background:rgba(96,165,250,0.06); border:1px solid rgba(96,165,250,0.18); border-radius:12px; font-size:11px; color:#94A3B8; line-height:1.5;">
+          💡 Cuando conectemos Apple Health (próximo sprint), tus pasos se importarán automáticamente.
+        </div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="dl-save-btn" onclick="dlSaveDaily()">Guardar</button>
+  </div>
+
   <!-- ============== WORKOUT — Dashboard ============== -->
   <div class="screen nut-screen" data-step="workout">
     <div class="nut-topbar">
@@ -5358,7 +5658,7 @@ function goStep(n) {
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
     'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
-    'workout', 'wk-log', 0];
+    'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -6466,43 +6766,316 @@ function getDayContext() {
 }
 
 // =============================================
-// HERO DAILY PULSE — render dinámico
+// HOY REDESIGN — Balance Energético + Pillars + AI
 // =============================================
 async function renderDailyPulse() {
-  // Date + day counter
-  try {
-    const dateEl = document.getElementById('hoy-pulse-date');
-    const dayEl = document.getElementById('hoy-pulse-day');
-    if (dateEl) dateEl.textContent = formatPulseDate();
-    if (dayEl) dayEl.textContent = getDayContext();
-  } catch (e) { console.warn('pulse meta failed:', e); }
+  // 1) Balance Energético (kcal consumidas vs gastadas)
+  try { await renderHoyBalance(); } catch (e) { console.warn('balance render:', e); }
 
-  // Ring + score
-  const score = computePulseScore();
-  applyPulseScore(score);
+  // 2) Pillars (workout, steps, sleep, hydration, recovery, fatiga)
+  try { await renderHoyPillars(); } catch (e) { console.warn('pillars render:', e); }
 
-  // KPI macros — carga data real de nutrition si user tiene targets
-  let macrosKpi = null;
-  try {
-    const macrosData = await computeMacrosKpiData();
-    if (macrosData) {
-      macrosKpi = macrosData.pct + '%';
-      updateMacrosKpiDonut(macrosData.pct);
-    } else {
-      updateMacrosKpiDonut(null);
-    }
-  } catch (e) { console.warn('macros kpi failed:', e); }
+  // 3) AI Insight (placeholder hardcoded por ahora — Edge Function en próximo sprint)
+  try { renderHoyAIInsight(); } catch (e) { console.warn('ai render:', e); }
 
-  // Otros KPIs siguen placeholder (wearables en Sprint posterior)
-  const sleep = getKpiSleep();
-  const strain = getKpiStrain();
-  setKpi('hoy-pulse-sleep', sleep);
-  setKpi('hoy-pulse-macros', macrosKpi);
-  setKpi('hoy-pulse-strain', strain);
-
-  // Acción contextual
-  applyContextualAction();
+  // 4) Next Action contextual
+  try { renderHoyNextAction(); } catch (e) { console.warn('next render:', e); }
 }
+
+// Calcula y pinta el Balance Energético hero
+async function renderHoyBalance() {
+  // Cargar targets + meals de hoy
+  let targets = nutState.targets;
+  if (!targets) { try { targets = await nutLoadTargets(); if (targets) nutState.targets = targets; } catch {} }
+
+  await nutLoadTodayData();
+  const meals = nutState.todayMeals || [];
+
+  // Consumido
+  const consumed = meals.reduce((a, m) => ({
+    kcal: a.kcal + (m.total_kcal || 0),
+    p: a.p + parseFloat(m.total_protein_g || 0),
+    c: a.c + parseFloat(m.total_carbs_g || 0),
+    f: a.f + parseFloat(m.total_fat_g || 0),
+  }), { kcal: 0, p: 0, c: 0, f: 0 });
+
+  // Gastado = BMR base + workouts del día
+  await wkLoadData();
+  const workoutKcal = (wkState.todayLogs || []).reduce((s, w) => s + (w.kcal_burned || 0), 0);
+  // BMR base: usar Mifflin-St Jeor desde nutState. Si falta data, ~1600 fallback
+  const bmrBase = estimateDailyBMR();
+  const expended = Math.round(bmrBase + workoutKcal);
+
+  const balance = consumed.kcal - expended;
+
+  // Pintar valores
+  document.getElementById('hoy-balance-in').textContent = consumed.kcal.toLocaleString();
+  document.getElementById('hoy-balance-out').textContent = expended.toLocaleString();
+  const numEl = document.getElementById('hoy-balance-num');
+  numEl.textContent = (balance > 0 ? '+' : '') + balance;
+  numEl.className = 'hoy-balance-num ' + (balance > 0 ? 'positive' : balance < 0 ? '' : 'neutral');
+
+  // Anillos (visualización)
+  const CIRC_OUT = 327; // 2π·52
+  const CIRC_IN = 240;  // 2π·38
+  const targetKcal = targets && targets.kcal ? targets.kcal : 2000;
+  const consumedPct = Math.min(1, consumed.kcal / targetKcal);
+  const expendedPct = Math.min(1, expended / (targetKcal * 1.3));
+  document.getElementById('hoy-balance-in-ring').setAttribute('stroke-dasharray', (consumedPct * CIRC_IN) + ' ' + CIRC_IN);
+  document.getElementById('hoy-balance-out-ring').setAttribute('stroke-dasharray', (expendedPct * CIRC_OUT) + ' ' + CIRC_OUT);
+
+  // Hint del balance
+  const hintEl = document.getElementById('hoy-balance-hint');
+  if (!targets) {
+    hintEl.textContent = 'Configurá tu nutrición primero';
+    hintEl.className = 'hoy-balance-stat-hint warning';
+  } else {
+    // Ideal según goal (placeholder simple por ahora)
+    const goal = nutState.goal || 'maintenance';
+    if (goal === 'fat_loss' || goal === 'recomposition') {
+      if (balance < -700) { hintEl.textContent = '⚠ Déficit muy alto'; hintEl.className = 'hoy-balance-stat-hint danger'; }
+      else if (balance >= -700 && balance <= -300) { hintEl.textContent = '✓ Déficit ideal'; hintEl.className = 'hoy-balance-stat-hint'; }
+      else if (balance > -300 && balance <= 0) { hintEl.textContent = 'Te faltan ' + Math.abs(balance + 300) + ' kcal de déficit'; hintEl.className = 'hoy-balance-stat-hint warning'; }
+      else { hintEl.textContent = 'Hoy superaste tu meta'; hintEl.className = 'hoy-balance-stat-hint warning'; }
+    } else if (goal === 'muscle_gain') {
+      if (balance > 500) { hintEl.textContent = '⚠ Superávit alto'; hintEl.className = 'hoy-balance-stat-hint warning'; }
+      else if (balance >= 200 && balance <= 500) { hintEl.textContent = '✓ Surplus ideal'; hintEl.className = 'hoy-balance-stat-hint'; }
+      else { hintEl.textContent = 'Necesitás surplus de +200 a +500'; hintEl.className = 'hoy-balance-stat-hint warning'; }
+    } else {
+      hintEl.textContent = 'Mantenimiento: cerca de 0';
+      hintEl.className = 'hoy-balance-stat-hint';
+    }
+  }
+
+  // Mini-rings de macros
+  if (targets) {
+    paintMacroMini('p', consumed.p, targets.protein_g);
+    paintMacroMini('c', consumed.c, targets.carbs_g);
+    paintMacroMini('f', consumed.f, targets.fat_g);
+  }
+}
+
+function paintMacroMini(key, val, target) {
+  const pct = target > 0 ? Math.min(1, val / target) : 0;
+  const CIRC = 88; // 2π·14
+  document.getElementById('hoy-pmac-' + key).setAttribute('stroke-dasharray', (pct * CIRC) + ' ' + CIRC);
+  document.getElementById('hoy-pmac-' + key + '-val').textContent = Math.round(val) + ' / ' + target + 'g';
+  document.getElementById('hoy-pmac-' + key + '-pct').textContent = Math.round(pct * 100) + '%';
+}
+
+// Estima BMR diario (Mifflin-St Jeor × activity factor base, sin workouts adicionales)
+function estimateDailyBMR() {
+  if (!nutState.weight || !nutState.height) return 1600;
+  const sex = state.sex || 'm';
+  const age = state.birthdate ? calcAgeFromBirthdate(state.birthdate) : 30;
+  const rmr = sex === 'f'
+    ? (10 * nutState.weight + 6.25 * nutState.height - 5 * age - 161)
+    : (10 * nutState.weight + 6.25 * nutState.height - 5 * age + 5);
+  const factor = (ACTIVITY_FACTOR && ACTIVITY_FACTOR[nutState.activity]) || 1.375; // light default
+  return Math.round(rmr * factor);
+}
+
+// Renderiza los 6 pillars
+async function renderHoyPillars() {
+  // Workout (data ya cargada en renderHoyBalance)
+  const wkKcal = (wkState.todayLogs || []).reduce((s, w) => s + (w.kcal_burned || 0), 0);
+  document.getElementById('hoy-pillar-wk-kcal').textContent = wkKcal.toLocaleString();
+  const wkCount = (wkState.todayLogs || []).length;
+  document.getElementById('hoy-pillar-wk-meta').textContent = wkCount > 0
+    ? `${wkCount} ${wkCount === 1 ? 'sesión' : 'sesiones'} · ${(wkState.todayLogs || []).reduce((s, w) => s + (w.duration_min || 0), 0)} min`
+    : 'Sin actividad hoy';
+
+  // Hidratación (de nutState.todayHydrationMl)
+  const hydMl = nutState.todayHydrationMl || 0;
+  const hydTarget = (nutState.targets && nutState.targets.water_ml) || 2500;
+  document.getElementById('hoy-pillar-hyd-ml').textContent = hydMl;
+  document.getElementById('hoy-pillar-hyd-bar').style.width = Math.min(100, Math.round((hydMl / hydTarget) * 100)) + '%';
+  document.getElementById('hoy-pillar-hyd-meta').textContent = `${hydMl} de ${hydTarget} ml`;
+
+  // Sleep + Steps (de daily_logs)
+  const daily = await dlLoadToday();
+  if (daily) {
+    if (daily.sleep_hours) {
+      const stars = '★'.repeat(daily.sleep_rating || 0) + '☆'.repeat(5 - (daily.sleep_rating || 0));
+      document.getElementById('hoy-pillar-sleep').textContent = daily.sleep_hours + 'h';
+      document.getElementById('hoy-pillar-sleep-meta').textContent = stars;
+    }
+    if (daily.steps) {
+      document.getElementById('hoy-pillar-steps').textContent = daily.steps.toLocaleString();
+      const goalSteps = 10000;
+      document.getElementById('hoy-pillar-steps-bar').style.width = Math.min(100, Math.round((daily.steps / goalSteps) * 100)) + '%';
+      document.getElementById('hoy-pillar-steps-meta').textContent = `${Math.round((daily.steps / goalSteps) * 100)}% de ${goalSteps.toLocaleString()}`;
+    }
+  }
+}
+
+// AI Insight (placeholder hardcoded — Edge Function en próximo sub-sprint)
+function renderHoyAIInsight() {
+  const targets = nutState.targets;
+  const meals = nutState.todayMeals || [];
+  const consumed = meals.reduce((a, m) => ({
+    kcal: a.kcal + (m.total_kcal || 0),
+    p: a.p + parseFloat(m.total_protein_g || 0),
+  }), { kcal: 0, p: 0 });
+  const textEl = document.getElementById('hoy-ai-text');
+  const actEl = document.getElementById('hoy-ai-actions');
+  if (!targets) {
+    textEl.textContent = 'Completá tu onboarding de nutrición para insights personalizados.';
+    actEl.innerHTML = '';
+    return;
+  }
+  const proteinGap = targets.protein_g - consumed.p;
+  if (proteinGap > 30) {
+    textEl.innerHTML = `Te faltan <strong style="color:#FCA5A5;">${Math.round(proteinGap)}g de proteína</strong>. Para tu objetivo, considerá:`;
+    actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">Yogurt griego +20g</button><button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">Pollo 150g +35g</button>';
+  } else if (proteinGap > 0) {
+    textEl.innerHTML = `Vas bien con tu proteína. Te faltan <strong>${Math.round(proteinGap)}g</strong> para llegar al target del día.`;
+    actEl.innerHTML = '';
+  } else {
+    textEl.textContent = 'Excelente — completaste tu proteína del día. Hidratate y descansá bien.';
+    actEl.innerHTML = '';
+  }
+}
+
+function renderHoyNextAction() {
+  const el = document.getElementById('hoy-next-text');
+  if (!el) return;
+  const h = new Date().getHours();
+  let next = 'Cena';
+  if (h >= 5 && h < 10) next = 'Desayuno';
+  else if (h >= 10 && h < 12) next = 'Snack AM';
+  else if (h >= 12 && h < 15) next = 'Almuerzo';
+  else if (h >= 15 && h < 18) next = 'Snack PM';
+  else if (h >= 18 && h < 22) next = 'Cena';
+  else next = 'Última hidratación';
+  const targets = nutState.targets;
+  const consumed = (nutState.todayMeals || []).reduce((s, m) => s + (m.total_kcal || 0), 0);
+  if (targets) {
+    const remaining = Math.max(0, targets.kcal - consumed);
+    el.textContent = `${next} · ~${remaining} kcal disponibles`;
+  } else {
+    el.textContent = `${next} · configurá tu nutrición →`;
+  }
+}
+
+// ============================================================
+//  DAILY LOG (sueño + pasos manual)
+// ============================================================
+const dlState = {
+  mode: null,         // 'sleep' | 'steps'
+  sleepHours: 8,
+  sleepRating: null,
+  steps: 10000,
+};
+
+function openSleepStepsLog(mode) {
+  dlState.mode = mode;
+  document.getElementById('daily-log-title').textContent = mode === 'sleep' ? 'Sueño' : 'Pasos';
+  document.getElementById('daily-log-sleep-section').style.display = mode === 'sleep' ? '' : 'none';
+  document.getElementById('daily-log-steps-section').style.display = mode === 'steps' ? '' : 'none';
+  // Reset
+  document.querySelectorAll('[data-step="daily-log"] [data-sleep-h]').forEach(el => el.classList.toggle('selected', el.dataset.sleepH === '8'));
+  document.querySelectorAll('[data-step="daily-log"] [data-sleep-rating]').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('[data-step="daily-log"] [data-steps]').forEach(el => el.classList.toggle('selected', el.dataset.steps === '10000'));
+  document.getElementById('dl-sleep-hours-custom').value = '';
+  document.getElementById('dl-sleep-notes').value = '';
+  document.getElementById('dl-steps-custom').value = '';
+  dlState.sleepHours = 8;
+  dlState.sleepRating = null;
+  dlState.steps = 10000;
+  goStep('daily-log');
+}
+
+function dlSelectSleepHours(h, el) {
+  dlState.sleepHours = h;
+  document.querySelectorAll('[data-step="daily-log"] [data-sleep-h]').forEach(p => p.classList.toggle('selected', p === el));
+  document.getElementById('dl-sleep-hours-custom').value = '';
+}
+function dlSelectSleepHoursCustom(v) {
+  const h = parseFloat(String(v).replace(',', '.'));
+  if (h > 0 && h < 24) {
+    dlState.sleepHours = h;
+    document.querySelectorAll('[data-step="daily-log"] [data-sleep-h]').forEach(p => p.classList.remove('selected'));
+  }
+}
+function dlSelectSleepRating(r, el) {
+  dlState.sleepRating = r;
+  document.querySelectorAll('[data-step="daily-log"] [data-sleep-rating]').forEach(p => p.classList.toggle('selected', p === el));
+}
+function dlSelectSteps(s, el) {
+  dlState.steps = s;
+  document.querySelectorAll('[data-step="daily-log"] [data-steps]').forEach(p => p.classList.toggle('selected', p === el));
+  document.getElementById('dl-steps-custom').value = '';
+}
+function dlSelectStepsCustom(v) {
+  const s = parseInt(v, 10);
+  if (s > 0 && s < 100000) {
+    dlState.steps = s;
+    document.querySelectorAll('[data-step="daily-log"] [data-steps]').forEach(p => p.classList.remove('selected'));
+  }
+}
+
+async function dlSaveDaily() {
+  const btn = document.getElementById('dl-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const today = new Date().toISOString().slice(0, 10);
+    const existing = await dlLoadToday();
+    const payload = { user_id: session.user.id, log_date: today };
+    if (dlState.mode === 'sleep') {
+      payload.sleep_hours = dlState.sleepHours;
+      payload.sleep_rating = dlState.sleepRating;
+      payload.sleep_notes = (document.getElementById('dl-sleep-notes').value || '').trim() || null;
+    } else if (dlState.mode === 'steps') {
+      payload.steps = dlState.steps;
+    }
+    // UPSERT por (user_id, log_date)
+    const url = `${SUPABASE_URL}/rest/v1/daily_logs?on_conflict=user_id,log_date`;
+    await fetch(url, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    console.warn('[DL] save failed:', e);
+    alert('No se pudo guardar. Probá de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
+    return;
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
+  dlInvalidateCache(); // forzar re-fetch en próximo render
+  goStep('app'); // vuelve al Hoy y dispara re-render
+}
+
+let _dlCache = null;
+async function dlLoadToday() {
+  // Cache simple para evitar fetch duplicado en el mismo render
+  if (_dlCache && _dlCache.date === new Date().toDateString()) return _dlCache.data;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return null;
+    const today = new Date().toISOString().slice(0, 10);
+    const url = `${SUPABASE_URL}/rest/v1/daily_logs?user_id=eq.${session.user.id}&log_date=eq.${today}&limit=1`;
+    const resp = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!resp.ok) return null;
+    const rows = await resp.json();
+    const data = rows && rows[0] ? rows[0] : null;
+    _dlCache = { date: new Date().toDateString(), data };
+    return data;
+  } catch (e) { console.warn('[DL] load failed:', e); return null; }
+}
+
+// Invalidar cache cuando se guarda
+function dlInvalidateCache() { _dlCache = null; }
 
 // Lee data real de nutrition para el KPI macros del Daily Pulse.
 // Retorna {pct, kcal_consumed, kcal_target} o null si el user no tiene targets aún.
