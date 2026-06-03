@@ -2126,6 +2126,49 @@
   .nut-meal-swipe-underlay svg { width: 18px; height: 18px; }
   .nut-meal-swipe-underlay:active { background: #DC2626; }
 
+  /* Workout type cards */
+  .wk-type-card {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 12px 4px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    cursor: pointer; transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    color: #CBD5E1;
+  }
+  .wk-type-card svg { width: 22px; height: 22px; }
+  .wk-type-card span { font-size: 11px; font-weight: 600; }
+  .wk-type-card:active { transform: scale(0.94); }
+  .wk-type-card.selected {
+    background: rgba(251,191,36,0.12);
+    border-color: rgba(251,191,36,0.5);
+    color: #FBBF24;
+  }
+
+  /* Workout list rows */
+  .wk-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    margin-bottom: 8px;
+  }
+  .wk-row-icon {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: rgba(251,191,36,0.12);
+    border: 1px solid rgba(251,191,36,0.3);
+    color: #FBBF24;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .wk-row-icon svg { width: 18px; height: 18px; }
+  .wk-row-body { flex: 1; min-width: 0; }
+  .wk-row-title { font-size: 13px; font-weight: 600; color: #F8FAFC; }
+  .wk-row-meta { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+  .wk-row-kcal { font-size: 13px; font-weight: 600; color: #FBBF24; flex-shrink: 0; }
+
   /* Compare targets table */
   .nut-cmp-table {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
@@ -3857,9 +3900,10 @@
         <div class="hoy-card" onclick="openModule('workout')">
           <div class="hoy-card-header">
             <div class="hoy-card-title"><span class="accent" style="color:#F59E0B;">💪</span> WORKOUT</div>
+            <div class="hoy-card-meta" style="color:#FBBF24;">Activo</div>
           </div>
-          <div class="hoy-card-body" style="margin-top:4px;">Próximo</div>
-          <div class="hoy-card-empty" style="margin-top:6px;">Plan diario o mensual</div>
+          <div class="hoy-card-body" style="margin-top:4px;"><span id="hoy-wk-today-kcal">0</span> kcal hoy</div>
+          <div class="hoy-card-empty" style="margin-top:6px;">Log workouts y mide tu gasto</div>
         </div>
         <div class="hoy-card" onclick="openModule('sleep')">
           <div class="hoy-card-header">
@@ -4362,6 +4406,107 @@
   </div>
 
   <!-- ============== NUTRITION — Main dashboard ============== -->
+  <!-- ============== WORKOUT — Dashboard ============== -->
+  <div class="screen nut-screen" data-step="workout">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('app')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Hoy
+      </button>
+      <div class="nut-title">Workout</div>
+      <div style="width:32px;"></div>
+    </div>
+    <div class="nut-dash">
+      <div class="nut-dash-hero" style="background:linear-gradient(135deg, rgba(245,158,11,0.08), rgba(245,158,11,0.02));">
+        <div class="nut-dash-kcal-row">
+          <span class="nut-dash-kcal-current" id="wk-dash-kcal" style="color:#FBBF24;">0</span>
+          <span class="nut-dash-kcal-target">kcal quemadas hoy</span>
+        </div>
+        <div class="nut-dash-kcal-label" id="wk-dash-summary">Aún no hay actividad</div>
+        <div style="height:4px; background:rgba(255,255,255,0.06); border-radius:2px; overflow:hidden; margin-top:10px;">
+          <div id="wk-dash-bar" style="width:0%; height:100%; background:#F59E0B; border-radius:2px; transition:width 0.4s ease;"></div>
+        </div>
+        <div style="font-size:11px; color:#94A3B8; margin-top:6px;"><span id="wk-dash-count">0</span> entrenamientos · <span id="wk-dash-min">0</span> min</div>
+      </div>
+
+      <div class="nut-dash-section-title" style="margin-top:18px;">Esta semana</div>
+      <div id="wk-week-card" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:14px 16px; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <div style="font-size:11px; color:#94A3B8; letter-spacing:0.5px;">7 DÍAS</div>
+            <div style="font-size:22px; font-weight:700; color:#F8FAFC;"><span id="wk-week-kcal">0</span> <span style="font-size:12px; color:#94A3B8; font-weight:500;">kcal totales</span></div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:11px; color:#94A3B8; letter-spacing:0.5px;">SESIONES</div>
+            <div style="font-size:22px; font-weight:700; color:#FBBF24;" id="wk-week-count">0</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="nut-dash-section-title">Historial reciente</div>
+      <div id="wk-list">
+        <div style="text-align:center;padding:30px 16px;color:#64748B;font-size:13px;line-height:1.6;">
+          No has logueado workouts todavía.<br>
+          <span style="color:#94A3B8;">Tap el botón amarillo abajo derecha para empezar.</span>
+        </div>
+      </div>
+    </div>
+    <button class="nut-add-btn" onclick="wkOpenLog()" title="Loguear workout" style="background:#FBBF24;">+</button>
+  </div>
+
+  <!-- ============== WORKOUT — Log form ============== -->
+  <div class="screen nut-screen" data-step="wk-log">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('workout')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title">Nuevo workout</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-field-label">Tipo de actividad</div>
+      <div id="wk-type-grid" style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:18px;">
+        <div class="wk-type-card" data-wk-type="run" onclick="wkSelectType('run', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5a2 2 0 100-4 2 2 0 000 4zm-3 7l3-3 4 2v6m-7-2l3-3M5 21l4-4m4 0l3 4"/></svg><span>Correr</span></div>
+        <div class="wk-type-card" data-wk-type="bike" onclick="wkSelectType('bike', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="17" r="4"/><circle cx="18" cy="17" r="4"/><path stroke-linecap="round" d="M6 17l4-7h5l3 7M10 10l-1-4h2"/></svg><span>Bici</span></div>
+        <div class="wk-type-card" data-wk-type="swim" onclick="wkSelectType('swim', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2 16c2-1 4-1 6 0s4 1 6 0 4-1 6 0M2 20c2-1 4-1 6 0s4 1 6 0 4-1 6 0M8 12l4-2 4 2M16 7a2 2 0 100-4 2 2 0 000 4z"/></svg><span>Nadar</span></div>
+        <div class="wk-type-card" data-wk-type="walk" onclick="wkSelectType('walk', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="13" cy="4" r="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l3-7 3 3v5M9 13l-3-3 4-3 3 3"/></svg><span>Caminar</span></div>
+        <div class="wk-type-card" data-wk-type="strength" onclick="wkSelectType('strength', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l2-2 4 4-4 4-2-2zm12 12l-2 2-4-4 4-4 2 2M3 9l3 3M18 12l3 3"/></svg><span>Fuerza</span></div>
+        <div class="wk-type-card" data-wk-type="hiit" onclick="wkSelectType('hiit', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg><span>HIIT</span></div>
+        <div class="wk-type-card" data-wk-type="yoga" onclick="wkSelectType('yoga', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="5" r="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v6m-5 0h10m-5 0v8m-3-3l3-2 3 2"/></svg><span>Yoga</span></div>
+        <div class="wk-type-card" data-wk-type="other" onclick="wkSelectType('other', this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4l3 2"/></svg><span>Otro</span></div>
+      </div>
+
+      <div class="nut-onb-field-label">Duración (min)</div>
+      <div class="nut-onb-pills" style="margin-bottom:10px;">
+        <div class="nut-onb-pill" data-wk-dur="15" onclick="wkSelectDuration(15, this)">15</div>
+        <div class="nut-onb-pill" data-wk-dur="30" onclick="wkSelectDuration(30, this)">30</div>
+        <div class="nut-onb-pill selected" data-wk-dur="45" onclick="wkSelectDuration(45, this)">45</div>
+        <div class="nut-onb-pill" data-wk-dur="60" onclick="wkSelectDuration(60, this)">60</div>
+        <div class="nut-onb-pill" data-wk-dur="90" onclick="wkSelectDuration(90, this)">90</div>
+        <div class="nut-onb-pill" data-wk-dur="120" onclick="wkSelectDuration(120, this)">120</div>
+      </div>
+      <input type="number" inputmode="numeric" class="nut-onb-field-input" id="wk-dur-custom" placeholder="o ingresá los minutos exactos" oninput="wkSelectDurationCustom(this.value)"/>
+
+      <div class="nut-onb-field-label" style="margin-top:14px;">Intensidad</div>
+      <div class="nut-onb-pills" style="margin-bottom:14px;">
+        <div class="nut-onb-pill" data-wk-int="light" onclick="wkSelectIntensity('light', this)">Suave</div>
+        <div class="nut-onb-pill selected" data-wk-int="moderate" onclick="wkSelectIntensity('moderate', this)">Moderada</div>
+        <div class="nut-onb-pill" data-wk-int="vigorous" onclick="wkSelectIntensity('vigorous', this)">Intensa</div>
+      </div>
+
+      <div class="nut-onb-field-label">Notas (opcional)</div>
+      <input type="text" class="nut-onb-field-input" id="wk-notes" placeholder="Ej: piernas, sprint 10x100m..."/>
+
+      <div style="margin-top:18px; padding:12px 14px; background:rgba(251,191,36,0.06); border:1px solid rgba(251,191,36,0.2); border-radius:12px;">
+        <div style="font-size:11px; color:#FBBF24; font-weight:600; letter-spacing:0.5px; margin-bottom:4px;">CALORÍAS ESTIMADAS</div>
+        <div id="wk-kcal-estimate" style="font-size:20px; font-weight:700; color:#F8FAFC;">— kcal</div>
+        <div style="font-size:10px; color:#94A3B8; margin-top:4px; line-height:1.4;">Basado en tu peso × MET de la actividad × duración (Compendium of Physical Activities 2024)</div>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="wk-save-btn" disabled onclick="wkSaveWorkout()">Guardar workout</button>
+  </div>
+
   <div class="screen nut-screen" data-step="nutrition">
     <div class="nut-topbar">
       <button class="nut-back-btn" onclick="goStep('app')">
@@ -5212,16 +5357,20 @@ function goStep(n) {
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
-    'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare', 0];
+    'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
+    'workout', 'wk-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
-  // Re-render Daily Pulse cuando VOLVEMOS al Hoy desde otra pantalla
-  // (ej: después de loguear una comida en nutrition, el donut macros debe actualizarse).
+  // Re-render Daily Pulse + sync workout kcal cuando VOLVEMOS al Hoy desde otra pantalla
+  // (ej: después de loguear una comida o workout, el donut macros y card workout deben actualizarse).
   // Skip si venimos del initial load (prevStep undefined o 0) — enterAppSimulation ya renderiza.
   if (n === 'app' && prevStep && prevStep !== 0 && prevStep !== 'app') {
     if (typeof renderDailyPulse === 'function') {
       renderDailyPulse().catch(e => console.warn('[SAVIA] pulse refresh failed:', e));
+    }
+    if (typeof wkSyncHoyCard === 'function') {
+      wkSyncHoyCard().catch(e => console.warn('[SAVIA] wk hoy sync failed:', e));
     }
   }
 }
@@ -6591,6 +6740,10 @@ function openModule(name) {
     openNutritionModule();
     return;
   }
+  if (name === 'workout') {
+    wkOpenDashboard();
+    return;
+  }
   const labels = {
     readiness: 'Readiness · Recovery',
     workout: 'Workout',
@@ -7406,6 +7559,232 @@ function nutPhotoSelectCategory(cat, el) {
   document.querySelectorAll('[data-step="nut-photo-result"] [data-photo-cat]').forEach(p => {
     p.classList.toggle('selected', p === el);
   });
+}
+
+// ============================================================
+//  WORKOUT MODULE (manual log + dashboard, Strava en Sprint 1.2)
+// ============================================================
+// MET (Metabolic Equivalent of Task) por actividad + intensidad.
+// Source: Compendium of Physical Activities 2024 (Ainsworth et al.)
+// kcal = MET × peso_kg × duración_horas
+const WK_MET = {
+  run:      { light: 6.0,  moderate: 9.8,  vigorous: 11.5 },  // jog → 6mph → 8mph
+  bike:     { light: 4.0,  moderate: 7.5,  vigorous: 10.0 },
+  swim:     { light: 5.8,  moderate: 8.3,  vigorous: 10.0 },
+  walk:     { light: 2.8,  moderate: 3.8,  vigorous: 4.8 },
+  strength: { light: 3.5,  moderate: 5.0,  vigorous: 6.0 },
+  hiit:     { light: 6.0,  moderate: 8.0,  vigorous: 10.0 },
+  yoga:     { light: 2.5,  moderate: 3.0,  vigorous: 4.0 },
+  other:    { light: 3.0,  moderate: 5.0,  vigorous: 7.0 },
+};
+const WK_TYPE_LABEL = {
+  run: 'Correr', bike: 'Bici', swim: 'Nadar', walk: 'Caminar',
+  strength: 'Fuerza', hiit: 'HIIT', yoga: 'Yoga', other: 'Otro',
+};
+const WK_TYPE_SVG = {
+  run: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 5a2 2 0 100-4 2 2 0 000 4zm-3 7l3-3 4 2v6m-7-2l3-3M5 21l4-4m4 0l3 4"/></svg>',
+  bike: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6" cy="17" r="4"/><circle cx="18" cy="17" r="4"/><path stroke-linecap="round" d="M6 17l4-7h5l3 7M10 10l-1-4h2"/></svg>',
+  swim: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2 16c2-1 4-1 6 0s4 1 6 0 4-1 6 0M2 20c2-1 4-1 6 0s4 1 6 0 4-1 6 0M8 12l4-2 4 2M16 7a2 2 0 100-4 2 2 0 000 4z"/></svg>',
+  walk: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="13" cy="4" r="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M9 20l3-7 3 3v5M9 13l-3-3 4-3 3 3"/></svg>',
+  strength: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l2-2 4 4-4 4-2-2zm12 12l-2 2-4-4 4-4 2 2M3 9l3 3M18 12l3 3"/></svg>',
+  hiit: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>',
+  yoga: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="5" r="2"/><path stroke-linecap="round" stroke-linejoin="round" d="M12 7v6m-5 0h10m-5 0v8m-3-3l3-2 3 2"/></svg>',
+  other: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path stroke-linecap="round" d="M12 8v4l3 2"/></svg>',
+};
+
+const wkState = {
+  type: null,
+  durationMin: 45,
+  intensity: 'moderate',
+  todayLogs: [],
+  weekLogs: [],
+};
+
+async function wkOpenDashboard() {
+  goStep('workout');
+  await wkLoadData();
+  wkRenderDashboard();
+}
+
+async function wkLoadData() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    // Pull últimos 7 días (incluye hoy)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sinceISO = sevenDaysAgo.toISOString();
+    const url = `${SUPABASE_URL}/rest/v1/workout_logs?user_id=eq.${session.user.id}&ts=gte.${sinceISO}&order=ts.desc`;
+    const resp = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!resp.ok) return;
+    const rows = await resp.json();
+    const startToday = new Date(); startToday.setHours(0, 0, 0, 0);
+    wkState.weekLogs = rows;
+    wkState.todayLogs = rows.filter(r => new Date(r.ts) >= startToday);
+  } catch (e) { console.warn('[WK] load failed:', e); }
+}
+
+function wkRenderDashboard() {
+  const today = wkState.todayLogs || [];
+  const week = wkState.weekLogs || [];
+
+  const todayKcal = today.reduce((s, r) => s + (r.kcal_burned || 0), 0);
+  const todayMin = today.reduce((s, r) => s + (r.duration_min || 0), 0);
+  document.getElementById('wk-dash-kcal').textContent = todayKcal;
+  document.getElementById('wk-dash-count').textContent = today.length;
+  document.getElementById('wk-dash-min').textContent = todayMin;
+  document.getElementById('wk-dash-summary').textContent = today.length === 0
+    ? 'Aún no hay actividad'
+    : `${today.length} ${today.length === 1 ? 'sesión' : 'sesiones'} · ${todayMin} min totales`;
+  // Bar: relativo a meta sugerida de 500 kcal/día (placeholder)
+  const dailyGoal = 500;
+  document.getElementById('wk-dash-bar').style.width = Math.min(100, Math.round((todayKcal / dailyGoal) * 100)) + '%';
+
+  // Week summary
+  const weekKcal = week.reduce((s, r) => s + (r.kcal_burned || 0), 0);
+  document.getElementById('wk-week-kcal').textContent = weekKcal.toLocaleString();
+  document.getElementById('wk-week-count').textContent = week.length;
+
+  // Historial reciente (hasta 10)
+  const listEl = document.getElementById('wk-list');
+  if (!week.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:30px 16px;color:#64748B;font-size:13px;line-height:1.6;">No has logueado workouts todavía.<br><span style="color:#94A3B8;">Tap el botón abajo derecha para empezar.</span></div>';
+    return;
+  }
+  listEl.innerHTML = week.slice(0, 10).map(w => {
+    const t = new Date(w.ts);
+    const isToday = t >= new Date(new Date().setHours(0, 0, 0, 0));
+    const dateLabel = isToday
+      ? t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })
+      : t.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    const typeLabel = WK_TYPE_LABEL[w.type] || w.type;
+    const svg = WK_TYPE_SVG[w.type] || WK_TYPE_SVG.other;
+    const notes = w.notes ? ' · ' + escapeHtml(w.notes.slice(0, 40)) : '';
+    return `
+      <div class="wk-row">
+        <div class="wk-row-icon">${svg}</div>
+        <div class="wk-row-body">
+          <div class="wk-row-title">${typeLabel}${notes}</div>
+          <div class="wk-row-meta">${w.duration_min} min · ${dateLabel}</div>
+        </div>
+        <div class="wk-row-kcal">${w.kcal_burned || 0} kcal</div>
+      </div>
+    `;
+  }).join('');
+}
+
+function wkOpenLog() {
+  // Reset state
+  wkState.type = null;
+  wkState.durationMin = 45;
+  wkState.intensity = 'moderate';
+  // Reset UI
+  document.querySelectorAll('[data-step="wk-log"] [data-wk-type]').forEach(el => el.classList.remove('selected'));
+  document.querySelectorAll('[data-step="wk-log"] [data-wk-dur]').forEach(el => {
+    el.classList.toggle('selected', el.dataset.wkDur === '45');
+  });
+  document.querySelectorAll('[data-step="wk-log"] [data-wk-int]').forEach(el => {
+    el.classList.toggle('selected', el.dataset.wkInt === 'moderate');
+  });
+  document.getElementById('wk-dur-custom').value = '';
+  document.getElementById('wk-notes').value = '';
+  wkUpdateKcalEstimate();
+  goStep('wk-log');
+}
+
+function wkSelectType(type, el) {
+  wkState.type = type;
+  document.querySelectorAll('[data-step="wk-log"] [data-wk-type]').forEach(c => c.classList.toggle('selected', c === el));
+  wkUpdateKcalEstimate();
+}
+
+function wkSelectDuration(min, el) {
+  wkState.durationMin = min;
+  document.querySelectorAll('[data-step="wk-log"] [data-wk-dur]').forEach(p => p.classList.toggle('selected', p === el));
+  document.getElementById('wk-dur-custom').value = '';
+  wkUpdateKcalEstimate();
+}
+
+function wkSelectDurationCustom(val) {
+  const m = parseInt(val, 10);
+  if (m > 0 && m < 1000) {
+    wkState.durationMin = m;
+    document.querySelectorAll('[data-step="wk-log"] [data-wk-dur]').forEach(p => p.classList.remove('selected'));
+    wkUpdateKcalEstimate();
+  }
+}
+
+function wkSelectIntensity(level, el) {
+  wkState.intensity = level;
+  document.querySelectorAll('[data-step="wk-log"] [data-wk-int]').forEach(p => p.classList.toggle('selected', p === el));
+  wkUpdateKcalEstimate();
+}
+
+function wkComputeKcal(type, intensity, durationMin, weightKg) {
+  const met = (WK_MET[type] && WK_MET[type][intensity]) || 5.0;
+  const w = weightKg || nutState.weight || 70;
+  const hours = durationMin / 60;
+  return Math.round(met * w * hours);
+}
+
+function wkUpdateKcalEstimate() {
+  const btn = document.getElementById('wk-save-btn');
+  if (!wkState.type) {
+    document.getElementById('wk-kcal-estimate').textContent = 'Elegí actividad primero';
+    if (btn) btn.disabled = true;
+    return;
+  }
+  const kcal = wkComputeKcal(wkState.type, wkState.intensity, wkState.durationMin);
+  document.getElementById('wk-kcal-estimate').textContent = kcal + ' kcal';
+  if (btn) btn.disabled = false;
+}
+
+async function wkSaveWorkout() {
+  if (!wkState.type) return;
+  const btn = document.getElementById('wk-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  const kcal = wkComputeKcal(wkState.type, wkState.intensity, wkState.durationMin);
+  const notes = (document.getElementById('wk-notes').value || '').trim() || null;
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) throw new Error('no_user');
+    await sb.from('workout_logs').insert({
+      user_id: user.id,
+      type: wkState.type,
+      duration_min: wkState.durationMin,
+      intensity: wkState.intensity,
+      kcal_burned: kcal,
+      notes,
+      source: 'manual',
+    });
+  } catch (e) {
+    console.warn('[WK] save failed:', e);
+    alert('No se pudo guardar. Probá de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar workout'; }
+    return;
+  }
+  await wkLoadData();
+  wkRenderDashboard();
+  // Sync kcal del Hoy card
+  const hoyEl = document.getElementById('hoy-wk-today-kcal');
+  if (hoyEl) {
+    const today = wkState.todayLogs.reduce((s, r) => s + (r.kcal_burned || 0), 0);
+    hoyEl.textContent = today;
+  }
+  if (btn) { btn.disabled = false; btn.textContent = 'Guardar workout'; }
+  goStep('workout');
+}
+
+// Sync card del Hoy con kcal de workouts del día (llamar al cargar el app)
+async function wkSyncHoyCard() {
+  await wkLoadData();
+  const hoyEl = document.getElementById('hoy-wk-today-kcal');
+  if (hoyEl) {
+    const today = wkState.todayLogs.reduce((s, r) => s + (r.kcal_burned || 0), 0);
+    hoyEl.textContent = today;
+  }
 }
 
 // ============================================================
