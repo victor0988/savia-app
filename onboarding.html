@@ -6727,8 +6727,8 @@ function enterAppSimulation(source) {
   try {
     const greeting = document.getElementById('app-greeting');
     if (greeting) greeting.textContent = `Hola, ${firstName}`;
-    const sub = document.getElementById('app-subgreeting');
-    if (sub) sub.textContent = getDayContext();
+    // Subgreeting + pill de calibración se actualizan en refreshHoyHeader (lo llama renderDailyPulse)
+    if (typeof refreshHoyHeader === 'function') refreshHoyHeader();
   } catch (e) { console.error('[SAVIA] greeting setup failed:', e); }
 
   try {
@@ -6769,6 +6769,9 @@ function getDayContext() {
 // HOY REDESIGN — Balance Energético + Pillars + AI
 // =============================================
 async function renderDailyPulse() {
+  // 0) Refresh del header (subgreeting + pill de calibración) — al re-entrar al Hoy
+  try { refreshHoyHeader(); } catch (e) { console.warn('header refresh:', e); }
+
   // 1) Balance Energético (kcal consumidas vs gastadas)
   try { await renderHoyBalance(); } catch (e) { console.warn('balance render:', e); }
 
@@ -6780,6 +6783,23 @@ async function renderDailyPulse() {
 
   // 4) Next Action contextual
   try { renderHoyNextAction(); } catch (e) { console.warn('next render:', e); }
+}
+
+// Actualiza subgreeting "Día N" + pill "Calibrando N/7" o lo oculta si calibración terminó.
+// Llamada desde renderDailyPulse (cada re-entrada al Hoy) y desde enterAppSimulation (entrada inicial).
+function refreshHoyHeader() {
+  const sub = document.getElementById('app-subgreeting');
+  if (sub) sub.textContent = getDayContext();
+  const pill = document.getElementById('hoy-calib-pill');
+  if (pill) {
+    const days = getDaysSinceSignup();
+    if (days > 7) {
+      pill.style.display = 'none';
+    } else {
+      pill.style.display = '';
+      pill.textContent = `Calibrando ${days}/7`;
+    }
+  }
 }
 
 // Calcula y pinta el Balance Energético hero
