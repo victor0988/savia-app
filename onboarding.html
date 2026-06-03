@@ -2161,7 +2161,13 @@
   .nut-cmp-diff.up { color: #BEF264; }
   .nut-cmp-diff.down { color: #FCA5A5; }
   .nut-cmp-diff.same { color: #64748B; }
-  /* Compare buttons */
+  /* Compare buttons — wrapper fixed bottom (mismo patrón que .nut-onb-continue) */
+  .nut-cmp-actions {
+    position: fixed; bottom: 24px; left: 24px; right: 24px;
+    display: flex; gap: 10px;
+    max-width: 380px; margin: 0 auto;
+    z-index: 20;
+  }
   .nut-cmp-btn-secondary {
     flex: 1;
     background: rgba(255,255,255,0.06);
@@ -4729,7 +4735,7 @@
         </div>
       </div>
     </div>
-    <div style="padding:0 24px 24px; display:flex; gap:10px;">
+    <div class="nut-cmp-actions">
       <button class="nut-cmp-btn-secondary" onclick="nutKeepCurrentTargets()">Mantener actuales</button>
       <button class="nut-cmp-btn-primary" id="nut-cmp-accept-btn" onclick="nutAcceptNewTargets()">Usar nuevos →</button>
     </div>
