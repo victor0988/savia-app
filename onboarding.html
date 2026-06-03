@@ -6779,7 +6779,7 @@ async function renderDailyPulse() {
   try { await renderHoyPillars(); } catch (e) { console.warn('pillars render:', e); }
 
   // 3) AI Insight (placeholder hardcoded por ahora — Edge Function en próximo sprint)
-  try { renderHoyAIInsight(); } catch (e) { console.warn('ai render:', e); }
+  renderHoyAIInsight().catch(e => console.warn('ai render:', e));
 
   // 4) Next Action contextual
   try { renderHoyNextAction(); } catch (e) { console.warn('next render:', e); }
@@ -6970,8 +6970,148 @@ async function renderHoyPillars() {
   }
 }
 
-// AI Insight (placeholder contextual por hora — Edge Function con Claude en próximo sub-sprint)
-function renderHoyAIInsight() {
+// AI Insight — usa Edge Function con Claude Haiku 4.5 + fallback hardcoded si falla
+// Cache 30 min en memoria para no spamear API
+const _aiInsightCache = { data: null, ts: 0, hourBucket: null };
+const AI_INSIGHT_TTL_MS = 30 * 60 * 1000;
+
+async function renderHoyAIInsight() {
+  const textEl = document.getElementById('hoy-ai-text');
+  const actEl = document.getElementById('hoy-ai-actions');
+  if (!textEl) return;
+
+  const targets = nutState.targets;
+  if (!targets) {
+    textEl.textContent = 'Completá tu onboarding de nutrición para insights personalizados.';
+    if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">Configurar →</button>';
+    return;
+  }
+
+  const now = new Date();
+  const hour = now.getHours();
+  const hourBucket = Math.floor(hour / 2); // refresh cada 2h o cuando expira TTL
+
+  // Check cache
+  const cacheValid = _aiInsightCache.data
+    && (Date.now() - _aiInsightCache.ts < AI_INSIGHT_TTL_MS)
+    && _aiInsightCache.hourBucket === hourBucket;
+
+  if (cacheValid) {
+    _paintAIInsight(_aiInsightCache.data);
+    return;
+  }
+
+  // Render placeholder mientras llamamos a la API
+  textEl.innerHTML = '<span style="opacity:0.6;">Pensando...</span>';
+  if (actEl) actEl.innerHTML = '';
+
+  try {
+    const meals = nutState.todayMeals || [];
+    const consumed = meals.reduce((a, m) => ({
+      kcal: a.kcal + (m.total_kcal || 0),
+      protein_g: a.protein_g + parseFloat(m.total_protein_g || 0),
+      carbs_g: a.carbs_g + parseFloat(m.total_carbs_g || 0),
+      fat_g: a.fat_g + parseFloat(m.total_fat_g || 0),
+    }), { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 });
+
+    const daily = await dlLoadToday().catch(() => null);
+    const wkData = (wkState.todayLogs || []).map(w => ({
+      type: w.type, duration_min: w.duration_min, kcal_burned: w.kcal_burned || 0,
+    }));
+
+    const payload = {
+      hour,
+      day_of_week: ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][now.getDay()],
+      consumed: {
+        kcal: Math.round(consumed.kcal),
+        protein_g: Math.round(consumed.protein_g),
+        carbs_g: Math.round(consumed.carbs_g),
+        fat_g: Math.round(consumed.fat_g),
+      },
+      targets: {
+        kcal: targets.kcal,
+        protein_g: targets.protein_g,
+        carbs_g: targets.carbs_g,
+        fat_g: targets.fat_g,
+        water_ml: targets.water_ml || 2500,
+      },
+      hydration_ml: nutState.todayHydrationMl || 0,
+      workouts_today: wkData,
+      sleep_last_night: daily && daily.sleep_hours
+        ? { hours: parseFloat(daily.sleep_hours), rating: daily.sleep_rating }
+        : null,
+      steps_today: daily && daily.steps ? daily.steps : 0,
+      goal: nutState.goal || 'maintenance',
+      name: (state.fullName || '').split(' ')[0] || 'mae',
+      streak_days: 0, // TODO: calcular real cuando tengamos tracking de adherencia
+    };
+
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+
+    // Timeout 5s — si tarda más, fallback
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/ai-daily-insight`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal: controller.signal,
+    });
+    clearTimeout(timeoutId);
+
+    if (!r.ok) throw new Error('upstream_' + r.status);
+    const result = await r.json();
+    if (!result.insight) throw new Error('empty_insight');
+
+    // Cachear y pintar
+    _aiInsightCache.data = result;
+    _aiInsightCache.ts = Date.now();
+    _aiInsightCache.hourBucket = hourBucket;
+    _paintAIInsight(result);
+  } catch (e) {
+    console.warn('[AI Insight] falling back to local logic:', e);
+    _renderHoyAIInsightFallback();
+  }
+}
+
+function _paintAIInsight(result) {
+  const textEl = document.getElementById('hoy-ai-text');
+  const actEl = document.getElementById('hoy-ai-actions');
+  if (!textEl) return;
+
+  // Tone → color del texto
+  const toneColor = result.tone === 'warning' ? '#FCA5A5'
+    : result.tone === 'encouraging' ? '#A7F3D0'
+    : '#E5E7EB';
+  textEl.innerHTML = `<span style="color:${toneColor};">${escapeHtml(result.insight)}</span>`;
+
+  if (actEl) {
+    if (Array.isArray(result.actions) && result.actions.length > 0) {
+      actEl.innerHTML = result.actions.map(a => {
+        const onclick = a.module === 'sleep'
+          ? `openSleepStepsLog('sleep')`
+          : a.module === 'hydration'
+          ? `nutHydrationAdd(250)`
+          : a.module === 'workout'
+          ? `openModule('workout')`
+          : `openModule('nutrition')`;
+        return `<button class="hoy-ai-chip" onclick="${onclick}">${escapeHtml(a.label)}</button>`;
+      }).join('');
+    } else {
+      actEl.innerHTML = '';
+    }
+  }
+}
+
+// Fallback con lógica hardcoded por hora (si Edge Function falla)
+// (escapeHtml ya existe globalmente más abajo en el archivo)
+function _renderHoyAIInsightFallback() {
   const targets = nutState.targets;
   const meals = nutState.todayMeals || [];
   const consumed = meals.reduce((a, m) => ({
