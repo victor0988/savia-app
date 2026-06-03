@@ -4044,7 +4044,7 @@
               <div class="hoy-balance-stat-val"><span id="hoy-balance-in">0</span> <span class="unit">kcal</span></div>
             </div>
             <div class="hoy-balance-stat">
-              <div class="hoy-balance-stat-label"><span class="dot blue"></span>GASTADO</div>
+              <div class="hoy-balance-stat-label"><span class="dot blue"></span>META + WORKOUT</div>
               <div class="hoy-balance-stat-val"><span id="hoy-balance-out">0</span> <span class="unit">kcal</span></div>
             </div>
             <div class="hoy-balance-stat" style="border-top:1px solid rgba(255,255,255,0.06); padding-top:8px;">
@@ -6802,12 +6802,34 @@ function refreshHoyHeader() {
   }
 }
 
+// Helper: garantiza que nutState tenga peso/altura/activity/goal cargados del profile
+async function ensureNutStateLoaded() {
+  if (nutState.weight && nutState.height && nutState.activity && nutState.goal) return true;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return false;
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}&select=weight_kg,height_cm,activity_level,nutrition_goal,body_fat_pct,meals_per_day,goals`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!r.ok) return false;
+    const p = (await r.json())[0];
+    if (!p) return false;
+    if (!nutState.weight) nutState.weight = p.weight_kg;
+    if (!nutState.height) nutState.height = p.height_cm;
+    if (!nutState.activity) nutState.activity = p.activity_level;
+    if (!nutState.goal) nutState.goal = p.nutrition_goal || nutCollapseGoalsToSingle(p.goals || []);
+    if (nutState.bodyFat == null) nutState.bodyFat = p.body_fat_pct;
+    if (!nutState.mealsPerDay) nutState.mealsPerDay = p.meals_per_day;
+    return !!(nutState.weight && nutState.height && nutState.activity);
+  } catch (e) { console.warn('[NUT] ensureNutStateLoaded failed:', e); return false; }
+}
+
 // Calcula y pinta el Balance Energético hero
 async function renderHoyBalance() {
-  // Cargar targets + meals de hoy
+  // Cargar targets + meals + perfil base
   let targets = nutState.targets;
   if (!targets) { try { targets = await nutLoadTargets(); if (targets) nutState.targets = targets; } catch {} }
-
+  await ensureNutStateLoaded();
   await nutLoadTodayData();
   const meals = nutState.todayMeals || [];
 
@@ -6819,53 +6841,71 @@ async function renderHoyBalance() {
     f: a.f + parseFloat(m.total_fat_g || 0),
   }), { kcal: 0, p: 0, c: 0, f: 0 });
 
-  // Gastado = BMR base + workouts del día
+  // Workouts del día (gasto extra REAL, no proyectado)
   await wkLoadData();
   const workoutKcal = (wkState.todayLogs || []).reduce((s, w) => s + (w.kcal_burned || 0), 0);
-  // BMR base: usar Mifflin-St Jeor desde nutState. Si falta data, ~1600 fallback
-  const bmrBase = estimateDailyBMR();
-  const expended = Math.round(bmrBase + workoutKcal);
 
-  const balance = consumed.kcal - expended;
-
-  // Pintar valores
+  // Pintar valores base
   document.getElementById('hoy-balance-in').textContent = consumed.kcal.toLocaleString();
-  document.getElementById('hoy-balance-out').textContent = expended.toLocaleString();
+
+  // NUEVO concepto: "kcal restantes" para tu target del día (más útil que TDEE en tiempo real)
+  // Restantes = target - consumido + workout_extra (los workouts te ganan más kcal)
+  const targetKcal = targets && targets.kcal && targets.kcal > 0 ? targets.kcal : null;
   const numEl = document.getElementById('hoy-balance-num');
-  numEl.textContent = (balance > 0 ? '+' : '') + balance;
-  numEl.className = 'hoy-balance-num ' + (balance > 0 ? 'positive' : balance < 0 ? '' : 'neutral');
-
-  // Anillos (visualización)
-  const CIRC_OUT = 327; // 2π·52
-  const CIRC_IN = 240;  // 2π·38
-  const targetKcal = targets && targets.kcal ? targets.kcal : 2000;
-  const consumedPct = Math.min(1, consumed.kcal / targetKcal);
-  const expendedPct = Math.min(1, expended / (targetKcal * 1.3));
-  document.getElementById('hoy-balance-in-ring').setAttribute('stroke-dasharray', (consumedPct * CIRC_IN) + ' ' + CIRC_IN);
-  document.getElementById('hoy-balance-out-ring').setAttribute('stroke-dasharray', (expendedPct * CIRC_OUT) + ' ' + CIRC_OUT);
-
-  // Hint del balance
   const hintEl = document.getElementById('hoy-balance-hint');
-  if (!targets) {
+  const subEl = document.querySelector('.hoy-balance-sub');
+
+  if (!targetKcal) {
+    // Sin targets — mostrar mensaje claro
+    document.getElementById('hoy-balance-out').textContent = '—';
+    numEl.textContent = '—';
+    numEl.className = 'hoy-balance-num neutral';
+    if (subEl) subEl.textContent = 'sin meta';
     hintEl.textContent = 'Configurá tu nutrición primero';
     hintEl.className = 'hoy-balance-stat-hint warning';
   } else {
-    // Ideal según goal (placeholder simple por ahora)
-    const goal = nutState.goal || 'maintenance';
-    if (goal === 'fat_loss' || goal === 'recomposition') {
-      if (balance < -700) { hintEl.textContent = '⚠ Déficit muy alto'; hintEl.className = 'hoy-balance-stat-hint danger'; }
-      else if (balance >= -700 && balance <= -300) { hintEl.textContent = '✓ Déficit ideal'; hintEl.className = 'hoy-balance-stat-hint'; }
-      else if (balance > -300 && balance <= 0) { hintEl.textContent = 'Te faltan ' + Math.abs(balance + 300) + ' kcal de déficit'; hintEl.className = 'hoy-balance-stat-hint warning'; }
-      else { hintEl.textContent = 'Hoy superaste tu meta'; hintEl.className = 'hoy-balance-stat-hint warning'; }
-    } else if (goal === 'muscle_gain') {
-      if (balance > 500) { hintEl.textContent = '⚠ Superávit alto'; hintEl.className = 'hoy-balance-stat-hint warning'; }
-      else if (balance >= 200 && balance <= 500) { hintEl.textContent = '✓ Surplus ideal'; hintEl.className = 'hoy-balance-stat-hint'; }
-      else { hintEl.textContent = 'Necesitás surplus de +200 a +500'; hintEl.className = 'hoy-balance-stat-hint warning'; }
+    // Gasto MOSTRADO = target del día + workouts extra (lo que vas a quemar si comés todo)
+    const expectedExpended = targetKcal + workoutKcal;
+    document.getElementById('hoy-balance-out').textContent = expectedExpended.toLocaleString();
+    // Restantes para llegar a la meta del día
+    const remaining = targetKcal - consumed.kcal + workoutKcal;
+    if (remaining > 0) {
+      numEl.textContent = remaining.toLocaleString();
+      numEl.className = 'hoy-balance-num positive';
+      if (subEl) subEl.textContent = 'kcal restantes';
     } else {
-      hintEl.textContent = 'Mantenimiento: cerca de 0';
+      numEl.textContent = Math.abs(remaining).toLocaleString();
+      numEl.className = 'hoy-balance-num';
+      if (subEl) subEl.textContent = 'kcal excedidas';
+    }
+    // Hint según goal + progreso del día
+    const goal = nutState.goal || 'maintenance';
+    const pctConsumido = consumed.kcal / targetKcal;
+    if (pctConsumido >= 0.95 && pctConsumido <= 1.05) {
+      hintEl.textContent = '✓ Cumpliste tu meta del día';
+      hintEl.className = 'hoy-balance-stat-hint';
+    } else if (pctConsumido > 1.15) {
+      hintEl.textContent = '⚠ Excediste tu meta';
+      hintEl.className = 'hoy-balance-stat-hint warning';
+    } else if (goal === 'fat_loss' || goal === 'recomposition') {
+      hintEl.textContent = `Déficit objetivo · ${targetKcal} kcal`;
+      hintEl.className = 'hoy-balance-stat-hint';
+    } else if (goal === 'muscle_gain') {
+      hintEl.textContent = `Surplus objetivo · ${targetKcal} kcal`;
+      hintEl.className = 'hoy-balance-stat-hint';
+    } else {
+      hintEl.textContent = `Mantenimiento · ${targetKcal} kcal`;
       hintEl.className = 'hoy-balance-stat-hint';
     }
   }
+
+  // Anillos: outer = consumido vs target (lima); inner = workout vs target (azul)
+  const CIRC_OUT = 327;
+  const CIRC_IN = 240;
+  const consumedPct = targetKcal ? Math.min(1, consumed.kcal / targetKcal) : 0;
+  const workoutPct = targetKcal ? Math.min(1, workoutKcal / (targetKcal * 0.3)) : 0;
+  document.getElementById('hoy-balance-in-ring').setAttribute('stroke-dasharray', (consumedPct * CIRC_IN) + ' ' + CIRC_IN);
+  document.getElementById('hoy-balance-out-ring').setAttribute('stroke-dasharray', (workoutPct * CIRC_OUT) + ' ' + CIRC_OUT);
 
   // Mini-rings de macros
   if (targets) {
@@ -6884,8 +6924,9 @@ function paintMacroMini(key, val, target) {
 }
 
 // Estima BMR diario (Mifflin-St Jeor × activity factor base, sin workouts adicionales)
+// Devuelve null si falta data — el caller debe manejar ese caso (no inventamos números)
 function estimateDailyBMR() {
-  if (!nutState.weight || !nutState.height) return 1600;
+  if (!nutState.weight || !nutState.height) return null;
   const sex = state.sex || 'm';
   const age = state.birthdate ? calcAgeFromBirthdate(state.birthdate) : 30;
   const rmr = sex === 'f'
@@ -6929,7 +6970,7 @@ async function renderHoyPillars() {
   }
 }
 
-// AI Insight (placeholder hardcoded — Edge Function en próximo sub-sprint)
+// AI Insight (placeholder contextual por hora — Edge Function con Claude en próximo sub-sprint)
 function renderHoyAIInsight() {
   const targets = nutState.targets;
   const meals = nutState.todayMeals || [];
@@ -6939,22 +6980,84 @@ function renderHoyAIInsight() {
   }), { kcal: 0, p: 0 });
   const textEl = document.getElementById('hoy-ai-text');
   const actEl = document.getElementById('hoy-ai-actions');
+  if (!textEl) return;
   if (!targets) {
     textEl.textContent = 'Completá tu onboarding de nutrición para insights personalizados.';
-    actEl.innerHTML = '';
+    if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">Configurar →</button>';
     return;
   }
-  const proteinGap = targets.protein_g - consumed.p;
-  if (proteinGap > 30) {
-    textEl.innerHTML = `Te faltan <strong style="color:#FCA5A5;">${Math.round(proteinGap)}g de proteína</strong>. Para tu objetivo, considerá:`;
-    actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">Yogurt griego +20g</button><button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">Pollo 150g +35g</button>';
-  } else if (proteinGap > 0) {
-    textEl.innerHTML = `Vas bien con tu proteína. Te faltan <strong>${Math.round(proteinGap)}g</strong> para llegar al target del día.`;
-    actEl.innerHTML = '';
-  } else {
-    textEl.textContent = 'Excelente — completaste tu proteína del día. Hidratate y descansá bien.';
-    actEl.innerHTML = '';
+
+  const hour = new Date().getHours();
+  const pctKcal = consumed.kcal / targets.kcal;
+  const pctProt = consumed.p / targets.protein_g;
+  const hydMl = nutState.todayHydrationMl || 0;
+  const hydTarget = (targets && targets.water_ml) || 2500;
+  const pctHyd = hydMl / hydTarget;
+
+  // Contexto por momento del día
+  // MAÑANA TEMPRANO (5-10am): si no ha comido, sugerir desayuno (no decir "te faltan TODOS los macros")
+  if (hour >= 5 && hour < 10 && consumed.kcal < 100) {
+    textEl.innerHTML = `Buenos días ☀️ Arrancá con un desayuno alto en proteína (${Math.round(targets.protein_g * 0.25)}g aprox para el primer cuarto del día).`;
+    if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">+ Desayuno</button>';
+    return;
   }
+
+  // MAÑANA-MEDIODÍA (10-12): si tomó desayuno ligero, snack
+  if (hour >= 10 && hour < 12 && pctKcal < 0.20) {
+    textEl.innerHTML = `Vas suave hoy. Un snack con proteína (yogurt griego, huevos) te ayuda a llegar al almuerzo sin déficit.`;
+    if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">+ Snack</button>';
+    return;
+  }
+
+  // ALMUERZO (12-15): chequear proteína acumulada
+  if (hour >= 12 && hour < 15) {
+    if (pctKcal < 0.30) {
+      textEl.innerHTML = `Hora de almorzar. Apuntá a <strong>${Math.round(targets.protein_g * 0.4)}g de proteína</strong> en este tiempo para distribuir bien tu meta.`;
+    } else if (pctProt < pctKcal - 0.15) {
+      textEl.innerHTML = `Vas bien en kcal pero corto en proteína. Subí el plato fuerte hoy.`;
+    } else {
+      textEl.innerHTML = `Vas en buen ritmo. Hidratación: ${Math.round(pctHyd * 100)}% — ${pctHyd < 0.4 ? 'tomá agua ahora' : 'seguí así'}.`;
+    }
+    if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">+ Almuerzo</button>';
+    return;
+  }
+
+  // TARDE (15-18): foco en hidratación y proteína pendiente
+  if (hour >= 15 && hour < 18) {
+    const protGap = targets.protein_g - consumed.p;
+    if (protGap > targets.protein_g * 0.5) {
+      textEl.innerHTML = `Te faltan <strong>${Math.round(protGap)}g de proteína</strong>. Cená fuerte o sumá un snack alto en proteína ya.`;
+      if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">+ Snack</button>';
+    } else if (pctHyd < 0.6) {
+      textEl.innerHTML = `Hidratación al ${Math.round(pctHyd * 100)}%. Subí ${Math.round((hydTarget - hydMl) / 250)} vasos antes de la noche.`;
+      if (actEl) actEl.innerHTML = '';
+    } else {
+      textEl.innerHTML = `Vas en buen camino. Pensá la cena tranquilo, no te excedas en kcal.`;
+      if (actEl) actEl.innerHTML = '';
+    }
+    return;
+  }
+
+  // NOCHE (18-22): cierre del día
+  if (hour >= 18 && hour < 22) {
+    const protGap = targets.protein_g - consumed.p;
+    const kcalGap = targets.kcal - consumed.kcal;
+    if (protGap > 30) {
+      textEl.innerHTML = `Cierre del día: te faltan <strong>${Math.round(protGap)}g de proteína</strong> y ~${Math.max(0, kcalGap)} kcal. Cená con pollo, pescado o huevos.`;
+      if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openModule(\'nutrition\')">+ Cena</button>';
+    } else if (kcalGap < -200) {
+      textEl.innerHTML = `Excediste tu meta por ${Math.abs(kcalGap)} kcal. Mañana arrancá liviano — sin culpas.`;
+      if (actEl) actEl.innerHTML = '';
+    } else {
+      textEl.innerHTML = `Excelente día. Hidratate antes de dormir y descansá 7-8h.`;
+      if (actEl) actEl.innerHTML = '';
+    }
+    return;
+  }
+
+  // NOCHE TARDE (22+) o MUY TEMPRANO (<5)
+  textEl.innerHTML = `Es hora de descansar. Apagá pantallas y dormí 7-8h para recuperación óptima.`;
+  if (actEl) actEl.innerHTML = '<button class="hoy-ai-chip" onclick="openSleepStepsLog(\'sleep\')">+ Sueño</button>';
 }
 
 function renderHoyNextAction() {
