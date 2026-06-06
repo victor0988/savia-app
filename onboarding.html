@@ -2599,6 +2599,127 @@
   }
   .em-secondary-btn:active { transform: scale(0.98); }
 
+  /* ========== PLAN MODULE ========== */
+  .hoy-plan-cta {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, rgba(132,204,22,0.12), rgba(132,204,22,0.04));
+    border: 1px solid rgba(132,204,22,0.28);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+  .hoy-plan-cta:active { transform: scale(0.985); background: rgba(132,204,22,0.15); }
+  .hoy-plan-cta-icon { font-size: 22px; line-height: 1; }
+  .hoy-plan-cta-text { flex: 1; min-width: 0; }
+  .hoy-plan-cta-title { font-size: 13px; font-weight: 700; color: #fff; line-height: 1.2; }
+  .hoy-plan-cta-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; line-height: 1.3; }
+  .hoy-plan-cta-arrow { font-size: 18px; color: #BEF264; font-weight: 700; }
+
+  .plan-method-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-method-btn:active { transform: scale(0.985); }
+  .plan-method-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .plan-method-text { flex: 1; min-width: 0; }
+  .plan-method-title { font-size: 13px; font-weight: 600; color: #fff; }
+  .plan-method-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+  .plan-method-chev { color: #475569; font-size: 16px; }
+
+  .plan-cf-banner {
+    background: rgba(132,204,22,0.06);
+    border: 1px solid rgba(132,204,22,0.22);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    display: flex; gap: 10px; align-items: center;
+  }
+  .plan-cf-header-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 14px 16px;
+  }
+  .plan-cf-meal-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+  }
+  .plan-cf-meal-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .plan-cf-meal-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .plan-cf-meal-time { font-size: 10px; color: #64748B; margin-left: 6px; }
+  .plan-cf-meal-kcal { font-size: 11px; color: #BEF264; font-weight: 600; }
+  .plan-cf-alt-badge {
+    display: inline-block;
+    background: rgba(167,139,250,0.15); color: #A78BFA;
+    font-size: 9px; font-weight: 700;
+    padding: 2px 6px; border-radius: 5px;
+    margin-left: 6px;
+  }
+  .plan-cf-item-row {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    font-size: 11px;
+    color: #CBD5E1;
+  }
+  .plan-cf-item-row:last-child { border-bottom: none; }
+  .plan-cf-item-grp {
+    font-size: 9px; color: #94A3B8;
+    background: rgba(255,255,255,0.06);
+    padding: 1px 6px; border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .plan-cf-item-name { flex: 1; min-width: 0; }
+  .plan-cf-item-qty { color: #64748B; font-size: 10px; }
+  .plan-cf-item-del {
+    background: transparent; border: none;
+    color: #64748B; font-size: 14px;
+    padding: 0 4px; cursor: pointer;
+  }
+  .plan-cf-item-del:active { color: #F87171; }
+
+  .plan-cf-supp-row, .plan-cf-rule-row {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    font-size: 11px; color: #CBD5E1;
+    line-height: 1.4;
+  }
+  .plan-cf-supp-name { font-weight: 700; color: #C4B5FD; }
+  .plan-cf-supp-meta { color: #94A3B8; font-size: 10px; margin-top: 2px; }
+  .plan-cf-rule-type-badge {
+    display: inline-block;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+    padding: 2px 6px; border-radius: 5px;
+    text-transform: uppercase;
+    margin-right: 6px;
+  }
+
   /* Photo analyzing spinner */
   .nut-photo-spinner {
     width: 56px; height: 56px;
@@ -4250,6 +4371,16 @@
         </div>
       </div>
 
+      <!-- Banner Plan (solo si no hay plan activo) -->
+      <div id="hoy-plan-cta" class="hoy-plan-cta" style="display:none;" onclick="planOpenUpload()">
+        <div class="hoy-plan-cta-icon">📋</div>
+        <div class="hoy-plan-cta-text">
+          <div class="hoy-plan-cta-title">¿Tenés un plan?</div>
+          <div class="hoy-plan-cta-sub">Subilo y SAVIA lo organiza por vos</div>
+        </div>
+        <div class="hoy-plan-cta-arrow">›</div>
+      </div>
+
       <!-- Pillars Grid 2x3 -->
       <div class="hoy-pillars">
         <div class="hoy-pillar pillar-workout" onclick="openModule('workout')">
@@ -5414,6 +5545,99 @@
     </div>
   </div>
 
+  <!-- ============== PLAN: método de upload ============== -->
+  <div class="screen nut-screen" data-step="plan-upload-method">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('app')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Hoy
+      </button>
+      <div class="nut-title">Subí tu plan</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-eyebrow">Plan nutricional</div>
+      <div class="nut-onb-title">¿Cómo lo querés subir?</div>
+      <div class="nut-onb-hint">SAVIA lo parsea automáticamente con IA y organiza tus comidas para que solo tengas que tocar "Lo comí".</div>
+
+      <input type="file" id="plan-file-input" accept="image/*,application/pdf" style="display:none;" onchange="planOnFileSelected(event)"/>
+
+      <button class="plan-method-btn" onclick="planSelectMethod('photo')">
+        <div class="plan-method-icon" style="background:rgba(132,204,22,0.15); color:#BEF264;">📷</div>
+        <div class="plan-method-text">
+          <div class="plan-method-title">Foto del plan</div>
+          <div class="plan-method-sub">Imprimís o screenshot</div>
+        </div>
+        <div class="plan-method-chev">›</div>
+      </button>
+
+      <button class="plan-method-btn" onclick="planSelectMethod('pdf')">
+        <div class="plan-method-icon" style="background:rgba(96,165,250,0.15); color:#60A5FA;">📄</div>
+        <div class="plan-method-text">
+          <div class="plan-method-title">Documento PDF</div>
+          <div class="plan-method-sub">El que te mandó tu nutricionista</div>
+        </div>
+        <div class="plan-method-chev">›</div>
+      </button>
+
+      <button class="plan-method-btn" style="opacity:0.5;" onclick="alert('Próximamente: armar tu plan manual desde cero.')">
+        <div class="plan-method-icon" style="background:rgba(244,114,182,0.15); color:#F472B6;">✏️</div>
+        <div class="plan-method-text">
+          <div class="plan-method-title">Escribirlo manual</div>
+          <div class="plan-method-sub">Próximamente</div>
+        </div>
+        <div class="plan-method-chev">›</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============== PLAN: analizando con IA ============== -->
+  <div class="screen nut-screen" data-step="plan-analyzing">
+    <div class="nut-photo-analyzing">
+      <div class="nut-photo-spinner"></div>
+      <div style="margin-top:24px; font-size:16px; font-weight:700; color:#fff;">Leyendo tu plan...</div>
+      <div style="margin-top:6px; font-size:12px; color:#94A3B8; text-align:center; max-width:280px; line-height:1.5;">
+        Claude está extrayendo tus comidas, suplementos y reglas. Tarda 10-20 segundos.
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== PLAN: confirmar parseo ============== -->
+  <div class="screen nut-screen" data-step="plan-confirm">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="planCancelConfirm()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Confirmá tu plan</div>
+      <button class="em-save-btn" onclick="planSave()">Guardar</button>
+    </div>
+    <div class="nut-onb-content" style="padding-bottom:100px;">
+      <div id="plan-cf-detected" class="plan-cf-banner">
+        <div style="font-size:14px;">✨</div>
+        <div>
+          <div style="font-size:11px; color:#BEF264; font-weight:600;">Plan detectado</div>
+          <div style="font-size:12px; color:#94A3B8; margin-top:2px;" id="plan-cf-summary">—</div>
+        </div>
+      </div>
+
+      <div id="plan-cf-header" class="plan-cf-header-card"></div>
+
+      <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:18px 0 8px;">COMIDAS</div>
+      <div id="plan-cf-meals"></div>
+
+      <div id="plan-cf-supps-wrap" style="display:none;">
+        <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:18px 0 8px;">SUPLEMENTOS</div>
+        <div id="plan-cf-supps"></div>
+      </div>
+
+      <div id="plan-cf-rules-wrap" style="display:none;">
+        <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:18px 0 8px;">OBSERVACIONES</div>
+        <div id="plan-cf-rules"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ============== InBody: comparar targets actuales vs nuevos ============== -->
   <div class="screen nut-screen" data-step="nut-targets-compare">
     <div class="nut-topbar">
@@ -5965,7 +6189,8 @@ function goStep(n) {
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
     'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
-    'nut-edit-macros', 'workout', 'wk-log', 'daily-log', 0];
+    'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
+    'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -7084,6 +7309,7 @@ async function renderDailyPulse() {
 
   // 2) Pillars (workout, steps, sleep, hydration, recovery, fatiga)
   try { await renderHoyPillars(); } catch (e) { console.warn('pillars render:', e); }
+  planRefreshHoyBanner().catch(e => console.warn('plan banner:', e));
 
   // 3) AI Insight (placeholder hardcoded por ahora — Edge Function en próximo sprint)
   renderHoyAIInsight().catch(e => console.warn('ai render:', e));
@@ -9637,6 +9863,501 @@ async function resetMacrosToAuto() {
   }
 }
 
+// ============================================================
+//  PLAN MODULE — Subir, parsear y guardar plan nutricional
+// ============================================================
+const planState = {
+  active: null,         // plan activo (desde DB)
+  uploadFile: null,     // File seleccionado
+  uploadBase64: null,
+  uploadMime: null,
+  parsed: null,         // output de la Edge Function
+};
+
+// Cargar plan activo del paciente (si tiene)
+async function planLoadActive() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return null;
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${session.user.id}&active=eq.true&select=*&limit=1`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!r.ok) return null;
+    const rows = await r.json();
+    planState.active = rows[0] || null;
+    return planState.active;
+  } catch (e) {
+    console.warn('[PLAN] load active failed:', e);
+    return null;
+  }
+}
+
+// Refresh del banner en Hoy: ocultar si ya hay plan activo
+async function planRefreshHoyBanner() {
+  const banner = document.getElementById('hoy-plan-cta');
+  if (!banner) return;
+  const active = await planLoadActive();
+  banner.style.display = active ? 'none' : 'flex';
+}
+
+// Abrir flow de upload
+function planOpenUpload() {
+  planState.uploadFile = null;
+  planState.uploadBase64 = null;
+  planState.uploadMime = null;
+  planState.parsed = null;
+  goStep('plan-upload-method');
+}
+
+function planSelectMethod(method) {
+  const inp = document.getElementById('plan-file-input');
+  if (!inp) return;
+  // Foto = sólo image/*; PDF = sólo application/pdf
+  inp.accept = method === 'pdf' ? 'application/pdf' : 'image/*';
+  // En iOS, capture="environment" dispara la cámara para fotos
+  if (method === 'photo') {
+    inp.setAttribute('capture', 'environment');
+  } else {
+    inp.removeAttribute('capture');
+  }
+  inp.value = ''; // permitir re-seleccionar mismo archivo
+  inp.click();
+}
+
+async function planOnFileSelected(ev) {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  if (file.size > 10 * 1024 * 1024) {
+    alert('El archivo es muy grande (>10MB). Comprimilo o cortalo.');
+    return;
+  }
+  planState.uploadFile = file;
+  planState.uploadMime = file.type || 'image/jpeg';
+
+  // Convertir a base64
+  try {
+    planState.uploadBase64 = await _planFileToBase64(file);
+  } catch (e) {
+    alert('No se pudo leer el archivo.');
+    return;
+  }
+
+  // Pasar a analyzing
+  goStep('plan-analyzing');
+
+  // Llamar Edge Function
+  await planAnalyze();
+}
+
+function _planFileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const r = new FileReader();
+    r.onload = () => {
+      const dataUrl = r.result;
+      // Extraer base64 (después de la coma)
+      const b64 = dataUrl.split(',')[1];
+      resolve(b64);
+    };
+    r.onerror = () => reject(new Error('reader_failed'));
+    r.readAsDataURL(file);
+  });
+}
+
+async function planAnalyze() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/parse-meal-plan`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ file: planState.uploadBase64, mime: planState.uploadMime }),
+    });
+
+    const result = await r.json();
+    if (!r.ok || result.error) {
+      const errMsg = result.error === 'not_a_meal_plan' ? 'El archivo no parece ser un plan nutricional.'
+        : result.error === 'unreadable' ? 'No se pudo leer el documento. Probá con una foto más nítida.'
+        : result.error === 'no_data_extracted' ? 'No se extrajo info útil del plan.'
+        : `Error: ${result.error || r.status}`;
+      alert(errMsg);
+      goStep('plan-upload-method');
+      return;
+    }
+
+    // Post-procesamiento: bug fix de is_required
+    // Si en una meal hay 2+ items con mismo selection_group, todos deben ser is_required=false
+    if (Array.isArray(result.meals)) {
+      result.meals.forEach(meal => {
+        const groupCounts = {};
+        (meal.items || []).forEach(it => {
+          if (!it.selection_group) return;
+          groupCounts[it.selection_group] = (groupCounts[it.selection_group] || 0) + 1;
+        });
+        meal.items.forEach(it => {
+          if (groupCounts[it.selection_group] > 1) it.is_required = false;
+        });
+      });
+    }
+
+    planState.parsed = result;
+    planRenderConfirm();
+    goStep('plan-confirm');
+  } catch (e) {
+    console.warn('[PLAN] analyze failed:', e);
+    alert('No se pudo analizar el plan. Probá de nuevo.');
+    goStep('plan-upload-method');
+  }
+}
+
+function planCancelConfirm() {
+  if (confirm('¿Descartar el plan parseado?')) {
+    planState.parsed = null;
+    goStep('app');
+  }
+}
+
+const SLOT_LABELS = {
+  desayuno: 'Desayuno',
+  snack_am: 'Merienda',
+  merienda: 'Merienda',
+  almuerzo: 'Almuerzo',
+  pre_entreno: 'Pre entreno',
+  post_entreno: 'Post entreno',
+  snack_pm: 'Snack PM',
+  cena: 'Cena',
+  otro: 'Comida',
+};
+const SLOT_EMOJI = {
+  desayuno: '🍳', snack_am: '🥣', merienda: '🥣', almuerzo: '🍽️',
+  pre_entreno: '🏋️', post_entreno: '💪', snack_pm: '🥜', cena: '🌙', otro: '🍴',
+};
+const GROUP_LABELS = {
+  protein: 'P', carb: 'C', fruit: 'F', fat: 'G',
+  vegetable: 'V', dairy: 'L', beverage: 'B', free: '·',
+};
+
+function planRenderConfirm() {
+  const p = planState.parsed;
+  if (!p) return;
+
+  // Summary
+  const numMeals = (p.meals || []).length;
+  const numSupps = (p.supplements || []).length;
+  const numRules = (p.rules || []).length;
+  const sumEl = document.getElementById('plan-cf-summary');
+  if (sumEl) sumEl.textContent = `${numMeals} comidas · ${p.targets?.kcal || '?'} kcal · ${numSupps} suplementos`;
+
+  // Header card: nutricionista + targets
+  const head = document.getElementById('plan-cf-header');
+  if (head) {
+    const nName = p.nutritionist?.name ? _planEscape(p.nutritionist.name) : 'Sin identificar';
+    const initials = (p.nutritionist?.name || 'NA').split(' ').filter(s => s && s[0]).slice(0, 2).map(s => s[0].toUpperCase()).join('');
+    head.innerHTML = `
+      <div style="display:flex; align-items:center; gap:12px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.06); margin-bottom:12px;">
+        <div style="width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#A7F3D0,#6EE7B7); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#064E3B;">${_planEscape(initials)}</div>
+        <div style="flex:1; min-width:0;">
+          <div style="font-size:10px; color:#94A3B8; font-weight:600;">NUTRICIONISTA</div>
+          <div style="font-size:13px; font-weight:700; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${nName}</div>
+          ${p.nutritionist?.contact ? `<div style="font-size:10px; color:#64748B;">${_planEscape(p.nutritionist.contact)}</div>` : ''}
+        </div>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#fff; font-weight:700;">${p.targets?.kcal || '—'}</div><div style="font-size:9px; color:#94A3B8;">kcal</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#F472B6; font-weight:700;">${p.targets?.protein_g || '—'}g</div><div style="font-size:9px; color:#94A3B8;">P</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#FBBF24; font-weight:700;">${p.targets?.carbs_g || '—'}g</div><div style="font-size:9px; color:#94A3B8;">C</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#A78BFA; font-weight:700;">${p.targets?.fat_g || '—'}g</div><div style="font-size:9px; color:#94A3B8;">G</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#60A5FA; font-weight:700;">${p.targets?.water_ml ? Math.round(p.targets.water_ml / 100) / 10 + 'L' : '—'}</div><div style="font-size:9px; color:#94A3B8;">💧</div></div>
+      </div>
+    `;
+  }
+
+  // Meals
+  const mealsEl = document.getElementById('plan-cf-meals');
+  if (mealsEl) {
+    if (!(p.meals || []).length) {
+      mealsEl.innerHTML = '<div style="color:#64748B; font-size:12px; text-align:center; padding:20px;">No se detectaron comidas.</div>';
+    } else {
+      mealsEl.innerHTML = p.meals.map((m, mIdx) => {
+        const slotLabel = SLOT_LABELS[m.slot] || m.custom_label || m.slot;
+        const emoji = SLOT_EMOJI[m.slot] || '🍴';
+        const altBadge = m.alternative_label ? `<span class="plan-cf-alt-badge">OPCIÓN ${m.alternative_label}</span>` : '';
+        const labelOverride = m.custom_label && m.custom_label !== slotLabel ? ` · ${_planEscape(m.custom_label)}` : '';
+        const time = m.scheduled_time_label ? `<span class="plan-cf-meal-time">${_planEscape(m.scheduled_time_label)}</span>` : '';
+        const items = (m.items || []).map((it, iIdx) => {
+          const grp = GROUP_LABELS[it.selection_group] || '·';
+          const qty = it.quantity_text ? `<span class="plan-cf-item-qty">${_planEscape(it.quantity_text)}</span>` : '';
+          const opt = !it.is_required && !it.is_free_quantity ? `<span style="font-size:9px; color:#94A3B8;">○</span>` : '';
+          return `
+            <div class="plan-cf-item-row">
+              <span class="plan-cf-item-grp">${grp}</span>
+              <span class="plan-cf-item-name">${opt} ${_planEscape(it.name)} ${qty}</span>
+              <button class="plan-cf-item-del" onclick="planRemoveItem(${mIdx},${iIdx})" aria-label="Eliminar">×</button>
+            </div>
+          `;
+        }).join('');
+        return `
+          <div class="plan-cf-meal-card">
+            <div class="plan-cf-meal-head">
+              <div>
+                <span style="font-size:16px;">${emoji}</span>
+                <span class="plan-cf-meal-title">${_planEscape(slotLabel)}${_planEscape(labelOverride)}</span>
+                ${time}
+                ${altBadge}
+              </div>
+              <div class="plan-cf-meal-kcal">${m.total_kcal_est || 0} kcal</div>
+            </div>
+            ${items}
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  // Supplements
+  const suppsWrap = document.getElementById('plan-cf-supps-wrap');
+  const suppsEl = document.getElementById('plan-cf-supps');
+  if (suppsWrap && suppsEl) {
+    if (!numSupps) {
+      suppsWrap.style.display = 'none';
+    } else {
+      suppsWrap.style.display = '';
+      suppsEl.innerHTML = p.supplements.map(s => `
+        <div class="plan-cf-supp-row">
+          <div class="plan-cf-supp-name">💊 ${_planEscape(s.name)}</div>
+          <div class="plan-cf-supp-meta">${_planEscape(s.dose || '')}${s.dose && s.timing ? ' · ' : ''}${_planEscape(s.timing || '')}</div>
+        </div>
+      `).join('');
+    }
+  }
+
+  // Rules
+  const rulesWrap = document.getElementById('plan-cf-rules-wrap');
+  const rulesEl = document.getElementById('plan-cf-rules');
+  if (rulesWrap && rulesEl) {
+    if (!numRules) {
+      rulesWrap.style.display = 'none';
+    } else {
+      rulesWrap.style.display = '';
+      const typeBadgeStyle = (t) => {
+        if (t === 'conditional') return 'background:rgba(251,191,36,0.15); color:#FBBF24;';
+        if (t === 'hydration')   return 'background:rgba(96,165,250,0.15); color:#60A5FA;';
+        if (t === 'supplement')  return 'background:rgba(167,139,250,0.15); color:#A78BFA;';
+        return 'background:rgba(255,255,255,0.08); color:#94A3B8;';
+      };
+      rulesEl.innerHTML = p.rules.map(r => `
+        <div class="plan-cf-rule-row">
+          <span class="plan-cf-rule-type-badge" style="${typeBadgeStyle(r.rule_type)}">${_planEscape(r.rule_type)}</span>
+          ${_planEscape(r.rule_text)}
+        </div>
+      `).join('');
+    }
+  }
+}
+
+function _planEscape(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function planRemoveItem(mealIdx, itemIdx) {
+  const m = planState.parsed?.meals?.[mealIdx];
+  if (!m) return;
+  m.items.splice(itemIdx, 1);
+  planRenderConfirm();
+}
+
+async function planSave() {
+  if (!planState.parsed) return;
+  const btn = document.querySelector('[data-step="plan-confirm"] .em-save-btn');
+  const origText = btn ? btn.textContent : 'Guardar';
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const userId = session.user.id;
+    const accessToken = session.access_token;
+    const p = planState.parsed;
+
+    // 1) Marcar planes anteriores como inactivos (constraint unique active permite solo 1)
+    await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${userId}&active=eq.true`, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ active: false }),
+    });
+
+    // 2) Subir archivo original al bucket meal-plans/{userId}/{timestamp}-{name}
+    let sourceFileUrl = null;
+    if (planState.uploadFile) {
+      const ts = Date.now();
+      const safeName = planState.uploadFile.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+      const path = `${userId}/${ts}-${safeName}`;
+      const upResp = await fetch(`${SUPABASE_URL}/storage/v1/object/meal-plans/${path}`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': planState.uploadMime || 'application/octet-stream' },
+        body: planState.uploadFile,
+      });
+      if (upResp.ok) sourceFileUrl = path;
+    }
+
+    // 3) INSERT meal_plans
+    const planInsert = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({
+        patient_user_id: userId,
+        uploaded_by_user_id: userId,
+        source: 'self',
+        title: p.title || null,
+        nutritionist_name: p.nutritionist?.name || null,
+        nutritionist_contact: p.nutritionist?.contact || null,
+        nutritionist_handle: p.nutritionist?.handle || null,
+        motivational_quote: p.motivational_quote || null,
+        total_kcal: p.targets?.kcal || null,
+        total_protein_g: p.targets?.protein_g || null,
+        total_carbs_g: p.targets?.carbs_g || null,
+        total_fat_g: p.targets?.fat_g || null,
+        water_ml_target: p.targets?.water_ml || null,
+        protein_per_kg: p.targets?.protein_per_kg || null,
+        source_file_url: sourceFileUrl,
+        raw_parsed_json: p,
+        active: true,
+      }),
+    });
+    if (!planInsert.ok) {
+      const detail = await planInsert.text();
+      throw new Error('meal_plans insert failed: ' + detail.slice(0, 200));
+    }
+    const [savedPlan] = await planInsert.json();
+    const planId = savedPlan.id;
+
+    // 4) INSERT plan_meals
+    const mealRows = (p.meals || []).map((m, idx) => ({
+      plan_id: planId,
+      slot: m.slot || 'otro',
+      custom_label: m.custom_label || null,
+      display_order: idx,
+      scheduled_time: m.scheduled_time_24h ? (m.scheduled_time_24h.length === 5 ? m.scheduled_time_24h + ':00' : m.scheduled_time_24h) : null,
+      scheduled_time_label: m.scheduled_time_label || null,
+      alternative_group: m.alternative_group || null,
+      alternative_label: m.alternative_label || null,
+      total_kcal_est: m.total_kcal_est || null,
+      total_protein_g_est: m.total_protein_g_est || null,
+      total_carbs_g_est: m.total_carbs_g_est || null,
+      total_fat_g_est: m.total_fat_g_est || null,
+    }));
+    const mealIdMap = {};
+    if (mealRows.length) {
+      const mealsInsert = await fetch(`${SUPABASE_URL}/rest/v1/plan_meals`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+        body: JSON.stringify(mealRows),
+      });
+      if (!mealsInsert.ok) {
+        const detail = await mealsInsert.text();
+        throw new Error('plan_meals insert failed: ' + detail.slice(0, 200));
+      }
+      const savedMeals = await mealsInsert.json();
+      savedMeals.forEach((sm, idx) => { mealIdMap[idx] = sm.id; });
+    }
+
+    // 5) INSERT plan_meal_items (flatten)
+    const itemRows = [];
+    (p.meals || []).forEach((m, mIdx) => {
+      const mealId = mealIdMap[mIdx];
+      if (!mealId) return;
+      (m.items || []).forEach((it, iIdx) => {
+        itemRows.push({
+          meal_id: mealId,
+          name: it.name || '',
+          quantity_text: it.quantity_text || null,
+          quantity_g: it.quantity_g != null ? it.quantity_g : null,
+          unit_count: it.unit_count != null ? it.unit_count : null,
+          selection_group: it.selection_group || 'free',
+          is_required: it.is_required !== false,
+          is_free_quantity: it.is_free_quantity === true,
+          kcal_est: it.kcal_est || 0,
+          protein_g_est: it.protein_g_est || 0,
+          carbs_g_est: it.carbs_g_est || 0,
+          fat_g_est: it.fat_g_est || 0,
+          macros_source: 'claude_estimate',
+          display_order: iIdx,
+        });
+      });
+    });
+    if (itemRows.length) {
+      const itemsInsert = await fetch(`${SUPABASE_URL}/rest/v1/plan_meal_items`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify(itemRows),
+      });
+      if (!itemsInsert.ok) {
+        const detail = await itemsInsert.text();
+        console.warn('plan_meal_items insert error:', detail.slice(0, 200));
+      }
+    }
+
+    // 6) INSERT plan_supplements
+    if ((p.supplements || []).length) {
+      const suppRows = p.supplements.map((s, idx) => ({
+        plan_id: planId,
+        name: s.name || '',
+        dose: s.dose || null,
+        timing: s.timing || null,
+        display_order: idx,
+      }));
+      const sIns = await fetch(`${SUPABASE_URL}/rest/v1/plan_supplements`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify(suppRows),
+      });
+      if (!sIns.ok) console.warn('plan_supplements insert error:', await sIns.text());
+    }
+
+    // 7) INSERT plan_rules
+    if ((p.rules || []).length) {
+      const ruleRows = p.rules.map((r, idx) => ({
+        plan_id: planId,
+        rule_type: r.rule_type || 'general',
+        rule_text: r.rule_text || '',
+        display_order: idx,
+      }));
+      const rIns = await fetch(`${SUPABASE_URL}/rest/v1/plan_rules`, {
+        method: 'POST',
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify(ruleRows),
+      });
+      if (!rIns.ok) console.warn('plan_rules insert error:', await rIns.text());
+    }
+
+    // 8) Update state + toast + volver a Hoy
+    planState.active = savedPlan;
+    planState.parsed = null;
+    planState.uploadFile = null;
+    planState.uploadBase64 = null;
+
+    const ok = document.createElement('div');
+    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+    ok.textContent = '✓ Plan guardado';
+    document.body.appendChild(ok);
+    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 2200);
+
+    // Refresh banner Hoy + ir a Hoy
+    goStep('app');
+    setTimeout(() => { planRefreshHoyBanner().catch(() => {}); }, 200);
+  } catch (e) {
+    console.error('[PLAN] save failed:', e);
+    alert('No se pudo guardar el plan: ' + (e.message || 'error desconocido'));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = origText; }
+  }
+}
+
 // Persiste nuevos targets: marca viejos active=false + INSERT nuevos active=true
 // Acepta un opt formula override (default: mifflin_stjeor_inbody_v1; manual_edit_v1 para edits del user)
 async function nutPersistNewTargets(userId, accessToken, targets, formula) {
@@ -11840,6 +12561,13 @@ async function logout() {
   if (typeof editMacrosState !== 'undefined') {
     editMacrosState.initial = null;
     editMacrosState.current = null;
+  }
+  if (typeof planState !== 'undefined') {
+    planState.active = null;
+    planState.uploadFile = null;
+    planState.uploadBase64 = null;
+    planState.uploadMime = null;
+    planState.parsed = null;
   }
   if (typeof _aiInsightCache !== 'undefined') {
     _aiInsightCache.data = null;
