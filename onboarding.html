@@ -2446,6 +2446,159 @@
   .nut-cmp-btn-primary:active { transform: scale(0.97); }
   .nut-cmp-btn-secondary:active { transform: scale(0.97); }
 
+  /* ========== EDIT MACROS SCREEN ========== */
+  .em-save-btn {
+    background: transparent; border: none;
+    color: #BEF264; font-size: 14px; font-weight: 700;
+    padding: 12px 14px; border-radius: 10px;
+    min-height: 44px; min-width: 44px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .em-save-btn:disabled { color: #475569; cursor: not-allowed; }
+  .em-save-btn:active:not(:disabled) { background: rgba(132,204,22,0.12); }
+
+  .em-info-banner {
+    background: rgba(132,204,22,0.06);
+    border: 1px solid rgba(132,204,22,0.18);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 18px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .em-info-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #BEF264; margin-top: 6px; flex-shrink: 0;
+  }
+  .em-info-title { font-size: 12px; color: #BEF264; font-weight: 600; margin-bottom: 2px; }
+  .em-info-sub { font-size: 12px; color: #94A3B8; line-height: 1.4; }
+
+  .em-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 18px 16px;
+    margin-bottom: 14px;
+  }
+  .em-card-primary {
+    background: rgba(132,204,22,0.05);
+    border: 1px solid rgba(132,204,22,0.18);
+  }
+  .em-card-header {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 12px; gap: 12px;
+  }
+  .em-card-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.5px; text-transform: uppercase;
+  }
+  .em-card-sub {
+    font-size: 11px; color: #64748B; margin-top: 3px;
+  }
+  .em-input-wrap {
+    display: flex; align-items: baseline; gap: 4px;
+    flex-shrink: 0;
+  }
+  .em-input {
+    width: 70px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: #fff;
+    font-size: 17px; font-weight: 700;
+    text-align: right;
+    outline: none;
+    -moz-appearance: textfield;
+    font-family: inherit;
+  }
+  .em-input::-webkit-outer-spin-button,
+  .em-input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .em-input-primary {
+    border-color: rgba(132,204,22,0.3);
+    color: #BEF264;
+    width: 76px;
+    font-size: 18px;
+  }
+  .em-input:focus { border-color: rgba(132,204,22,0.5); }
+  .em-input-unit { font-size: 12px; color: #94A3B8; }
+
+  .em-slider {
+    width: 100%; height: 6px;
+    -webkit-appearance: none; appearance: none;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    outline: none;
+    margin-top: 4px;
+  }
+  .em-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 3px solid #0a0e1a;
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.3);
+  }
+  .em-slider::-moz-range-thumb {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+    border: 3px solid #0a0e1a;
+  }
+  .em-slider-primary::-webkit-slider-thumb { box-shadow: 0 0 0 2px rgba(132,204,22,0.5); }
+  .em-slider-prot::-webkit-slider-thumb { box-shadow: 0 0 0 2px rgba(244,114,182,0.5); }
+  .em-slider-carbs::-webkit-slider-thumb { box-shadow: 0 0 0 2px rgba(251,191,36,0.5); }
+  .em-slider-fat::-webkit-slider-thumb { box-shadow: 0 0 0 2px rgba(167,139,250,0.5); }
+  .em-slider-water::-webkit-slider-thumb { box-shadow: 0 0 0 2px rgba(96,165,250,0.5); }
+
+  .em-slider-bounds {
+    display: flex; justify-content: space-between;
+    font-size: 10px; color: #64748B; margin-top: 6px;
+  }
+
+  .em-dist-card {
+    background: rgba(0,0,0,0.4);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+  }
+  .em-dist-label {
+    font-size: 11px; color: #94A3B8;
+    font-weight: 600; letter-spacing: 0.4px;
+    text-transform: uppercase; margin-bottom: 8px;
+  }
+  .em-dist-bar {
+    display: flex; height: 8px;
+    border-radius: 4px; overflow: hidden;
+    background: rgba(255,255,255,0.06);
+  }
+  .em-dist-seg { transition: width 0.18s ease; }
+  .em-dist-prot { background: #F472B6; }
+  .em-dist-carbs { background: #FBBF24; }
+  .em-dist-fat { background: #A78BFA; }
+  .em-dist-legend {
+    display: flex; justify-content: space-between;
+    margin-top: 8px; font-size: 11px; color: #94A3B8;
+  }
+
+  .em-secondary-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(132,204,22,0.3);
+    color: #BEF264;
+    font-size: 13px; font-weight: 600;
+    padding: 13px;
+    border-radius: 14px;
+    margin-top: 6px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .em-secondary-btn:active { transform: scale(0.98); }
+
   /* Photo analyzing spinner */
   .nut-photo-spinner {
     width: 56px; height: 56px;
@@ -4284,6 +4437,41 @@
       <input type="file" id="profile-inbody-input" accept="image/*,application/pdf" style="display:none;" onchange="nutInBodyOnSelected(event)"/>
     </div>
 
+    <!-- Macros del día -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <div class="profile-section-title">Macros del día</div>
+        <button class="profile-section-action" onclick="openEditMacros()">Editar</button>
+      </div>
+      <div class="profile-card" id="profile-macros-card">
+        <div class="profile-row" id="profile-macros-empty" style="display:none;">
+          <div class="profile-row-label" style="font-size:12px; color:#94A3B8; line-height:1.5;">Configurá tu nutrición primero para ver tus targets.</div>
+        </div>
+        <div id="profile-macros-rows">
+          <div class="profile-row">
+            <div class="profile-row-label">Calorías</div>
+            <div class="profile-row-value"><span id="profile-macros-kcal">—</span> kcal</div>
+          </div>
+          <div class="profile-row">
+            <div class="profile-row-label">Proteína</div>
+            <div class="profile-row-value"><span id="profile-macros-prot">—</span> g</div>
+          </div>
+          <div class="profile-row">
+            <div class="profile-row-label">Carbohidratos</div>
+            <div class="profile-row-value"><span id="profile-macros-carbs">—</span> g</div>
+          </div>
+          <div class="profile-row">
+            <div class="profile-row-label">Grasa</div>
+            <div class="profile-row-value"><span id="profile-macros-fat">—</span> g</div>
+          </div>
+          <div class="profile-row">
+            <div class="profile-row-label">Agua</div>
+            <div class="profile-row-value"><span id="profile-macros-water">—</span> ml</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Wearables -->
     <div class="profile-section">
       <div class="profile-section-header">
@@ -5107,6 +5295,125 @@
     <button class="nut-onb-continue" id="nut-inbody-save-btn" onclick="nutInBodySave()">Guardar y recalcular macros</button>
   </div>
 
+  <!-- ============== Editar macros manualmente ============== -->
+  <div class="screen nut-screen" data-step="nut-edit-macros">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="cancelEditMacros()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Perfil
+      </button>
+      <div class="nut-title">Editar macros</div>
+      <button class="em-save-btn" id="em-save-btn" onclick="saveEditMacros()" disabled>Guardar</button>
+    </div>
+    <div class="nut-onb-content" style="padding-bottom:100px;">
+      <div class="em-info-banner">
+        <div class="em-info-dot"></div>
+        <div>
+          <div class="em-info-title">Cálculo automático</div>
+          <div class="em-info-sub">Tus targets fueron calculados con tu data. Editalos si tu coach te recomendó algo distinto.</div>
+        </div>
+      </div>
+
+      <!-- Calorías (destacada) -->
+      <div class="em-card em-card-primary">
+        <div class="em-card-header">
+          <div>
+            <div class="em-card-label" style="color:#BEF264;">CALORÍAS</div>
+            <div class="em-card-sub" id="em-kcal-derived">según macros: — kcal</div>
+          </div>
+          <div class="em-input-wrap">
+            <input type="number" inputmode="numeric" class="em-input em-input-primary" id="em-kcal-input" value="2000" min="1000" max="5000" step="50"/>
+            <span class="em-input-unit">kcal</span>
+          </div>
+        </div>
+        <input type="range" class="em-slider em-slider-primary" id="em-kcal-slider" min="1000" max="5000" value="2000" step="50"/>
+        <div class="em-slider-bounds">
+          <span>1,000</span>
+          <span>5,000</span>
+        </div>
+      </div>
+
+      <!-- Proteína -->
+      <div class="em-card">
+        <div class="em-card-header">
+          <div>
+            <div class="em-card-label" style="color:#F472B6;">● PROTEÍNA</div>
+            <div class="em-card-sub" id="em-prot-derived">— kcal · —% del total</div>
+          </div>
+          <div class="em-input-wrap">
+            <input type="number" inputmode="numeric" class="em-input" id="em-prot-input" value="150" min="30" max="400" step="5" style="border-color:rgba(244,114,182,0.3); color:#F472B6;"/>
+            <span class="em-input-unit">g</span>
+          </div>
+        </div>
+        <input type="range" class="em-slider em-slider-prot" id="em-prot-slider" min="30" max="400" value="150" step="5"/>
+      </div>
+
+      <!-- Carbs -->
+      <div class="em-card">
+        <div class="em-card-header">
+          <div>
+            <div class="em-card-label" style="color:#FBBF24;">● CARBOHIDRATOS</div>
+            <div class="em-card-sub" id="em-carbs-derived">— kcal · —% del total</div>
+          </div>
+          <div class="em-input-wrap">
+            <input type="number" inputmode="numeric" class="em-input" id="em-carbs-input" value="200" min="30" max="600" step="5" style="border-color:rgba(251,191,36,0.3); color:#FBBF24;"/>
+            <span class="em-input-unit">g</span>
+          </div>
+        </div>
+        <input type="range" class="em-slider em-slider-carbs" id="em-carbs-slider" min="30" max="600" value="200" step="5"/>
+      </div>
+
+      <!-- Grasa -->
+      <div class="em-card">
+        <div class="em-card-header">
+          <div>
+            <div class="em-card-label" style="color:#A78BFA;">● GRASA</div>
+            <div class="em-card-sub" id="em-fat-derived">— kcal · —% del total</div>
+          </div>
+          <div class="em-input-wrap">
+            <input type="number" inputmode="numeric" class="em-input" id="em-fat-input" value="70" min="20" max="250" step="2" style="border-color:rgba(167,139,250,0.3); color:#A78BFA;"/>
+            <span class="em-input-unit">g</span>
+          </div>
+        </div>
+        <input type="range" class="em-slider em-slider-fat" id="em-fat-slider" min="20" max="250" value="70" step="2"/>
+      </div>
+
+      <!-- Agua -->
+      <div class="em-card">
+        <div class="em-card-header">
+          <div>
+            <div class="em-card-label" style="color:#60A5FA;">● AGUA</div>
+            <div class="em-card-sub" id="em-water-derived">~— vasos al día</div>
+          </div>
+          <div class="em-input-wrap">
+            <input type="number" inputmode="numeric" class="em-input" id="em-water-input" value="2500" min="1000" max="6000" step="100" style="border-color:rgba(96,165,250,0.3); color:#60A5FA;"/>
+            <span class="em-input-unit">ml</span>
+          </div>
+        </div>
+        <input type="range" class="em-slider em-slider-water" id="em-water-slider" min="1000" max="6000" value="2500" step="100"/>
+      </div>
+
+      <!-- Distribución -->
+      <div class="em-dist-card">
+        <div class="em-dist-label">Distribución actual</div>
+        <div class="em-dist-bar">
+          <div class="em-dist-seg em-dist-prot" id="em-dist-prot"></div>
+          <div class="em-dist-seg em-dist-carbs" id="em-dist-carbs"></div>
+          <div class="em-dist-seg em-dist-fat" id="em-dist-fat"></div>
+        </div>
+        <div class="em-dist-legend">
+          <span>P <span id="em-dist-prot-pct">—</span>%</span>
+          <span>C <span id="em-dist-carbs-pct">—</span>%</span>
+          <span>G <span id="em-dist-fat-pct">—</span>%</span>
+        </div>
+      </div>
+
+      <button class="em-secondary-btn" onclick="resetMacrosToAuto()">
+        ↻ Recalcular automático
+      </button>
+    </div>
+  </div>
+
   <!-- ============== InBody: comparar targets actuales vs nuevos ============== -->
   <div class="screen nut-screen" data-step="nut-targets-compare">
     <div class="nut-topbar">
@@ -5658,7 +5965,7 @@ function goStep(n) {
     'nut-onb-1', 'nut-onb-2', 'nut-onb-3', 'nut-onb-4', 'nut-onb-conflict', 'nut-results', 'nutrition', 'nut-log',
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
     'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
-    'workout', 'wk-log', 'daily-log', 0];
+    'nut-edit-macros', 'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
   if (n === 'login') updateFaceIDButtonVisibility();
@@ -9030,9 +9337,310 @@ function nutKeepCurrentTargets() {
   goStep('profile');
 }
 
+// ============================================================
+//  EDIT MACROS — Pantalla para editar targets manualmente
+// ============================================================
+const editMacrosState = {
+  initial: null,   // snapshot al abrir, para detectar cambios
+  current: null,   // valores actuales del form
+};
+
+// Render de la sección "Macros del día" en Profile
+function renderProfileMacros() {
+  const targets = nutState.targets;
+  const empty = document.getElementById('profile-macros-empty');
+  const rows = document.getElementById('profile-macros-rows');
+  if (!targets) {
+    if (empty) empty.style.display = '';
+    if (rows) rows.style.display = 'none';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (rows) rows.style.display = '';
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('profile-macros-kcal', (targets.kcal || 0).toLocaleString());
+  set('profile-macros-prot', Math.round(targets.protein_g || 0));
+  set('profile-macros-carbs', Math.round(targets.carbs_g || 0));
+  set('profile-macros-fat', Math.round(targets.fat_g || 0));
+  set('profile-macros-water', (targets.water_ml || 0).toLocaleString());
+}
+
+async function openEditMacros() {
+  // Asegurar que nutState está cargado (necesario si entra directo desde Hoy)
+  try { await ensureNutStateLoaded(); } catch (e) {}
+
+  // Si todavía no hay targets, redirigir al onboarding de nutrición
+  if (!nutState.targets) {
+    alert('Configurá tu nutrición primero desde el módulo.');
+    goStep('nut-onb-1');
+    return;
+  }
+
+  const t = nutState.targets;
+  editMacrosState.initial = {
+    kcal: t.kcal || 2000,
+    protein_g: Math.round(t.protein_g || 150),
+    carbs_g: Math.round(t.carbs_g || 200),
+    fat_g: Math.round(t.fat_g || 70),
+    water_ml: t.water_ml || 2500,
+  };
+  editMacrosState.current = { ...editMacrosState.initial };
+
+  // Llenar inputs y sliders
+  _emSyncFieldsFromState();
+  _emRecomputeDerived();
+  _emRefreshSaveBtn();
+
+  // Setup listeners (idempotente)
+  if (!editMacrosState._listenersBound) {
+    _emBindListeners();
+    editMacrosState._listenersBound = true;
+  }
+
+  goStep('nut-edit-macros');
+}
+
+function cancelEditMacros() {
+  // Si hay cambios sin guardar, confirmar
+  if (_emHasChanges()) {
+    if (!confirm('¿Descartar cambios?')) return;
+  }
+  goStep('profile');
+}
+
+function _emHasChanges() {
+  const a = editMacrosState.initial;
+  const c = editMacrosState.current;
+  if (!a || !c) return false;
+  return a.kcal !== c.kcal
+    || a.protein_g !== c.protein_g
+    || a.carbs_g !== c.carbs_g
+    || a.fat_g !== c.fat_g
+    || a.water_ml !== c.water_ml;
+}
+
+function _emRefreshSaveBtn() {
+  const btn = document.getElementById('em-save-btn');
+  if (!btn) return;
+  btn.disabled = !_emHasChanges();
+}
+
+function _emSyncFieldsFromState() {
+  const c = editMacrosState.current;
+  const setPair = (key, val) => {
+    const inp = document.getElementById('em-' + key + '-input');
+    const sld = document.getElementById('em-' + key + '-slider');
+    if (inp) inp.value = val;
+    if (sld) sld.value = val;
+  };
+  setPair('kcal', c.kcal);
+  setPair('prot', c.protein_g);
+  setPair('carbs', c.carbs_g);
+  setPair('fat', c.fat_g);
+  setPair('water', c.water_ml);
+}
+
+function _emBindListeners() {
+  const pairs = [
+    { key: 'kcal',  field: 'kcal' },
+    { key: 'prot',  field: 'protein_g' },
+    { key: 'carbs', field: 'carbs_g' },
+    { key: 'fat',   field: 'fat_g' },
+    { key: 'water', field: 'water_ml' },
+  ];
+  pairs.forEach(p => {
+    const inp = document.getElementById('em-' + p.key + '-input');
+    const sld = document.getElementById('em-' + p.key + '-slider');
+    if (inp) {
+      // input: solo parsea valor en rango razonable mientras tipea (no clamp)
+      inp.addEventListener('input', () => {
+        const raw = parseFloat(inp.value);
+        if (isNaN(raw)) return; // permite borrar todo sin saltar a min
+        // Si el valor está dentro del rango, actualiza live; si no, espera al blur
+        const min = parseFloat(inp.min) || 0;
+        const max = parseFloat(inp.max) || 99999;
+        if (raw >= min && raw <= max) {
+          const v = Math.round(raw);
+          if (sld) sld.value = v;
+          editMacrosState.current[p.field] = v;
+          _emRecomputeDerived();
+          _emRefreshSaveBtn();
+        }
+      });
+      // blur/change: clamp definitivo y sync visual
+      inp.addEventListener('change', () => {
+        const v = _emClampInput(inp);
+        inp.value = v; // sync visual del input
+        if (sld) sld.value = v;
+        editMacrosState.current[p.field] = v;
+        _emRecomputeDerived();
+        _emRefreshSaveBtn();
+      });
+    }
+    if (sld) {
+      sld.addEventListener('input', () => {
+        const v = parseInt(sld.value, 10) || 0;
+        if (inp) inp.value = v;
+        editMacrosState.current[p.field] = v;
+        _emRecomputeDerived();
+        _emRefreshSaveBtn();
+      });
+    }
+  });
+}
+
+function _emClampInput(inp) {
+  const min = parseFloat(inp.min) || 0;
+  const max = parseFloat(inp.max) || 99999;
+  let v = parseFloat(inp.value);
+  if (isNaN(v)) v = min;
+  if (v < min) v = min;
+  if (v > max) v = max;
+  return Math.round(v);
+}
+
+function _emRecomputeDerived() {
+  const c = editMacrosState.current;
+  const macroKcal = c.protein_g * 4 + c.carbs_g * 4 + c.fat_g * 9;
+  const total = c.kcal || macroKcal || 1;
+
+  // Calorías subtitle: muestra el cálculo derivado de los macros
+  const kcalSub = document.getElementById('em-kcal-derived');
+  if (kcalSub) {
+    const diff = Math.round(macroKcal - c.kcal);
+    if (Math.abs(diff) > 50) {
+      kcalSub.innerHTML = `según macros: ${macroKcal.toLocaleString()} kcal <span style="color:${diff > 0 ? '#FBBF24' : '#94A3B8'};">(${diff > 0 ? '+' : ''}${diff})</span>`;
+    } else {
+      kcalSub.textContent = `según macros: ${macroKcal.toLocaleString()} kcal`;
+    }
+  }
+
+  const set = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  set('em-prot-derived',  `${(c.protein_g * 4)} kcal · ${Math.round((c.protein_g * 4 / total) * 100)}% del total`);
+  set('em-carbs-derived', `${(c.carbs_g * 4)} kcal · ${Math.round((c.carbs_g * 4 / total) * 100)}% del total`);
+  set('em-fat-derived',   `${(c.fat_g * 9)} kcal · ${Math.round((c.fat_g * 9 / total) * 100)}% del total`);
+  set('em-water-derived', `~${Math.round(c.water_ml / 250)} vasos al día`);
+
+  // Distribución (sobre macroKcal). B13: garantizar que los % redondeados sumen exactamente 100.
+  const pPctRaw = (c.protein_g * 4 / macroKcal) * 100;
+  const cPctRaw = (c.carbs_g * 4 / macroKcal) * 100;
+  const fPctRaw = (c.fat_g * 9 / macroKcal) * 100;
+  const pPctR = Math.round(pPctRaw);
+  const cPctR = Math.round(cPctRaw);
+  const fPctR = 100 - pPctR - cPctR; // ajusta el último para sumar 100
+  const distP = document.getElementById('em-dist-prot');
+  const distC = document.getElementById('em-dist-carbs');
+  const distF = document.getElementById('em-dist-fat');
+  if (distP) distP.style.width = pPctRaw + '%';
+  if (distC) distC.style.width = cPctRaw + '%';
+  if (distF) distF.style.width = fPctRaw + '%';
+  set('em-dist-prot-pct', pPctR);
+  set('em-dist-carbs-pct', cPctR);
+  set('em-dist-fat-pct', Math.max(0, fPctR));
+}
+
+async function saveEditMacros() {
+  if (!_emHasChanges()) { goStep('profile'); return; }
+
+  // B8: warning si kcal diverge de la suma de macros (>100 kcal)
+  const c = editMacrosState.current;
+  const macroKcal = c.protein_g * 4 + c.carbs_g * 4 + c.fat_g * 9;
+  const diff = Math.abs(macroKcal - c.kcal);
+  if (diff > 100) {
+    const msg = `Tus macros suman ${macroKcal} kcal pero tu meta es ${c.kcal} kcal (diferencia de ${diff}).\n\n¿Querés guardar igual?`;
+    if (!confirm(msg)) return;
+  }
+
+  const btn = document.getElementById('em-save-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const newTargets = {
+      kcal: c.kcal,
+      protein_g: c.protein_g,
+      carbs_g: c.carbs_g,
+      fat_g: c.fat_g,
+      water_ml: c.water_ml,
+    };
+    await nutPersistNewTargets(session.user.id, session.access_token, newTargets, 'manual_edit_v1');
+
+    // B3: reemplazar nutState.targets limpio (sin id viejo) — el próximo nutLoadTargets refetch traerá el id nuevo
+    nutState.targets = {
+      kcal: newTargets.kcal,
+      protein_g: newTargets.protein_g,
+      carbs_g: newTargets.carbs_g,
+      fat_g: newTargets.fat_g,
+      water_ml: newTargets.water_ml,
+      formula: 'manual_edit_v1',
+      active: true,
+    };
+
+    // Re-snapshot del initial para que _emHasChanges retorne false post-save
+    editMacrosState.initial = { ...editMacrosState.current };
+
+    // Toast OK
+    const ok = document.createElement('div');
+    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+    ok.textContent = 'Macros actualizados';
+    document.body.appendChild(ok);
+    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 1800);
+
+    // Invalidar caches dependientes
+    if (typeof _aiInsightCache !== 'undefined') {
+      _aiInsightCache.data = null;
+      _aiInsightCache.ts = 0;
+      _aiInsightCache.hourBucket = null;
+    }
+
+    renderProfileMacros();
+    goStep('profile');
+  } catch (e) {
+    console.warn('[EM] save failed:', e);
+    alert('No se pudo guardar. Probá de nuevo.\n\n' + (e.message || ''));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
+  }
+}
+
+async function resetMacrosToAuto() {
+  if (!confirm('Esto va a recalcular tus targets desde tu peso, altura, actividad y objetivo. ¿Continuar?')) return;
+  try {
+    // B7: chequear prerequisitos con mensaje específico
+    const loaded = await ensureNutStateLoaded();
+    if (!loaded || !nutState.weight || !nutState.height || !nutState.activity || !nutState.goal) {
+      alert('Falta tu data básica (peso, altura, actividad u objetivo). Completá tu onboarding de nutrición primero.');
+      return;
+    }
+    // Recalcular con la fórmula
+    const proposed = nutCalculateTargets();
+    if (!proposed || !proposed.kcal || isNaN(proposed.kcal)) {
+      alert('No se pudo recalcular con tu data actual. Revisá tu peso/altura en el perfil.');
+      return;
+    }
+
+    // Aplicar al state del editor + sync UI
+    editMacrosState.current = {
+      kcal: proposed.kcal,
+      protein_g: Math.round(proposed.protein_g),
+      carbs_g: Math.round(proposed.carbs_g),
+      fat_g: Math.round(proposed.fat_g),
+      water_ml: proposed.water_ml || 2500,
+    };
+    _emSyncFieldsFromState();
+    _emRecomputeDerived();
+    _emRefreshSaveBtn();
+  } catch (e) {
+    console.warn('[EM] reset failed:', e);
+    alert('Error al recalcular: ' + (e.message || 'desconocido'));
+  }
+}
+
 // Persiste nuevos targets: marca viejos active=false + INSERT nuevos active=true
-async function nutPersistNewTargets(userId, accessToken, targets) {
-  await fetch(`${SUPABASE_URL}/rest/v1/nutrition_targets?user_id=eq.${userId}&active=eq.true`, {
+// Acepta un opt formula override (default: mifflin_stjeor_inbody_v1; manual_edit_v1 para edits del user)
+async function nutPersistNewTargets(userId, accessToken, targets, formula) {
+  const patchResp = await fetch(`${SUPABASE_URL}/rest/v1/nutrition_targets?user_id=eq.${userId}&active=eq.true`, {
     method: 'PATCH',
     headers: {
       apikey: SUPABASE_ANON_KEY,
@@ -9042,7 +9650,11 @@ async function nutPersistNewTargets(userId, accessToken, targets) {
     },
     body: JSON.stringify({ active: false }),
   });
-  await fetch(`${SUPABASE_URL}/rest/v1/nutrition_targets`, {
+  if (!patchResp.ok) {
+    const detail = await patchResp.text().catch(() => '');
+    throw new Error(`patch_failed_${patchResp.status}: ${detail.slice(0, 200)}`);
+  }
+  const postResp = await fetch(`${SUPABASE_URL}/rest/v1/nutrition_targets`, {
     method: 'POST',
     headers: {
       apikey: SUPABASE_ANON_KEY,
@@ -9057,10 +9669,14 @@ async function nutPersistNewTargets(userId, accessToken, targets) {
       carbs_g: targets.carbs_g,
       fat_g: targets.fat_g,
       water_ml: targets.water_ml,
-      formula: 'mifflin_stjeor_inbody_v1',
+      formula: formula || 'mifflin_stjeor_inbody_v1',
       active: true,
     }),
   });
+  if (!postResp.ok) {
+    const detail = await postResp.text().catch(() => '');
+    throw new Error(`post_failed_${postResp.status}: ${detail.slice(0, 200)}`);
+  }
 }
 
 // (LEGACY) Recalcula y persiste sin comparar — mantenida para compatibilidad si se necesita
@@ -10668,6 +11284,12 @@ function renderProfile() {
   const faceToggle = document.getElementById('profile-faceid-toggle');
   const faceEnabled = localStorage.getItem(STORAGE.enabled) === 'true';
   faceToggle.classList.toggle('on', faceEnabled);
+
+  // Macros del día — fire-and-forget (necesita asegurar nutState cargado)
+  (async () => {
+    try { await ensureNutStateLoaded(); } catch (e) {}
+    renderProfileMacros();
+  })();
 }
 
 function toggleProfileFaceID() {
@@ -11212,6 +11834,18 @@ async function logout() {
   state.photo = null;
   state.wearables = [];
   state.goals = [];
+  // Reset module states que tienen data del user previo.
+  // NOTA: NO reseteamos editMacrosState._listenersBound — los nodos DOM son los mismos
+  // (HTML estático), así que re-bindear duplicaría listeners. Solo limpiamos snapshots.
+  if (typeof editMacrosState !== 'undefined') {
+    editMacrosState.initial = null;
+    editMacrosState.current = null;
+  }
+  if (typeof _aiInsightCache !== 'undefined') {
+    _aiInsightCache.data = null;
+    _aiInsightCache.ts = 0;
+    _aiInsightCache.hourBucket = null;
+  }
   goStep(0);
   // Reset Face ID screen state for next time
   const fid = document.getElementById('faceid-icon');
