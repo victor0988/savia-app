@@ -2,6 +2,9 @@
   "buildCommand": null,
   "outputDirectory": ".",
   "framework": null,
+  "rewrites": [
+    { "source": "/strava-callback", "destination": "/onboarding.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
