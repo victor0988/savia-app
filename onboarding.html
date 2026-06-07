@@ -5298,6 +5298,19 @@
       <div id="profile-wearables-card"></div>
     </div>
 
+    <!-- Women's Health -->
+    <div class="profile-section" id="profile-wh-section">
+      <div class="profile-section-header">
+        <div class="profile-section-title">Women's Health</div>
+        <button class="profile-section-action" id="profile-wh-action" onclick="whOpenOnboardingFromProfile()">Activar</button>
+      </div>
+      <div class="profile-card" id="profile-wh-card">
+        <div class="profile-row" id="profile-wh-empty">
+          <div class="profile-row-label" style="font-size:12px; color:#94A3B8; line-height:1.5;">Activá tracking de ciclo + nutrición y entrenamiento phase-aware. Privado, editable, opcional.</div>
+        </div>
+      </div>
+    </div>
+
     <!-- Cuenta -->
     <div class="profile-section">
       <div class="profile-section-title">Cuenta</div>
@@ -6948,6 +6961,357 @@
     <button class="nut-onb-continue" id="nut-log-save-btn" disabled onclick="nutSaveMealLog()">Guardar comida</button>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- WOMEN'S HEALTH MODULE — Onboarding (6 pantallas)              -->
+  <!-- ============================================================ -->
+
+  <!-- WH Step 1: Status -->
+  <div class="screen nut-screen wh-screen" data-step="wh-onb-1">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="whOnbExit()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+        Cancelar
+      </button>
+      <div class="nut-title">Women's Health</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 1 de 6 · Privado y editable</div>
+      <div class="nut-onb-title">¿Cuál es tu situación?</div>
+      <div class="nut-onb-hint">Esto define cómo adaptamos tu nutrición, entrenamiento y recovery a tu estado hormonal.</div>
+
+      <div class="nut-onb-option" data-wh-status="cycle_natural" onclick="whSelectStatus('cycle_natural', this)">
+        <div class="nut-onb-option-icon">🌙</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Ciclo natural</div>
+          <div class="nut-onb-option-sub">Sin anticonceptivo hormonal</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-status="hormonal_bc" onclick="whSelectStatus('hormonal_bc', this)">
+        <div class="nut-onb-option-icon">💊</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Con anticonceptivo hormonal</div>
+          <div class="nut-onb-option-sub">Pastilla, DIU hormonal, implante, inyección</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-status="pregnancy" onclick="whSelectStatus('pregnancy', this)">
+        <div class="nut-onb-option-icon">🤰</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Embarazo</div>
+          <div class="nut-onb-option-sub">Recomendaciones específicas por trimestre</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-status="postpartum" onclick="whSelectStatus('postpartum', this)">
+        <div class="nut-onb-option-icon">👶</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Postparto</div>
+          <div class="nut-onb-option-sub">Recovery hormonal · lactancia opcional</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-status="perimenopause" onclick="whSelectStatus('perimenopause', this)">
+        <div class="nut-onb-option-icon">🍃</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Perimenopausia</div>
+          <div class="nut-onb-option-sub">Ciclo cambiante · manejo de síntomas</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-status="menopause" onclick="whSelectStatus('menopause', this)">
+        <div class="nut-onb-option-icon">🌅</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Menopausia</div>
+          <div class="nut-onb-option-sub">Nutrición y entrenamiento post-menopausia</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="wh-onb-1-btn" disabled onclick="whOnbNext(1)">Continuar</button>
+  </div>
+
+  <!-- WH Step 2: Edad + Cycle length + Period length -->
+  <div class="screen nut-screen wh-screen" data-step="wh-onb-2">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="whOnbBack(2)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Women's Health</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 2 de 6</div>
+      <div class="nut-onb-title">Tu ciclo en números</div>
+      <div class="nut-onb-hint">Si no estás segura, los valores por defecto funcionan bien. La IA aprende y ajusta con cada ciclo.</div>
+
+      <div class="nut-onb-field">
+        <div class="nut-onb-field-label">Edad</div>
+        <input type="number" inputmode="numeric" class="nut-onb-field-input" id="wh-age" placeholder="32" min="12" max="80" oninput="whValidateStep2()"/>
+      </div>
+
+      <div style="margin-top:22px;">
+        <div class="nut-onb-field-label" style="display:flex; justify-content:space-between;">
+          <span>Duración promedio del ciclo</span>
+          <span id="wh-cycle-display" style="color:#BEF264; font-weight:700;">28 días</span>
+        </div>
+        <input type="range" id="wh-cycle-length" min="21" max="45" value="28" step="1" oninput="whUpdateCycleDisplay()" style="width:100%; margin-top:10px; accent-color:#BEF264;"/>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B; margin-top:4px;">
+          <span>21d</span><span>33d</span><span>45d</span>
+        </div>
+      </div>
+
+      <div style="margin-top:22px;">
+        <div class="nut-onb-field-label" style="display:flex; justify-content:space-between;">
+          <span>Duración promedio del período</span>
+          <span id="wh-period-display" style="color:#BEF264; font-weight:700;">5 días</span>
+        </div>
+        <input type="range" id="wh-period-length" min="1" max="9" value="5" step="1" oninput="whUpdatePeriodDisplay()" style="width:100%; margin-top:10px; accent-color:#BEF264;"/>
+        <div style="display:flex; justify-content:space-between; font-size:11px; color:#64748B; margin-top:4px;">
+          <span>1d</span><span>5d</span><span>9d</span>
+        </div>
+      </div>
+
+      <div style="margin-top:24px; padding:12px 14px; background:rgba(167,139,250,0.08); border:1px solid rgba(167,139,250,0.18); border-radius:12px; font-size:12px; color:#CBD5E1; line-height:1.5;">
+        <strong style="color:#C4B5FD;">💡</strong> Si tu ciclo es irregular (PCOS, perimenopausia), no te preocupes — SAVIA detecta variabilidad y ajusta predicciones automáticamente.
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="wh-onb-2-btn" disabled onclick="whOnbNext(2)">Continuar</button>
+  </div>
+
+  <!-- WH Step 3: Last period start -->
+  <div class="screen nut-screen wh-screen" data-step="wh-onb-3">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="whOnbBack(3)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Women's Health</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 3 de 6</div>
+      <div class="nut-onb-title">¿Cuándo empezó tu último período?</div>
+      <div class="nut-onb-hint">Día 1 = primer día de sangrado. Si no recordás exacto, una aproximación funciona.</div>
+
+      <div class="nut-onb-field" style="margin-top:24px;">
+        <div class="nut-onb-field-label">Fecha de inicio del último período</div>
+        <input type="date" class="nut-onb-field-input" id="wh-last-period" oninput="whValidateStep3()"/>
+      </div>
+
+      <div style="margin-top:18px;">
+        <button onclick="whSkipLastPeriod()" style="background:transparent; border:none; color:#94A3B8; font-size:13px; text-decoration:underline; cursor:pointer; padding:0;">
+          No recuerdo · estimar después
+        </button>
+      </div>
+
+      <div style="margin-top:24px; padding:12px 14px; background:rgba(132,204,22,0.06); border:1px solid rgba(132,204,22,0.16); border-radius:12px; font-size:12px; color:#CBD5E1; line-height:1.5;">
+        <strong style="color:#BEF264;">🔒 Privacidad:</strong> tu data solo es visible para vos. Nunca se vende, nunca se comparte con terceros.
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="wh-onb-3-btn" onclick="whOnbNext(3)">Continuar</button>
+  </div>
+
+  <!-- WH Step 4: Goal primary -->
+  <div class="screen nut-screen wh-screen" data-step="wh-onb-4">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="whOnbBack(4)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Women's Health</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 4 de 6</div>
+      <div class="nut-onb-title">¿Qué buscás de este módulo?</div>
+      <div class="nut-onb-hint">Elegí tu objetivo principal. Define el foco del coaching.</div>
+
+      <div class="nut-onb-option" data-wh-goal="know_body" onclick="whSelectGoal('know_body', this)">
+        <div class="nut-onb-option-icon">🧬</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Conocer mi cuerpo mejor</div>
+          <div class="nut-onb-option-sub">Tracking + insights · sin metas específicas</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-goal="plan_pregnancy" onclick="whSelectGoal('plan_pregnancy', this)">
+        <div class="nut-onb-option-icon">🌱</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Planear embarazo</div>
+          <div class="nut-onb-option-sub">Ventana fértil · ovulación · biomarcadores</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-goal="avoid_pregnancy" onclick="whSelectGoal('avoid_pregnancy', this)">
+        <div class="nut-onb-option-icon">🛡️</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Evitar embarazo</div>
+          <div class="nut-onb-option-sub">Conciencia del ciclo (no reemplaza método)</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-goal="manage_symptoms" onclick="whSelectGoal('manage_symptoms', this)">
+        <div class="nut-onb-option-icon">💆</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Manejar síntomas</div>
+          <div class="nut-onb-option-sub">PMS, cólicos, mood, antojos</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-goal="optimize_training" onclick="whSelectGoal('optimize_training', this)">
+        <div class="nut-onb-option-icon">💪</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Optimizar entrenamiento</div>
+          <div class="nut-onb-option-sub">Intensidad y volumen por fase del ciclo</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-goal="optimize_nutrition" onclick="whSelectGoal('optimize_nutrition', this)">
+        <div class="nut-onb-option-icon">🥗</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Optimizar nutrición</div>
+          <div class="nut-onb-option-sub">Macros + micros adaptados a tu fase</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="wh-onb-4-btn" disabled onclick="whOnbNext(4)">Continuar</button>
+  </div>
+
+  <!-- WH Step 5: Conditions (optional, multi-select) -->
+  <div class="screen nut-screen wh-screen" data-step="wh-onb-5">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="whOnbBack(5)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Women's Health</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+        <div class="nut-onb-progress-seg"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Paso 5 de 6 · Opcional</div>
+      <div class="nut-onb-title">¿Alguna condición que querés que tenga en cuenta?</div>
+      <div class="nut-onb-hint">Esto ayuda a personalizar recomendaciones. Podés saltar y agregar después.</div>
+
+      <div class="nut-onb-option" data-wh-cond="PCOS" onclick="whToggleCondition('PCOS', this)">
+        <div class="nut-onb-option-icon">🌀</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">SOP / PCOS</div>
+          <div class="nut-onb-option-sub">Síndrome de ovario poliquístico</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-cond="endometriosis" onclick="whToggleCondition('endometriosis', this)">
+        <div class="nut-onb-option-icon">🌿</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Endometriosis</div>
+          <div class="nut-onb-option-sub">Manejo de dolor + inflamación</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-cond="fibroids" onclick="whToggleCondition('fibroids', this)">
+        <div class="nut-onb-option-icon">💠</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Miomas / fibromas</div>
+          <div class="nut-onb-option-sub">Flujo abundante · anemia</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="nut-onb-option" data-wh-cond="thyroid" onclick="whToggleCondition('thyroid', this)">
+        <div class="nut-onb-option-icon">🦋</div>
+        <div class="nut-onb-option-text">
+          <div class="nut-onb-option-title">Condición tiroidea</div>
+          <div class="nut-onb-option-sub">Hipo · hiper · Hashimoto</div>
+        </div>
+        <svg class="nut-onb-option-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width:22px;height:22px;stroke-width:2.5;"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+
+      <div style="margin-top:18px;">
+        <button onclick="whOnbNext(5)" style="background:transparent; border:none; color:#94A3B8; font-size:13px; text-decoration:underline; cursor:pointer; padding:0;">
+          Ninguna · saltar
+        </button>
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="wh-onb-5-btn" onclick="whOnbNext(5)">Continuar</button>
+  </div>
+
+  <!-- WH Step 6: Confirm + activate -->
+  <div class="screen nut-screen wh-screen" data-step="wh-onb-6">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="whOnbBack(6)">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Women's Health</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div class="nut-onb-progress">
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg done"></div>
+        <div class="nut-onb-progress-seg active"></div>
+      </div>
+      <div class="nut-onb-eyebrow">Listo</div>
+      <div class="nut-onb-title">Tu Women's Health en SAVIA</div>
+      <div class="nut-onb-hint">Revisá tu configuración. Podés editarla cuando quieras desde tu perfil.</div>
+
+      <div id="wh-onb-summary" style="margin-top:18px; padding:18px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px;">
+        <!-- populated by whRenderSummary() -->
+      </div>
+
+      <div style="margin-top:18px; padding:14px; background:rgba(132,204,22,0.06); border:1px solid rgba(132,204,22,0.16); border-radius:12px; font-size:12px; color:#CBD5E1; line-height:1.55;">
+        <strong style="color:#BEF264;">Próximamente:</strong> tu nutrición, entrenamiento y recovery se adaptarán automáticamente a tu fase del ciclo. La IA aprende patrones después de 2 ciclos.
+      </div>
+    </div>
+    <button class="nut-onb-continue" id="wh-onb-6-btn" onclick="whOnbConfirmActivate()">Activar Women's Health</button>
+  </div>
+
   <!-- ============== PHOTO CROPPER MODAL ============== -->
   <div class="cropper-overlay" id="cropper-overlay">
     <div class="cropper-topbar">
@@ -7143,6 +7507,7 @@ function goStep(n) {
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
     'plan-when', 'plan-when-date', 'plan-view', 'plan-today', 'plan-meal-log',
     'strava-callback',
+    'wh-onb-1', 'wh-onb-2', 'wh-onb-3', 'wh-onb-4', 'wh-onb-5', 'wh-onb-6',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -15036,6 +15401,11 @@ function renderProfile() {
   const faceEnabled = localStorage.getItem(STORAGE.enabled) === 'true';
   faceToggle.classList.toggle('on', faceEnabled);
 
+  // Women's Health section — fire-and-forget
+  (async () => {
+    try { await whRenderProfileSection(); } catch (e) { console.warn('[WH] profile render:', e); }
+  })();
+
   // Macros del día — fire-and-forget (necesita asegurar nutState cargado)
   (async () => {
     try { await ensureNutStateLoaded(); } catch (e) {}
@@ -16174,6 +16544,409 @@ function showDebugBanner() { /* no-op */ }
   // Estado inicial del botón Face ID
   updateFaceIDButtonVisibility();
 })();
+
+// ====================================================================
+// WOMEN'S HEALTH MODULE — Onboarding + profile section
+// ====================================================================
+
+const WH_STATUS_LABELS = {
+  cycle_natural: 'Ciclo natural',
+  hormonal_bc: 'Anticonceptivo hormonal',
+  pregnancy: 'Embarazo',
+  postpartum: 'Postparto',
+  perimenopause: 'Perimenopausia',
+  menopause: 'Menopausia',
+  skipped: 'No activo'
+};
+
+const WH_GOAL_LABELS = {
+  know_body: 'Conocer mi cuerpo',
+  plan_pregnancy: 'Planear embarazo',
+  avoid_pregnancy: 'Evitar embarazo',
+  manage_symptoms: 'Manejar síntomas',
+  optimize_training: 'Optimizar entrenamiento',
+  optimize_nutrition: 'Optimizar nutrición'
+};
+
+const WH_COND_LABELS = {
+  PCOS: 'SOP / PCOS',
+  endometriosis: 'Endometriosis',
+  fibroids: 'Miomas',
+  thyroid: 'Tiroides'
+};
+
+// Statuses que usan tracking de ciclo (pasan por steps 2 y 3)
+const WH_CYCLE_STATUSES = ['cycle_natural', 'hormonal_bc'];
+
+let whOnbState = {
+  status: null,
+  age: null,
+  avg_cycle_length_days: 28,
+  avg_period_length_days: 5,
+  last_period_start_date: null,
+  goal_primary: null,
+  conditions: []
+};
+
+function whResetOnbState() {
+  whOnbState = {
+    status: null,
+    age: null,
+    avg_cycle_length_days: 28,
+    avg_period_length_days: 5,
+    last_period_start_date: null,
+    goal_primary: null,
+    conditions: []
+  };
+}
+
+function whClearAllSelectedClasses() {
+  // QA Fix #2 + #5: clear stale selected classes on EVERY open/re-open
+  document.querySelectorAll('[data-wh-status]').forEach(e => e.classList.remove('selected'));
+  document.querySelectorAll('[data-wh-goal]').forEach(e => e.classList.remove('selected'));
+  document.querySelectorAll('[data-wh-cond]').forEach(e => e.classList.remove('selected'));
+  // Reset button disabled states defensively
+  const b1 = document.getElementById('wh-onb-1-btn'); if (b1) b1.disabled = true;
+  const b2 = document.getElementById('wh-onb-2-btn'); if (b2) b2.disabled = true;
+  const b4 = document.getElementById('wh-onb-4-btn'); if (b4) b4.disabled = true;
+  // Step 3 and 5 buttons are always enabled (skip-friendly)
+  const b6 = document.getElementById('wh-onb-6-btn');
+  if (b6) { b6.disabled = false; b6.textContent = "Activar Women's Health"; }
+}
+
+function whOpenOnboardingFromProfile() {
+  // Always start clean — no stale DOM state
+  whClearAllSelectedClasses();
+  // Pre-fill from existing profile if any
+  if (state.women_health && state.women_health.enabled) {
+    whOnbState = {
+      status: state.women_health.status || null,
+      age: state.women_health.age || null,
+      avg_cycle_length_days: state.women_health.avg_cycle_length_days || 28,
+      avg_period_length_days: state.women_health.avg_period_length_days || 5,
+      last_period_start_date: state.women_health.last_period_start_date || null,
+      goal_primary: state.women_health.goal_primary || null,
+      conditions: Array.isArray(state.women_health.conditions) ? [...state.women_health.conditions] : []
+    };
+  } else {
+    whResetOnbState();
+  }
+  goStep('wh-onb-1');
+  // Pre-select UI based on state (after screen transition)
+  setTimeout(() => {
+    if (whOnbState.status) {
+      const el = document.querySelector(`[data-wh-status="${whOnbState.status}"]`);
+      if (el) {
+        el.classList.add('selected');
+        const btn = document.getElementById('wh-onb-1-btn');
+        if (btn) btn.disabled = false;
+      }
+    }
+  }, 30);
+}
+
+function whOnbExit() {
+  whResetOnbState();
+  goStep('profile');
+}
+
+function whSelectStatus(val, el) {
+  const wasCycle = WH_CYCLE_STATUSES.includes(whOnbState.status);
+  const willBeCycle = WH_CYCLE_STATUSES.includes(val);
+  whOnbState.status = val;
+  // QA Fix #1: if switching FROM cycle TO non-cycle, drop cycle-specific data
+  // so we don't persist stale age/cycle_length/period_length/last_period to pregnancy/menopause/etc.
+  if (wasCycle && !willBeCycle) {
+    whOnbState.age = null;
+    whOnbState.avg_cycle_length_days = 28;  // back to default (not saved if status non-cycle)
+    whOnbState.avg_period_length_days = 5;
+    whOnbState.last_period_start_date = null;
+  }
+  document.querySelectorAll('[data-wh-status]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  const btn = document.getElementById('wh-onb-1-btn');
+  if (btn) btn.disabled = false;
+}
+
+function whUpdateCycleDisplay() {
+  const v = +document.getElementById('wh-cycle-length').value;
+  whOnbState.avg_cycle_length_days = v;
+  const disp = document.getElementById('wh-cycle-display');
+  if (disp) disp.textContent = `${v} días`;
+}
+
+function whUpdatePeriodDisplay() {
+  const v = +document.getElementById('wh-period-length').value;
+  whOnbState.avg_period_length_days = v;
+  const disp = document.getElementById('wh-period-display');
+  if (disp) disp.textContent = `${v} días`;
+}
+
+function whValidateStep2() {
+  const age = +document.getElementById('wh-age').value;
+  whOnbState.age = age || null;
+  const ok = age >= 12 && age <= 80;
+  const btn = document.getElementById('wh-onb-2-btn');
+  if (btn) btn.disabled = !ok;
+}
+
+function whValidateStep3() {
+  const v = document.getElementById('wh-last-period').value;
+  whOnbState.last_period_start_date = v || null;
+}
+
+function whSkipLastPeriod() {
+  whOnbState.last_period_start_date = null;
+  whOnbNext(3);
+}
+
+function whSelectGoal(val, el) {
+  whOnbState.goal_primary = val;
+  document.querySelectorAll('[data-wh-goal]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  const btn = document.getElementById('wh-onb-4-btn');
+  if (btn) btn.disabled = false;
+}
+
+function whToggleCondition(val, el) {
+  const i = whOnbState.conditions.indexOf(val);
+  if (i >= 0) {
+    whOnbState.conditions.splice(i, 1);
+    if (el) el.classList.remove('selected');
+  } else {
+    whOnbState.conditions.push(val);
+    if (el) el.classList.add('selected');
+  }
+}
+
+function whOnbNext(currentStep) {
+  const isCycle = WH_CYCLE_STATUSES.includes(whOnbState.status);
+  let next;
+  if (currentStep === 1) {
+    next = isCycle ? 'wh-onb-2' : 'wh-onb-4';
+  } else if (currentStep === 2) {
+    // Hydrate UI for step 3 if date exists
+    next = 'wh-onb-3';
+    setTimeout(() => {
+      const dateEl = document.getElementById('wh-last-period');
+      if (dateEl && whOnbState.last_period_start_date) dateEl.value = whOnbState.last_period_start_date;
+    }, 30);
+  } else if (currentStep === 3) {
+    next = 'wh-onb-4';
+    setTimeout(() => {
+      if (whOnbState.goal_primary) {
+        const el = document.querySelector(`[data-wh-goal="${whOnbState.goal_primary}"]`);
+        if (el) {
+          document.querySelectorAll('[data-wh-goal]').forEach(e => e.classList.remove('selected'));
+          el.classList.add('selected');
+          const btn = document.getElementById('wh-onb-4-btn');
+          if (btn) btn.disabled = false;
+        }
+      }
+    }, 30);
+  } else if (currentStep === 4) {
+    next = 'wh-onb-5';
+    setTimeout(() => {
+      // QA Fix #2: clear stale selected classes BEFORE adding current ones
+      document.querySelectorAll('[data-wh-cond]').forEach(e => e.classList.remove('selected'));
+      (whOnbState.conditions || []).forEach(c => {
+        const el = document.querySelector(`[data-wh-cond="${c}"]`);
+        if (el) el.classList.add('selected');
+      });
+    }, 30);
+  } else if (currentStep === 5) {
+    whRenderOnbSummary();
+    next = 'wh-onb-6';
+  }
+  if (next) goStep(next);
+
+  // Hydrate step 2 sliders + age when entering
+  if (next === 'wh-onb-2') {
+    setTimeout(() => {
+      const ageEl = document.getElementById('wh-age');
+      if (ageEl && whOnbState.age) ageEl.value = whOnbState.age;
+      const cycEl = document.getElementById('wh-cycle-length');
+      if (cycEl) {
+        cycEl.value = whOnbState.avg_cycle_length_days || 28;
+        whUpdateCycleDisplay();
+      }
+      const perEl = document.getElementById('wh-period-length');
+      if (perEl) {
+        perEl.value = whOnbState.avg_period_length_days || 5;
+        whUpdatePeriodDisplay();
+      }
+      whValidateStep2();
+    }, 30);
+  }
+}
+
+function whOnbBack(currentStep) {
+  const isCycle = WH_CYCLE_STATUSES.includes(whOnbState.status);
+  let prev;
+  if (currentStep === 2) prev = 'wh-onb-1';
+  else if (currentStep === 3) prev = 'wh-onb-2';
+  else if (currentStep === 4) prev = isCycle ? 'wh-onb-3' : 'wh-onb-1';
+  else if (currentStep === 5) prev = 'wh-onb-4';
+  else if (currentStep === 6) prev = 'wh-onb-5';
+  if (prev) goStep(prev);
+}
+
+function whRenderOnbSummary() {
+  const isCycle = WH_CYCLE_STATUSES.includes(whOnbState.status);
+  const summaryEl = document.getElementById('wh-onb-summary');
+  if (!summaryEl) return;
+  const rowStyle = 'display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.06);';
+  const labelStyle = 'font-size:12px; color:#94A3B8;';
+  const valueStyle = 'font-size:13px; color:#F8FAFC; font-weight:600;';
+  const rows = [];
+  rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Estado</span><span style="${valueStyle}">${WH_STATUS_LABELS[whOnbState.status] || '—'}</span></div>`);
+  if (isCycle) {
+    rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Edad</span><span style="${valueStyle}">${whOnbState.age ? whOnbState.age + ' años' : '—'}</span></div>`);
+    rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Ciclo / período</span><span style="${valueStyle}">${whOnbState.avg_cycle_length_days}d / ${whOnbState.avg_period_length_days}d</span></div>`);
+    if (whOnbState.last_period_start_date) {
+      rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Último período</span><span style="${valueStyle}">${whOnbState.last_period_start_date}</span></div>`);
+    }
+  }
+  rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Objetivo</span><span style="${valueStyle}">${WH_GOAL_LABELS[whOnbState.goal_primary] || '—'}</span></div>`);
+  if (whOnbState.conditions.length > 0) {
+    const conds = whOnbState.conditions.map(c => WH_COND_LABELS[c] || c).join(', ');
+    const lastRowStyle = rowStyle.replace('border-bottom:1px solid rgba(255,255,255,0.06);', '');
+    rows.push(`<div style="${lastRowStyle}"><span style="${labelStyle}">Condiciones</span><span style="${valueStyle}; text-align:right; max-width:60%;">${conds}</span></div>`);
+  }
+  summaryEl.innerHTML = rows.join('');
+}
+
+async function whOnbConfirmActivate() {
+  const btn = document.getElementById('wh-onb-6-btn');
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Activando...';
+  }
+  try {
+    const ok = await whUpsertProfile({
+      enabled: true,
+      status: whOnbState.status,
+      age: whOnbState.age,
+      avg_cycle_length_days: whOnbState.avg_cycle_length_days,
+      avg_period_length_days: whOnbState.avg_period_length_days,
+      last_period_start_date: whOnbState.last_period_start_date,
+      goal_primary: whOnbState.goal_primary,
+      conditions: whOnbState.conditions,
+      enabled_at: new Date().toISOString()
+    });
+    if (!ok) {
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = "Activar Women's Health";
+      }
+      alert('No se pudo guardar. Revisá tu conexión e intentá de nuevo.');
+      return;
+    }
+    // Success: vuelvo a profile y re-render
+    goStep('profile');
+    await whRenderProfileSection();
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Activar Women's Health";
+    }
+  } catch (e) {
+    console.error('[WH] activate failed:', e);
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = "Activar Women's Health";
+    }
+    alert('Error: ' + (e.message || 'desconocido'));
+  }
+}
+
+async function whUpsertProfile(data) {
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id || state.user_id || state.userId;
+    if (!userId) {
+      console.error('[WH] no user_id available');
+      return false;
+    }
+    const payload = { user_id: userId, ...data };
+    const { error } = await sb.from('women_health_profile').upsert(payload, { onConflict: 'user_id' });
+    if (error) {
+      console.error('[WH] upsert error:', error);
+      return false;
+    }
+    state.women_health = payload;
+    return true;
+  } catch (e) {
+    console.error('[WH] upsert exception:', e);
+    return false;
+  }
+}
+
+async function whLoadProfile() {
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id || state.user_id || state.userId;
+    if (!userId) return null;
+    const { data, error } = await sb.from('women_health_profile').select('*').eq('user_id', userId).maybeSingle();
+    if (error) {
+      console.warn('[WH] load error:', error);
+      return null;
+    }
+    state.women_health = data || null;
+    return data;
+  } catch (e) {
+    console.warn('[WH] load exception:', e);
+    return null;
+  }
+}
+
+async function whRenderProfileSection() {
+  const card = document.getElementById('profile-wh-card');
+  const action = document.getElementById('profile-wh-action');
+  if (!card || !action) return;
+  const profile = await whLoadProfile();
+  if (!profile || !profile.enabled) {
+    card.innerHTML = `<div class="profile-row" id="profile-wh-empty">
+      <div class="profile-row-label" style="font-size:12px; color:#94A3B8; line-height:1.5;">Activá tracking de ciclo + nutrición y entrenamiento phase-aware. Privado, editable, opcional.</div>
+    </div>`;
+    action.textContent = 'Activar';
+    action.onclick = whOpenOnboardingFromProfile;
+    return;
+  }
+  const rows = [];
+  rows.push(`<div class="profile-row">
+    <div class="profile-row-label">Estado</div>
+    <div class="profile-row-value"><span style="color:#F8FAFC;">${WH_STATUS_LABELS[profile.status] || '—'}</span></div>
+  </div>`);
+  if (WH_CYCLE_STATUSES.includes(profile.status)) {
+    rows.push(`<div class="profile-row">
+      <div class="profile-row-label">Ciclo / período</div>
+      <div class="profile-row-value"><span>${profile.avg_cycle_length_days}d / ${profile.avg_period_length_days}d</span></div>
+    </div>`);
+    if (profile.last_period_start_date) {
+      rows.push(`<div class="profile-row">
+        <div class="profile-row-label">Último período</div>
+        <div class="profile-row-value"><span>${profile.last_period_start_date}</span></div>
+      </div>`);
+    }
+  }
+  if (profile.goal_primary) {
+    rows.push(`<div class="profile-row">
+      <div class="profile-row-label">Objetivo</div>
+      <div class="profile-row-value"><span>${WH_GOAL_LABELS[profile.goal_primary] || profile.goal_primary}</span></div>
+    </div>`);
+  }
+  if (Array.isArray(profile.conditions) && profile.conditions.length > 0) {
+    const conds = profile.conditions.map(c => WH_COND_LABELS[c] || c).join(', ');
+    rows.push(`<div class="profile-row">
+      <div class="profile-row-label">Condiciones</div>
+      <div class="profile-row-value"><span style="font-size:12px;">${conds}</span></div>
+    </div>`);
+  }
+  card.innerHTML = rows.join('');
+  action.textContent = 'Editar';
+  action.onclick = whOpenOnboardingFromProfile;
+}
+
 </script>
 </body>
 </html>
