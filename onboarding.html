@@ -2884,6 +2884,89 @@
     color: #CBD5E1;
   }
 
+  /* Plan VIEW: bottom sticky actions */
+  .plan-view-actions {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; gap: 8px;
+    max-width: 380px; margin: 0 auto;
+    padding: 12px 16px 18px;
+    background: linear-gradient(to top, #0a0e1a 60%, rgba(10,14,26,0.85) 90%, transparent);
+    z-index: 20;
+  }
+  .plan-view-back-btn {
+    flex: 1;
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #CBD5E1;
+    padding: 13px;
+    border-radius: 14px;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-view-back-btn:active { transform: scale(0.97); }
+  .plan-view-action-btn {
+    flex: 1.4;
+    padding: 13px;
+    border-radius: 14px;
+    font-size: 13px; font-weight: 700;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    border: 1px solid transparent;
+  }
+  .plan-view-action-btn:active { transform: scale(0.97); }
+  .plan-view-action-btn.is-revert {
+    background: rgba(248,113,113,0.1);
+    border-color: rgba(248,113,113,0.3);
+    color: #FCA5A5;
+  }
+  .plan-view-action-btn.is-activate {
+    background: #BEF264;
+    border: none;
+    color: #0a0e1a;
+  }
+
+  /* Plan view header card */
+  .plan-view-nutri-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .plan-view-nutri-card.is-active { background: rgba(132,204,22,0.06); border-color: rgba(132,204,22,0.3); }
+  .plan-view-nutri-card.is-scheduled { background: rgba(251,191,36,0.04); border-color: rgba(251,191,36,0.25); }
+  .plan-view-nutri-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #A7F3D0, #6EE7B7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; color: #064E3B;
+    flex-shrink: 0;
+  }
+  .plan-view-nutri-card.is-paused .plan-view-nutri-avatar {
+    background: rgba(255,255,255,0.08); color: #94A3B8;
+  }
+  .plan-view-nutri-info { flex: 1; min-width: 0; }
+  .plan-view-nutri-name { font-size: 12px; font-weight: 700; color: #fff; }
+  .plan-view-nutri-contact { font-size: 10px; color: #94A3B8; }
+  .plan-view-status-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.4px;
+    padding: 3px 8px; border-radius: 6px;
+  }
+  .plan-view-status-badge.is-active { background: rgba(132,204,22,0.2); color: #BEF264; }
+  .plan-view-status-badge.is-scheduled { background: rgba(251,191,36,0.18); color: #FBBF24; }
+  .plan-view-status-badge.is-paused { background: rgba(255,255,255,0.06); color: #94A3B8; }
+
+  .plan-view-macros-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 4px;
+  }
+
   /* Hoy plan CTA: variantes según estado */
   .hoy-plan-cta.is-scheduled {
     background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.04));
@@ -5906,6 +5989,53 @@
     </div>
   </div>
 
+  <!-- ============== PLAN: ver plan completo (read-only) ============== -->
+  <div class="screen nut-screen" data-step="plan-view">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="planViewBack()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Perfil
+      </button>
+      <div class="nut-title">Mi plan</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content" style="padding-bottom:96px;">
+      <div id="plan-view-header"></div>
+      <div id="plan-view-macros"></div>
+
+      <div id="plan-view-meals-wrap" style="display:none;">
+        <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:18px 0 8px;">
+          COMIDAS · <span id="plan-view-meals-count">0</span>
+        </div>
+        <div id="plan-view-meals"></div>
+      </div>
+
+      <div id="plan-view-supps-wrap" style="display:none;">
+        <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:18px 0 8px;">
+          SUPLEMENTOS · <span id="plan-view-supps-count">0</span>
+        </div>
+        <div id="plan-view-supps"></div>
+      </div>
+
+      <div id="plan-view-rules-wrap" style="display:none;">
+        <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:18px 0 8px;">
+          OBSERVACIONES · <span id="plan-view-rules-count">0</span>
+        </div>
+        <div id="plan-view-rules"></div>
+      </div>
+
+      <div id="plan-view-empty" style="display:none; text-align:center; padding:40px 16px; color:#94A3B8;">
+        <div style="font-size:32px; margin-bottom:8px;">📋</div>
+        <div style="font-size:13px; font-weight:600;">Cargando plan...</div>
+      </div>
+    </div>
+
+    <div class="plan-view-actions">
+      <button class="plan-view-back-btn" onclick="planViewBack()">← Volver</button>
+      <button id="plan-view-action-btn" class="plan-view-action-btn" onclick="planViewAction()">—</button>
+    </div>
+  </div>
+
   <!-- ============== InBody: comparar targets actuales vs nuevos ============== -->
   <div class="screen nut-screen" data-step="nut-targets-compare">
     <div class="nut-topbar">
@@ -6461,7 +6591,7 @@ function goStep(n) {
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
     'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
-    'plan-when', 'plan-when-date',
+    'plan-when', 'plan-when-date', 'plan-view',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -10301,21 +10431,21 @@ function renderProfilePlan() {
     badgeText = '● ACTIVO';
     actions = `
       <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planPause()">Volver a mis macros</button>
-      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="alert('Próximamente: ver detalle del plan en Fase 3.')">Ver plan</button>
+      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planViewOpen()">Ver plan</button>
     `;
   } else if (status === 'scheduled') {
     metaText = `📅 Empieza el ${planFormatDatePretty(plan.starts_at)} · ${planFormatDateDiff(plan.starts_at)}`;
     badgeText = 'PROGRAMADO';
     actions = `
       <button class="profile-plan-btn profile-plan-btn-primary" onclick="planActivateExisting()">Empezar ya</button>
-      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planChangeDate()">Cambiar fecha</button>
+      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planViewOpen()">Ver plan</button>
     `;
   } else {
     metaText = 'Pausado · usando tus macros personalizados';
     badgeText = 'PAUSADO';
     actions = `
       <button class="profile-plan-btn profile-plan-btn-primary" onclick="planActivateExisting()">Usar este plan</button>
-      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planChangeDate()">Programar fecha</button>
+      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planViewOpen()">Ver plan</button>
     `;
   }
 
@@ -10447,6 +10577,257 @@ async function _planInvalidateAndRefresh() {
     _aiInsightCache.data = null;
     _aiInsightCache.ts = 0;
     _aiInsightCache.hourBucket = null;
+  }
+}
+
+// ============================================================
+//  PLAN VIEW — Ver el plan completo desde Profile
+// ============================================================
+const planViewState = {
+  plan: null,
+  meals: [],
+  items: [],     // todos los items, agrupados por meal_id en render
+  supplements: [],
+  rules: [],
+};
+
+async function planViewOpen() {
+  if (!planState.active) {
+    alert('No hay plan cargado.');
+    return;
+  }
+  // Limpiar pantalla mientras carga
+  document.getElementById('plan-view-meals-wrap').style.display = 'none';
+  document.getElementById('plan-view-supps-wrap').style.display = 'none';
+  document.getElementById('plan-view-rules-wrap').style.display = 'none';
+  document.getElementById('plan-view-empty').style.display = '';
+  document.getElementById('plan-view-empty').innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⏳</div><div style="font-size:13px; font-weight:600;">Cargando plan...</div>';
+
+  goStep('plan-view');
+
+  // Cargar data de las 4 tablas relacionadas
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const planId = planState.active.id;
+    const auth = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' };
+
+    const [mealsResp, suppsResp, rulesResp] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/plan_meals?plan_id=eq.${planId}&select=*&order=display_order.asc`, { headers: auth }),
+      fetch(`${SUPABASE_URL}/rest/v1/plan_supplements?plan_id=eq.${planId}&select=*&order=display_order.asc`, { headers: auth }),
+      fetch(`${SUPABASE_URL}/rest/v1/plan_rules?plan_id=eq.${planId}&select=*&order=display_order.asc`, { headers: auth }),
+    ]);
+    if (!mealsResp.ok || !suppsResp.ok || !rulesResp.ok) throw new Error('fetch_failed');
+
+    planViewState.plan = planState.active;
+    planViewState.meals = await mealsResp.json();
+    planViewState.supplements = await suppsResp.json();
+    planViewState.rules = await rulesResp.json();
+
+    // Cargar items de TODAS las comidas en un solo query (in)
+    const mealIds = planViewState.meals.map(m => m.id);
+    if (mealIds.length > 0) {
+      const itemsResp = await fetch(`${SUPABASE_URL}/rest/v1/plan_meal_items?meal_id=in.(${mealIds.join(',')})&select=*&order=display_order.asc`, { headers: auth });
+      if (itemsResp.ok) planViewState.items = await itemsResp.json();
+    } else {
+      planViewState.items = [];
+    }
+
+    planViewRender();
+  } catch (e) {
+    console.error('[PLAN VIEW] load failed:', e);
+    document.getElementById('plan-view-empty').innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⚠️</div><div style="font-size:13px; font-weight:600;">No se pudo cargar el plan.</div><div style="font-size:11px; margin-top:6px; color:#64748B;">' + _planEscape(e.message || '') + '</div>';
+  }
+}
+
+function planViewBack() {
+  if (typeof openProfile === 'function') openProfile();
+  else goStep('profile');
+}
+
+function planViewRender() {
+  const p = planViewState.plan;
+  if (!p) return;
+  const status = planComputeStatus(p);
+  document.getElementById('plan-view-empty').style.display = 'none';
+
+  // Header con nutricionista
+  const initials = (p.nutritionist_name || 'NA').split(' ').filter(s => s && s[0]).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'NA';
+  let statusBadge = '';
+  let metaText = '';
+  if (status === 'active') {
+    statusBadge = '<span class="plan-view-status-badge is-active">● ACTIVO</span>';
+    metaText = p.starts_at ? `Activo desde ${planFormatDatePretty(p.starts_at)}` : '';
+  } else if (status === 'scheduled') {
+    statusBadge = '<span class="plan-view-status-badge is-scheduled">PROGRAMADO</span>';
+    metaText = `Empieza ${planFormatDateDiff(p.starts_at)} · ${planFormatDatePretty(p.starts_at)}`;
+  } else {
+    statusBadge = '<span class="plan-view-status-badge is-paused">PAUSADO</span>';
+    metaText = 'No activo';
+  }
+  document.getElementById('plan-view-header').innerHTML = `
+    <div class="plan-view-nutri-card is-${status}">
+      <div class="plan-view-nutri-avatar">${_planEscape(initials)}</div>
+      <div class="plan-view-nutri-info">
+        <div class="plan-view-nutri-name">${_planEscape(p.nutritionist_name || 'Plan personalizado')}</div>
+        <div class="plan-view-nutri-contact">${_planEscape(p.nutritionist_contact || metaText)}</div>
+      </div>
+      ${statusBadge}
+    </div>
+  `;
+
+  // Macros card
+  const waterL = p.water_ml_target ? (Math.round(p.water_ml_target / 100) / 10) + 'L' : '—';
+  document.getElementById('plan-view-macros').innerHTML = `
+    <div class="plan-view-macros-card">
+      <div style="font-size:10px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin-bottom:8px;">MACROS DEL PLAN</div>
+      <div style="display:flex; gap:8px;">
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#fff; font-weight:700;">${(p.total_kcal || 0).toLocaleString()}</div><div style="font-size:9px; color:#94A3B8;">kcal</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#F472B6; font-weight:700;">${Math.round(p.total_protein_g || 0)}g</div><div style="font-size:9px; color:#94A3B8;">P</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#FBBF24; font-weight:700;">${Math.round(p.total_carbs_g || 0)}g</div><div style="font-size:9px; color:#94A3B8;">C</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#A78BFA; font-weight:700;">${Math.round(p.total_fat_g || 0)}g</div><div style="font-size:9px; color:#94A3B8;">G</div></div>
+        <div style="flex:1; text-align:center;"><div style="font-size:15px; color:#60A5FA; font-weight:700;">${waterL}</div><div style="font-size:9px; color:#94A3B8;">💧</div></div>
+      </div>
+      ${p.protein_per_kg ? `<div style="font-size:10px; color:#64748B; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.04);">${p.protein_per_kg} g/kg proteína</div>` : ''}
+    </div>
+  `;
+
+  // Comidas
+  const mealsWrap = document.getElementById('plan-view-meals-wrap');
+  const mealsEl = document.getElementById('plan-view-meals');
+  if (planViewState.meals.length > 0) {
+    mealsWrap.style.display = '';
+    document.getElementById('plan-view-meals-count').textContent = planViewState.meals.length;
+    mealsEl.innerHTML = planViewState.meals.map(m => {
+      const slotLabel = SLOT_LABELS[m.slot] || m.custom_label || m.slot;
+      const emoji = SLOT_EMOJI[m.slot] || '🍴';
+      const labelOverride = m.custom_label && m.custom_label !== slotLabel ? ` ${_planEscape(m.custom_label)}` : '';
+      const altBadge = m.alternative_label ? `<span class="plan-cf-alt-badge">OPCIÓN ${_planEscape(m.alternative_label)}</span>` : '';
+      const time = m.scheduled_time_label ? `<span class="plan-cf-meal-time">${_planEscape(m.scheduled_time_label)}</span>` : '';
+
+      // Items de esta meal, agrupados por selection_group
+      const items = planViewState.items.filter(it => it.meal_id === m.id);
+      // Agrupar por selection_group, mantener orden por display_order
+      const groups = {};
+      items.forEach(it => {
+        const g = it.selection_group || 'free';
+        if (!groups[g]) groups[g] = [];
+        groups[g].push(it);
+      });
+
+      // Render: items requeridos primero, después grupos opcionales con "o" entre alternativas
+      let itemsHtml = '';
+      const seen = new Set();
+      items.sort((a, b) => (a.display_order || 0) - (b.display_order || 0)).forEach(it => {
+        if (seen.has(it.id)) return;
+        const group = groups[it.selection_group || 'free'];
+        if (group.length > 1 && !it.is_required) {
+          // Grupo de alternativas: render todos juntos con "o"
+          const names = group.map(g => {
+            const q = g.quantity_text ? ` <span class="plan-cf-item-qty">${_planEscape(g.quantity_text)}</span>` : '';
+            return `<span>${_planEscape(g.name)}${q}</span>`;
+          }).join('<span style="color:#94A3B8; margin:0 4px;">o</span>');
+          itemsHtml += `<div style="font-size:11px; color:#CBD5E1; padding:5px 0; line-height:1.5;">• ${names}</div>`;
+          group.forEach(g => seen.add(g.id));
+        } else {
+          // Item solo (fijo o libre)
+          const qty = it.quantity_text ? ` <span class="plan-cf-item-qty">${_planEscape(it.quantity_text)}</span>` : '';
+          const dimmed = it.is_free_quantity ? 'color:#64748B;' : 'color:#CBD5E1;';
+          const freeNote = it.is_free_quantity ? ' <span style="color:#475569; font-size:10px;">(libre)</span>' : '';
+          itemsHtml += `<div style="font-size:11px; ${dimmed} padding:5px 0; line-height:1.5;">• ${_planEscape(it.name)}${qty}${freeNote}</div>`;
+          seen.add(it.id);
+        }
+      });
+
+      return `
+        <div class="plan-cf-meal-card">
+          <div class="plan-cf-meal-head">
+            <div>
+              <span style="font-size:16px;">${emoji}</span>
+              <span class="plan-cf-meal-title">${_planEscape(slotLabel)}${_planEscape(labelOverride)}</span>
+              ${time}
+              ${altBadge}
+            </div>
+            ${m.total_kcal_est ? `<div class="plan-cf-meal-kcal">${m.total_kcal_est} kcal</div>` : ''}
+          </div>
+          <div style="padding-left:24px;">${itemsHtml}</div>
+        </div>
+      `;
+    }).join('');
+  } else {
+    mealsWrap.style.display = 'none';
+  }
+
+  // Suplementos
+  const suppsWrap = document.getElementById('plan-view-supps-wrap');
+  const suppsEl = document.getElementById('plan-view-supps');
+  if (planViewState.supplements.length > 0) {
+    suppsWrap.style.display = '';
+    document.getElementById('plan-view-supps-count').textContent = planViewState.supplements.length;
+    suppsEl.innerHTML = planViewState.supplements.map(s => `
+      <div class="plan-cf-supp-row">
+        <div class="plan-cf-supp-name">💊 ${_planEscape(s.name)}</div>
+        <div class="plan-cf-supp-meta">${_planEscape(s.dose || '')}${s.dose && s.timing ? ' · ' : ''}${_planEscape(s.timing || '')}</div>
+      </div>
+    `).join('');
+  } else {
+    suppsWrap.style.display = 'none';
+  }
+
+  // Reglas
+  const rulesWrap = document.getElementById('plan-view-rules-wrap');
+  const rulesEl = document.getElementById('plan-view-rules');
+  if (planViewState.rules.length > 0) {
+    rulesWrap.style.display = '';
+    document.getElementById('plan-view-rules-count').textContent = planViewState.rules.length;
+    const typeBadgeStyle = (t) => {
+      if (t === 'conditional') return 'background:rgba(251,191,36,0.15); color:#FBBF24;';
+      if (t === 'hydration')   return 'background:rgba(96,165,250,0.15); color:#60A5FA;';
+      if (t === 'supplement')  return 'background:rgba(167,139,250,0.15); color:#A78BFA;';
+      return 'background:rgba(255,255,255,0.08); color:#94A3B8;';
+    };
+    rulesEl.innerHTML = planViewState.rules.map(r => `
+      <div class="plan-cf-rule-row">
+        <span class="plan-cf-rule-type-badge" style="${typeBadgeStyle(r.rule_type)}">${_planEscape(r.rule_type)}</span>
+        ${_planEscape(r.rule_text)}
+      </div>
+    `).join('');
+  } else {
+    rulesWrap.style.display = 'none';
+  }
+
+  // Botón de acción según estado
+  const btn = document.getElementById('plan-view-action-btn');
+  if (status === 'active') {
+    btn.textContent = 'Volver a mis macros';
+    btn.className = 'plan-view-action-btn is-revert';
+  } else if (status === 'scheduled') {
+    btn.textContent = '▶ Empezar ya';
+    btn.className = 'plan-view-action-btn is-activate';
+  } else {
+    btn.textContent = '▶ Usar este plan';
+    btn.className = 'plan-view-action-btn is-activate';
+  }
+}
+
+async function planViewAction() {
+  const btn = document.getElementById('plan-view-action-btn');
+  if (btn && btn.disabled) return; // anti double-tap
+  if (btn) btn.disabled = true;
+  try {
+    const status = planComputeStatus(planViewState.plan || planState.active);
+    if (status === 'active') {
+      await planPause();
+    } else {
+      await planActivateExisting();
+    }
+    // Refresh local state después de la acción
+    if (planState.active) {
+      planViewState.plan = planState.active;
+      planViewRender();
+    }
+  } finally {
+    if (btn) btn.disabled = false;
   }
 }
 

@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS plan_meals (
   scheduled_time_label TEXT,                  -- raw del PDF ej "3:30-4 PM"
 
   -- Grupos de alternativas: comidas mutuamente excluyentes (ej: Pre entreno completo vs Pre entreno rápido)
-  alternative_group_id UUID,                  -- mismo UUID = alternativas entre sí
+  alternative_group TEXT,                     -- mismo string = alternativas entre sí (ej 'pre_entreno_alt')
   alternative_label TEXT,                     -- 'A' / 'B' para mostrar como tabs
 
   -- Macros estimados (suma de items)
