@@ -5966,12 +5966,21 @@
       </div>
       <div id="nut-search-status" style="font-size:12px;color:#94A3B8;margin:8px 4px 0;min-height:18px;"></div>
     </div>
-    <div id="nut-search-results" style="padding:8px 24px 24px;overflow-y:auto;flex:1;">
-      <div style="text-align:center;padding:40px 16px;color:#64748B;font-size:13px;line-height:1.6;">
-        Escribí al menos 3 letras para buscar.<br>
-        <span style="color:#94A3B8;">Funciona mejor en español: "yogurt", "atún", "leche".</span>
+    <div id="nut-search-frequent-wrap" style="padding:16px 24px 4px;">
+      <div id="nut-search-frequent-label" style="font-size:10px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin-bottom:10px; display:none; align-items:center; gap:6px;">
+        <span>🕐</span> FRECUENTES · TUS ÚLTIMOS 7 DÍAS
       </div>
+      <div id="nut-search-frequent-list" style="display:flex; flex-direction:column; gap:6px;"></div>
     </div>
+    <div id="nut-search-categories-wrap" style="padding:4px 24px 12px;">
+      <div id="nut-search-categories-label" style="font-size:10px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:10px 0 8px; display:none;">CATEGORÍAS</div>
+      <div id="nut-search-categories" style="display:flex; gap:6px; flex-wrap:wrap;"></div>
+    </div>
+    <div id="nut-search-placeholder" style="text-align:center;padding:8px 16px 24px;color:#64748B;font-size:13px;line-height:1.6;">
+      Escribí al menos 3 letras para buscar productos.<br>
+      <span style="color:#94A3B8;">O usá las sugerencias de arriba.</span>
+    </div>
+    <div id="nut-search-results" style="padding:8px 24px 24px;overflow-y:auto;flex:1;"></div>
   </div>
 
   <!-- ============== NUTRITION — Photo: analyzing ============== -->
@@ -9918,16 +9927,288 @@ function nutOpenSearch() {
   if (input) {
     input.value = '';
     setTimeout(() => input.focus(), 250);
-    // Wire debounced search
-    input.oninput = () => nutSearchDebounced(input.value);
+    input.oninput = () => {
+      nutSearchDebounced(input.value);
+      // Ocultar/mostrar frecuentes y categorías según si hay query
+      _nutSearchToggleSuggestions(input.value.trim().length === 0);
+    };
   }
-  // Reset results
+  // Reset results y mostrar placeholder afuera
   const results = document.getElementById('nut-search-results');
-  if (results) {
-    results.innerHTML = '<div style="text-align:center;padding:40px 16px;color:#64748B;font-size:13px;line-height:1.6;">Escribí al menos 3 letras para buscar.<br><span style="color:#94A3B8;">Funciona mejor en español: "yogurt", "atún", "leche".</span></div>';
-  }
+  const placeholder = document.getElementById('nut-search-placeholder');
+  if (results) results.innerHTML = '';
+  if (placeholder) placeholder.style.display = '';
   document.getElementById('nut-search-clear').style.display = 'none';
   document.getElementById('nut-search-status').textContent = '';
+
+  // Cargar y renderear frecuentes + categorías
+  _nutSearchToggleSuggestions(true);
+  nutRenderCategories();
+  nutLoadAndRenderFrequents().catch(e => console.warn('frecuentes load:', e));
+}
+
+function _nutSearchToggleSuggestions(show) {
+  const fLabel = document.getElementById('nut-search-frequent-label');
+  const fList = document.getElementById('nut-search-frequent-list');
+  const cLabel = document.getElementById('nut-search-categories-label');
+  const cWrap = document.getElementById('nut-search-categories');
+  const placeholder = document.getElementById('nut-search-placeholder');
+  if (fLabel) fLabel.style.display = show && fList && fList.children.length > 0 ? 'flex' : 'none';
+  if (fList) fList.style.display = show ? 'flex' : 'none';
+  if (cLabel) cLabel.style.display = show ? 'block' : 'none';
+  if (cWrap) cWrap.style.display = show ? 'flex' : 'none';
+  if (placeholder) placeholder.style.display = show ? '' : 'none';
+}
+
+const NUT_CATEGORIES = [
+  { key: 'protein', label: 'Proteínas', emoji: '🥩', color: '#F472B6', bg: 'rgba(244,114,182,0.08)', border: 'rgba(244,114,182,0.25)' },
+  { key: 'carb',    label: 'Carbs',     emoji: '🍞', color: '#FBBF24', bg: 'rgba(251,191,36,0.08)', border: 'rgba(251,191,36,0.25)' },
+  { key: 'dairy',   label: 'Lácteos',   emoji: '🥛', color: '#60A5FA', bg: 'rgba(96,165,250,0.08)', border: 'rgba(96,165,250,0.25)' },
+  { key: 'fruit',   label: 'Frutas',    emoji: '🍎', color: '#BEF264', bg: 'rgba(132,204,22,0.08)', border: 'rgba(132,204,22,0.25)' },
+  { key: 'fat',     label: 'Grasas',    emoji: '🥑', color: '#A78BFA', bg: 'rgba(167,139,250,0.08)', border: 'rgba(167,139,250,0.25)' },
+  { key: 'drink',   label: 'Bebidas',   emoji: '☕', color: '#94A3B8', bg: 'rgba(148,163,184,0.08)', border: 'rgba(148,163,184,0.25)' },
+];
+
+function nutRenderCategories() {
+  const el = document.getElementById('nut-search-categories');
+  if (!el) return;
+  el.innerHTML = NUT_CATEGORIES.map(c =>
+    `<button data-cat-key="${_nutEscape(c.key)}" data-cat-label="${_nutEscape(c.label)}" style="background:${c.bg}; border:1px solid ${c.border}; padding:8px 12px; border-radius:18px; font-size:11px; color:${c.color}; cursor:pointer; -webkit-tap-highlight-color:transparent;">${c.emoji} ${_nutEscape(c.label)}</button>`
+  ).join('');
+  // Delegated handler — safe contra labels con caracteres especiales
+  el.onclick = (ev) => {
+    const btn = ev.target.closest('[data-cat-key]');
+    if (!btn) return;
+    nutCategoryTap(btn.dataset.catKey, btn.dataset.catLabel);
+  };
+}
+
+const NUT_CATEGORY_QUERIES = {
+  protein: 'pollo huevos atún carne pescado',
+  carb: 'arroz pan tortilla papa avena',
+  dairy: 'yogurt leche queso natilla',
+  fruit: 'banano manzana mandarina fresa',
+  fat: 'aguacate aceite almendra mantequilla',
+  drink: 'café té agua jugo bebida',
+};
+
+function nutCategoryTap(key, label) {
+  const input = document.getElementById('nut-search-input');
+  if (!input) return;
+  const seed = NUT_CATEGORY_QUERIES[key] || label.toLowerCase();
+  // Usar la primera palabra para una búsqueda inicial concreta
+  const firstWord = seed.split(' ')[0];
+  input.value = firstWord;
+  input.dispatchEvent(new Event('input'));
+}
+
+async function nutLoadAndRenderFrequents() {
+  const listEl = document.getElementById('nut-search-frequent-list');
+  const labelEl = document.getElementById('nut-search-frequent-label');
+  if (!listEl) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const sevenAgo = new Date(); sevenAgo.setDate(sevenAgo.getDate() - 7);
+    const url = `${SUPABASE_URL}/rest/v1/meal_logs?user_id=eq.${session.user.id}&ts=gte.${sevenAgo.toISOString()}&select=items_text,total_kcal,total_protein_g,total_carbs_g,total_fat_g&order=ts.desc&limit=200`;
+    const r = await fetch(url, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!r.ok) return;
+    const rows = await r.json();
+    // Agrupar por items_text normalizado
+    const groups = {};
+    rows.forEach(row => {
+      const raw = (row.items_text || '').trim();
+      if (!raw) return;
+      // Normalizar: solo primera línea, lowercase, max 60 chars
+      const key = raw.split(/[,·\n]/)[0].trim().toLowerCase().slice(0, 60);
+      if (!key) return;
+      if (!groups[key]) {
+        groups[key] = { sample: raw.slice(0, 60), count: 0, kcal: 0, p: 0, c: 0, f: 0 };
+      }
+      groups[key].count += 1;
+      groups[key].kcal += parseFloat(row.total_kcal) || 0;
+      groups[key].p += parseFloat(row.total_protein_g) || 0;
+      groups[key].c += parseFloat(row.total_carbs_g) || 0;
+      groups[key].f += parseFloat(row.total_fat_g) || 0;
+    });
+    const sorted = Object.values(groups)
+      .filter(g => g.count >= 1)
+      .map(g => ({
+        name: g.sample,
+        count: g.count,
+        kcal_avg: Math.round(g.kcal / g.count),
+        p_avg: Math.round((g.p / g.count) * 10) / 10,
+        type: _nutClassifyFood(g.sample),
+      }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 6);
+    if (sorted.length === 0) {
+      if (labelEl) labelEl.style.display = 'none';
+      listEl.innerHTML = '';
+      return;
+    }
+    if (labelEl) labelEl.style.display = 'flex';
+    listEl.innerHTML = sorted.map(s => {
+      const meta = _nutFoodTypeMeta(s.type);
+      const isTop = s.count >= 3;
+      return `
+        <div class="nut-freq-row" data-freq-name="${_nutEscape(s.name)}" data-freq-kcal="${s.kcal_avg}" data-freq-p="${s.p_avg}" style="background:${isTop ? 'rgba(132,204,22,0.06)' : 'rgba(255,255,255,0.03)'}; border:1px solid ${isTop ? 'rgba(132,204,22,0.22)' : 'rgba(255,255,255,0.08)'}; border-radius:11px; padding:10px 12px; display:flex; align-items:center; gap:10px; cursor:pointer; -webkit-tap-highlight-color:transparent;">
+          <div style="width:30px; height:30px; border-radius:8px; background:${meta.bg}; display:flex; align-items:center; justify-content:center; font-size:14px; flex-shrink:0;">${meta.emoji}</div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-size:12px; font-weight:${isTop ? 700 : 600}; color:#fff; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${_nutEscape(s.name)}</div>
+            <div style="font-size:10px; color:#94A3B8;">${s.kcal_avg} kcal · ${s.p_avg}g P · usado ${s.count} ${s.count === 1 ? 'vez' : 'veces'}</div>
+          </div>
+          <div style="background:${isTop ? 'rgba(132,204,22,0.2)' : 'rgba(255,255,255,0.06)'}; color:${isTop ? '#BEF264' : '#94A3B8'}; font-size:9px; font-weight:700; padding:3px 7px; border-radius:5px; flex-shrink:0;">+${s.count}</div>
+        </div>
+      `;
+    }).join('');
+    // Delegated handler — safe contra nombres con apóstrofes u otros caracteres
+    listEl.onclick = (ev) => {
+      const row = ev.target.closest('.nut-freq-row');
+      if (!row) return;
+      const name = row.dataset.freqName;
+      const kcal = parseFloat(row.dataset.freqKcal) || 0;
+      const p = parseFloat(row.dataset.freqP) || 0;
+      nutFrequentTap(name, kcal, p);
+    };
+  } catch (e) {
+    console.warn('[NUT] frecuentes load failed:', e);
+  }
+}
+
+function nutFrequentTap(name, kcal, p) {
+  // Abrir el manual log y prefill con el nombre + macros promedio
+  nutOpenMealLog();
+  setTimeout(() => {
+    const nameInput = document.getElementById('nut-log-items');
+    const pInput = document.getElementById('nut-log-p');
+    if (nameInput) nameInput.value = name;
+    if (pInput && p > 0) {
+      pInput.value = p;
+      pInput.dispatchEvent(new Event('input'));
+    }
+    if (typeof nutLogManualRecompute === 'function') nutLogManualRecompute();
+    if (typeof nutLogValidate === 'function') nutLogValidate();
+  }, 150);
+}
+
+function _nutEscape(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+// Clasificador de alimentos por nombre — retorna el tipo
+function _nutClassifyFood(name) {
+  const n = (name || '').toLowerCase();
+  if (/huevo|claras/.test(n)) return 'egg';
+  if (/aguacate|palta/.test(n)) return 'fat_avocado';
+  if (/aceite|mantequilla|ghee|manteca/.test(n)) return 'fat_oil';
+  if (/queso|turrialba|mozzarella|parmesano/.test(n)) return 'cheese';
+  if (/atún|tilapia|salmón|corvina|pescado|tuna|mahi|camar(o|ó)n/.test(n)) return 'protein_fish';
+  if (/pollo|res|cerdo|carne|lomito|costilla|chuleta|pechuga/.test(n)) return 'protein_meat';
+  if (/yogur|yogurt|leche|kéfir|natilla|crema/.test(n)) return 'liquid_dairy';
+  if (/jugo|café|té|agua|bebida|smoothie|batido|coca/.test(n)) return 'liquid_drink';
+  if (/banano|manzana|mandarina|pera|naranja|fresa|sand(í|i)a|piña|papaya|guayaba|fruta|fruto rojo/.test(n)) return 'fruit_whole';
+  if (/pan|tortilla|gallo|baguette|granola|cereal/.test(n)) return 'bread_tico';
+  if (/arroz|avena|quinoa|fideos|pasta|frijol|grano/.test(n)) return 'grain_cooked';
+  return 'generic';
+}
+
+// Metadata visual por tipo de alimento (emoji, color para el card)
+function _nutFoodTypeMeta(type) {
+  const map = {
+    egg:           { emoji: '🍳', bg: 'rgba(251,191,36,0.15)' },
+    fat_avocado:   { emoji: '🥑', bg: 'rgba(132,204,22,0.15)' },
+    fat_oil:       { emoji: '🫒', bg: 'rgba(167,139,250,0.15)' },
+    cheese:        { emoji: '🧀', bg: 'rgba(251,191,36,0.15)' },
+    protein_fish:  { emoji: '🐟', bg: 'rgba(96,165,250,0.15)' },
+    protein_meat:  { emoji: '🍗', bg: 'rgba(244,114,182,0.15)' },
+    liquid_dairy:  { emoji: '🥛', bg: 'rgba(96,165,250,0.15)' },
+    liquid_drink:  { emoji: '☕', bg: 'rgba(148,163,184,0.15)' },
+    fruit_whole:   { emoji: '🍎', bg: 'rgba(132,204,22,0.15)' },
+    bread_tico:    { emoji: '🍞', bg: 'rgba(251,191,36,0.15)' },
+    grain_cooked:  { emoji: '🍚', bg: 'rgba(251,191,36,0.15)' },
+    generic:       { emoji: '🍴', bg: 'rgba(148,163,184,0.15)' },
+  };
+  return map[type] || map.generic;
+}
+
+// Porciones comunes por tipo de alimento — estilo tico + plan-aware
+// El campo planAware=true indica que el componente buscará en planState.active si hay una porción definida
+function _nutCommonPortions(type) {
+  const portions = {
+    egg: { unit: 'units', items: [
+      { label: '1 huevo', value: 1, weightG: 50 },
+      { label: '2 huevos', value: 2, weightG: 100 },
+      { label: '3 huevos', value: 3, weightG: 150 },
+      { label: '4 huevos', value: 4, weightG: 200 },
+    ]},
+    protein_meat: { unit: 'g', items: [
+      { label: '100g', value: 100 },
+      { label: '150g', value: 150 },
+      { label: '180g', value: 180, planAware: true },
+      { label: '200g', value: 200 },
+    ]},
+    protein_fish: { unit: 'g', items: [
+      { label: '120g', value: 120 },
+      { label: '150g', value: 150 },
+      { label: '180g', value: 180, planAware: true },
+      { label: '1 filete (180g)', value: 180 },
+    ]},
+    liquid_dairy: { unit: 'ml', items: [
+      { label: '1 taza (240ml)', value: 240 },
+      { label: '1 vaso (250ml)', value: 250 },
+      { label: '1 envase (150ml)', value: 150 },
+      { label: '1 cucharada (15ml)', value: 15 },
+    ]},
+    liquid_drink: { unit: 'ml', items: [
+      { label: '1 vaso (240ml)', value: 240 },
+      { label: '1 botella chica (350ml)', value: 350 },
+      { label: '1 botella grande (500ml)', value: 500 },
+    ]},
+    fruit_whole: { unit: 'units', items: [
+      { label: '1 pequeño', value: 1, weightG: 100 },
+      { label: '1 mediano', value: 1, weightG: 120 },
+      { label: '1 grande', value: 1, weightG: 150 },
+      { label: '2 medianos', value: 2, weightG: 120 },
+    ]},
+    bread_tico: { unit: 'units', items: [
+      { label: '1 rebanada', value: 1, weightG: 30 },
+      { label: '2 rebanadas masa madre', value: 2, weightG: 60 },
+      { label: '1 tortilla palmeada', value: 1, weightG: 40 },
+      { label: '1 gallo (tortilla+queso)', value: 1, weightG: 60 },
+    ]},
+    cheese: { unit: 'g', items: [
+      { label: '30g (rebanada)', value: 30 },
+      { label: '1 onza turrialba (28g)', value: 28 },
+      { label: '1 cucharada (15g)', value: 15 },
+      { label: '50g', value: 50 },
+    ]},
+    grain_cooked: { unit: 'g', items: [
+      { label: 'Media taza (90g)', value: 90 },
+      { label: '1 taza (180g)', value: 180 },
+      { label: 'Casado típico (150g)', value: 150 },
+      { label: '1.5 tazas (270g)', value: 270 },
+    ]},
+    fat_oil: { unit: 'ml', items: [
+      { label: '1 cucharada (15ml)', value: 15 },
+      { label: '1 cucharadita (5ml)', value: 5 },
+      { label: '2 cucharadas (30ml)', value: 30 },
+    ]},
+    fat_avocado: { unit: 'g', items: [
+      { label: '½ aguacate (75g)', value: 75 },
+      { label: '1 aguacate (150g)', value: 150 },
+      { label: '¼ aguacate (40g)', value: 40 },
+    ]},
+    generic: { unit: 'g', items: [
+      { label: '50g', value: 50 },
+      { label: '100g', value: 100 },
+      { label: '150g', value: 150 },
+    ]},
+  };
+  return portions[type] || portions.generic;
 }
 
 function nutSearchClear() {
@@ -10341,7 +10622,7 @@ function wkRenderDashboard() {
           <div class="wk-row-title">${typeLabel} ${stravaBadge}</div>
           <div class="wk-row-meta">${metaParts.join(' · ')}</div>
         </div>
-        <div class="wk-row-kcal">${w.kcal_burned || 0} kcal</div>
+        <div class="wk-row-kcal">${w.kcal_burned != null ? w.kcal_burned + ' kcal' : '— kcal'}</div>
       </div>
     `;
   }).join('');
