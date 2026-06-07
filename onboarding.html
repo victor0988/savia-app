@@ -2720,6 +2720,177 @@
     margin-right: 6px;
   }
 
+  /* Plan WHEN: cuándo empezar */
+  .plan-when-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-when-btn:active { transform: scale(0.985); }
+  .plan-when-btn-primary {
+    background: rgba(132,204,22,0.06);
+    border-color: rgba(132,204,22,0.4);
+    border-width: 1.5px;
+  }
+  .plan-when-icon {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .plan-when-text { flex: 1; min-width: 0; }
+  .plan-when-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .plan-when-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+  .plan-when-sub-accent { color: #BEF264; }
+
+  /* Plan DATE picker */
+  .plan-date-hero {
+    background: rgba(132,204,22,0.04);
+    border: 1px solid rgba(132,204,22,0.22);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .plan-date-suggest {
+    width: 100%;
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 6px;
+    color: #fff;
+    font-size: 12px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-date-suggest:active { transform: scale(0.985); }
+  .plan-date-suggest.selected {
+    background: rgba(132,204,22,0.08);
+    border-color: rgba(132,204,22,0.4);
+    border-width: 1.5px;
+    font-weight: 700;
+  }
+  .plan-date-suggest-d {
+    font-size: 11px; color: #64748B;
+  }
+  .plan-date-suggest.selected .plan-date-suggest-d { color: #BEF264; }
+  .plan-date-custom {
+    width: 100%;
+    background: transparent;
+    border: 1px dashed rgba(255,255,255,0.18);
+    color: #94A3B8;
+    padding: 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    cursor: pointer;
+  }
+
+  /* Profile plan card */
+  .profile-plan-empty {
+    padding: 14px 16px;
+    background: rgba(132,204,22,0.04);
+    border: 1px dashed rgba(132,204,22,0.25);
+    border-radius: 14px;
+    text-align: center;
+  }
+  .profile-plan-card {
+    border-radius: 14px;
+    padding: 14px;
+    border: 1px solid;
+  }
+  .profile-plan-card.is-active {
+    background: rgba(132,204,22,0.06);
+    border-color: rgba(132,204,22,0.3);
+  }
+  .profile-plan-card.is-scheduled {
+    background: rgba(251,191,36,0.04);
+    border-color: rgba(251,191,36,0.25);
+  }
+  .profile-plan-card.is-paused {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.08);
+  }
+  .profile-plan-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .profile-plan-avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #A7F3D0, #6EE7B7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700; color: #064E3B;
+    flex-shrink: 0;
+  }
+  .profile-plan-card.is-paused .profile-plan-avatar {
+    background: rgba(255,255,255,0.08); color: #94A3B8;
+  }
+  .profile-plan-name {
+    flex: 1; min-width: 0;
+  }
+  .profile-plan-nutri {
+    font-size: 12px; font-weight: 700; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .profile-plan-meta {
+    font-size: 10px; color: #94A3B8; margin-top: 2px;
+  }
+  .profile-plan-card.is-scheduled .profile-plan-meta { color: #FBBF24; }
+  .profile-plan-card.is-paused .profile-plan-nutri { color: #CBD5E1; }
+  .profile-plan-card.is-paused .profile-plan-meta { color: #64748B; }
+  .profile-plan-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.4px;
+    padding: 3px 8px; border-radius: 6px;
+    flex-shrink: 0;
+  }
+  .profile-plan-card.is-active .profile-plan-badge {
+    background: rgba(132,204,22,0.2); color: #BEF264;
+  }
+  .profile-plan-card.is-scheduled .profile-plan-badge {
+    background: rgba(251,191,36,0.18); color: #FBBF24;
+  }
+  .profile-plan-card.is-paused .profile-plan-badge {
+    background: rgba(255,255,255,0.06); color: #94A3B8;
+  }
+  .profile-plan-actions {
+    display: flex; gap: 6px;
+  }
+  .profile-plan-btn {
+    flex: 1;
+    border-radius: 9px;
+    padding: 8px;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .profile-plan-btn-primary {
+    background: rgba(132,204,22,0.15);
+    border: 1px solid rgba(132,204,22,0.3);
+    color: #BEF264;
+    font-weight: 700;
+  }
+  .profile-plan-btn-secondary {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #CBD5E1;
+  }
+
+  /* Hoy plan CTA: variantes según estado */
+  .hoy-plan-cta.is-scheduled {
+    background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.04));
+    border-color: rgba(251,191,36,0.3);
+  }
+  .hoy-plan-cta.is-scheduled .hoy-plan-cta-arrow { color: #FBBF24; }
+
   /* Photo analyzing spinner */
   .nut-photo-spinner {
     width: 56px; height: 56px;
@@ -4568,6 +4739,15 @@
       <input type="file" id="profile-inbody-input" accept="image/*,application/pdf" style="display:none;" onchange="nutInBodyOnSelected(event)"/>
     </div>
 
+    <!-- Mi plan nutricional -->
+    <div class="profile-section">
+      <div class="profile-section-header">
+        <div class="profile-section-title">Mi plan nutricional</div>
+        <button class="profile-section-action" id="profile-plan-action" onclick="planOpenUpload()">+ Subir</button>
+      </div>
+      <div id="profile-plan-card"></div>
+    </div>
+
     <!-- Macros del día -->
     <div class="profile-section">
       <div class="profile-section-header">
@@ -5610,7 +5790,7 @@
         Atrás
       </button>
       <div class="nut-title">Confirmá tu plan</div>
-      <button class="em-save-btn" onclick="planSave()">Guardar</button>
+      <button class="em-save-btn" onclick="goStep('plan-when')">Siguiente</button>
     </div>
     <div class="nut-onb-content" style="padding-bottom:100px;">
       <div id="plan-cf-detected" class="plan-cf-banner">
@@ -5634,6 +5814,94 @@
       <div id="plan-cf-rules-wrap" style="display:none;">
         <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin:18px 0 8px;">OBSERVACIONES</div>
         <div id="plan-cf-rules"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== PLAN: ¿cuándo empezás? ============== -->
+  <div class="screen nut-screen" data-step="plan-when">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('plan-confirm')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Activar plan</div>
+      <div style="width:56px;"></div>
+    </div>
+    <div class="nut-onb-content">
+      <div style="text-align:center; padding:18px 8px 14px;">
+        <div style="width:54px; height:54px; border-radius:50%; background:rgba(132,204,22,0.15); display:inline-flex; align-items:center; justify-content:center; font-size:22px; color:#BEF264;">✓</div>
+        <div style="font-size:15px; font-weight:700; color:#fff; margin-top:12px;">Plan listo</div>
+        <div style="font-size:12px; color:#94A3B8; margin-top:4px;" id="plan-when-summary">—</div>
+      </div>
+
+      <div style="font-size:13px; font-weight:700; color:#fff; margin:8px 0 4px; text-align:center;">¿Cuándo querés empezar?</div>
+      <div style="font-size:11px; color:#94A3B8; margin-bottom:16px; text-align:center;">Podés cambiarlo cuando quieras desde tu perfil.</div>
+
+      <button class="plan-when-btn" onclick="planActivateNow()">
+        <div class="plan-when-icon" style="background:rgba(132,204,22,0.15); color:#BEF264;">▶</div>
+        <div class="plan-when-text">
+          <div class="plan-when-title">Empezar hoy</div>
+          <div class="plan-when-sub">Tus macros cambian al plan ahora mismo</div>
+        </div>
+      </button>
+
+      <button class="plan-when-btn plan-when-btn-primary" onclick="goStep('plan-when-date')">
+        <div class="plan-when-icon" style="background:rgba(132,204,22,0.2); color:#BEF264;">📅</div>
+        <div class="plan-when-text">
+          <div class="plan-when-title">Programar inicio</div>
+          <div class="plan-when-sub plan-when-sub-accent" id="plan-when-suggest">Lunes próximo</div>
+        </div>
+        <div style="color:#BEF264; font-size:16px;">›</div>
+      </button>
+
+      <button class="plan-when-btn" onclick="planSavePaused()" style="border-color:rgba(255,255,255,0.06);">
+        <div class="plan-when-icon" style="background:rgba(255,255,255,0.04); color:#94A3B8;">📋</div>
+        <div class="plan-when-text">
+          <div class="plan-when-title" style="color:#CBD5E1;">Solo guardarlo</div>
+          <div class="plan-when-sub">Mantenés tus macros actuales</div>
+        </div>
+      </button>
+    </div>
+  </div>
+
+  <!-- ============== PLAN: date picker ============== -->
+  <div class="screen nut-screen" data-step="plan-when-date">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('plan-when')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">Fecha de inicio</div>
+      <button class="em-save-btn" onclick="planActivateScheduled()">Activar</button>
+    </div>
+    <div class="nut-onb-content">
+      <div class="plan-date-hero">
+        <div style="font-size:10px; color:#94A3B8; font-weight:700; letter-spacing:0.5px;">EMPIEZA EL</div>
+        <div style="font-size:22px; font-weight:700; color:#BEF264; margin-top:6px;" id="plan-date-pretty">—</div>
+        <div style="font-size:11px; color:#94A3B8; margin-top:3px;" id="plan-date-diff">—</div>
+      </div>
+
+      <div style="font-size:11px; color:#94A3B8; font-weight:700; letter-spacing:0.5px; margin-bottom:8px;">SUGERENCIAS</div>
+
+      <button class="plan-date-suggest" data-key="tomorrow" onclick="planDateSelect('tomorrow')">
+        <span>Mañana</span>
+        <span class="plan-date-suggest-d" id="plan-date-sg-tomorrow">—</span>
+      </button>
+      <button class="plan-date-suggest" data-key="next_monday" onclick="planDateSelect('next_monday')">
+        <span>Próximo lunes</span>
+        <span class="plan-date-suggest-d" id="plan-date-sg-next_monday">—</span>
+      </button>
+      <button class="plan-date-suggest" data-key="next_month" onclick="planDateSelect('next_month')">
+        <span>Próximo día 1</span>
+        <span class="plan-date-suggest-d" id="plan-date-sg-next_month">—</span>
+      </button>
+
+      <div style="position:relative; margin-top:8px;">
+        <button class="plan-date-custom" onclick="document.getElementById('plan-date-input').showPicker ? document.getElementById('plan-date-input').showPicker() : document.getElementById('plan-date-input').click()">
+          📅 Elegir otra fecha
+        </button>
+        <input type="date" id="plan-date-input" style="position:absolute; inset:0; opacity:0; cursor:pointer;" onchange="planDateSelect('custom', this.value)"/>
       </div>
     </div>
   </div>
@@ -6183,6 +6451,9 @@ function goStep(n) {
     target.scrollTop = 0;
   }
   state.step = n;
+  // Render dinámico para pantallas del módulo Plan
+  if (n === 'plan-when') { try { planRenderWhenScreen(); } catch (e) { console.warn('plan-when render:', e); } }
+  if (n === 'plan-when-date') { try { planRenderDateScreen(); } catch (e) { console.warn('plan-when-date render:', e); } }
   // Persist onboarding progress (sobrevive a confirmar email en otra pestaña)
   // Solo guardamos durante onboarding real, no en auth/app/profile screens
   const skipPersist = ['login', 'signup', 'forgot', 'change-password', 'app', 'profile', 'auth', 'otp-email', 'otp-verify',
@@ -6190,6 +6461,7 @@ function goStep(n) {
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
     'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
+    'plan-when', 'plan-when-date',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -8539,9 +8811,31 @@ async function nutFinishOnboarding() {
 
 // --- LOAD TARGETS + TODAY DATA ---
 async function nutLoadTargets() {
+  // Si hay plan ACTIVO (no programado, no pausado), sus macros son los targets del día.
+  // Si no, usamos los nutrition_targets personalizados.
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return null;
+
+    // 1) Chequear plan activo primero
+    try {
+      if (!planState.active) await planLoadActive();
+      const status = planComputeStatus(planState.active);
+      if (status === 'active' && planState.active.total_kcal) {
+        const p = planState.active;
+        return {
+          kcal: p.total_kcal,
+          protein_g: parseFloat(p.total_protein_g) || 0,
+          carbs_g: parseFloat(p.total_carbs_g) || 0,
+          fat_g: parseFloat(p.total_fat_g) || 0,
+          water_ml: p.water_ml_target || 2500,
+          _source: 'plan',
+          _plan_id: p.id,
+        };
+      }
+    } catch (e) { console.warn('[NUT] plan override check failed:', e); }
+
+    // 2) Fallback: nutrition_targets personalizados
     const url = `${SUPABASE_URL}/rest/v1/nutrition_targets?user_id=eq.${session.user.id}&active=eq.true&order=computed_at.desc&limit=1`;
     const resp = await fetch(url, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
@@ -8550,7 +8844,7 @@ async function nutLoadTargets() {
     const rows = await resp.json();
     if (!rows.length) return null;
     const r = rows[0];
-    return { kcal: r.kcal, protein_g: r.protein_g, carbs_g: r.carbs_g, fat_g: r.fat_g, water_ml: r.water_ml };
+    return { kcal: r.kcal, protein_g: r.protein_g, carbs_g: r.carbs_g, fat_g: r.fat_g, water_ml: r.water_ml, _source: 'custom' };
   } catch (e) {
     console.warn('[NUT] loadTargets error:', e);
     return null;
@@ -9589,6 +9883,26 @@ function renderProfileMacros() {
   set('profile-macros-carbs', Math.round(targets.carbs_g || 0));
   set('profile-macros-fat', Math.round(targets.fat_g || 0));
   set('profile-macros-water', (targets.water_ml || 0).toLocaleString());
+
+  // Sub-label indicando fuente
+  let sourceLabel = '';
+  if (targets._source === 'plan') {
+    const nName = planState.active?.nutritionist_name || 'tu plan';
+    sourceLabel = `Del plan de ${nName}`;
+  } else {
+    sourceLabel = 'Personalizados (tu cálculo)';
+  }
+  let labelEl = document.getElementById('profile-macros-source');
+  if (!labelEl) {
+    const rowsEl = document.getElementById('profile-macros-rows');
+    if (rowsEl && rowsEl.parentNode) {
+      labelEl = document.createElement('div');
+      labelEl.id = 'profile-macros-source';
+      labelEl.style.cssText = 'font-size:10px; color:#94A3B8; padding:8px 14px 4px; font-style:italic;';
+      rowsEl.parentNode.insertBefore(labelEl, rowsEl);
+    }
+  }
+  if (labelEl) labelEl.textContent = sourceLabel;
 }
 
 async function openEditMacros() {
@@ -9874,30 +10188,266 @@ const planState = {
   parsed: null,         // output de la Edge Function
 };
 
-// Cargar plan activo del paciente (si tiene)
+// Cargar plan más reciente del paciente (active O paused)
+// El status real (active/scheduled/paused) se deriva con planComputeStatus.
 async function planLoadActive() {
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) return null;
-    const r = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${session.user.id}&active=eq.true&select=*&limit=1`, {
+    // Prioridad: 1) plan active=true (ordenado por starts_at desc por si hay edge cases) 2) plan más reciente
+    // Usamos 2 queries para no perder pausados: primero buscamos activo, si no hay, el más reciente created.
+    const tryActive = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${session.user.id}&active=eq.true&select=*&order=created_at.desc&limit=1`, {
       headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
     });
-    if (!r.ok) return null;
-    const rows = await r.json();
-    planState.active = rows[0] || null;
-    return planState.active;
+    let row = null;
+    if (tryActive.ok) {
+      const rows = await tryActive.json();
+      row = rows[0] || null;
+    }
+    // Si no hay activo, traer el más reciente (puede ser pausado)
+    if (!row) {
+      const tryRecent = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${session.user.id}&select=*&order=created_at.desc&limit=1`, {
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+      });
+      if (tryRecent.ok) {
+        const rows = await tryRecent.json();
+        row = rows[0] || null;
+      }
+    }
+    planState.active = row;
+    return row;
   } catch (e) {
     console.warn('[PLAN] load active failed:', e);
     return null;
   }
 }
 
-// Refresh del banner en Hoy: ocultar si ya hay plan activo
+// Refresh del banner en Hoy: 3 estados (sin plan, scheduled, active oculto)
 async function planRefreshHoyBanner() {
   const banner = document.getElementById('hoy-plan-cta');
   if (!banner) return;
-  const active = await planLoadActive();
-  banner.style.display = active ? 'none' : 'flex';
+  const plan = await planLoadActive();
+  const status = planComputeStatus(plan);
+
+  // Reset classes
+  banner.classList.remove('is-scheduled');
+
+  if (!plan) {
+    // Sin plan: banner default "¿Tenés un plan?"
+    banner.style.display = 'flex';
+    banner.onclick = () => planOpenUpload();
+    banner.innerHTML = `
+      <div class="hoy-plan-cta-icon">📋</div>
+      <div class="hoy-plan-cta-text">
+        <div class="hoy-plan-cta-title">¿Tenés un plan?</div>
+        <div class="hoy-plan-cta-sub">Subilo y SAVIA lo organiza por vos</div>
+      </div>
+      <div class="hoy-plan-cta-arrow">›</div>
+    `;
+  } else if (status === 'scheduled') {
+    // Programado: countdown ámbar
+    banner.style.display = 'flex';
+    banner.classList.add('is-scheduled');
+    banner.onclick = () => goStep('profile');
+    const nName = plan.nutritionist_name || 'tu plan';
+    const diff = planFormatDateDiff(plan.starts_at);
+    banner.innerHTML = `
+      <div class="hoy-plan-cta-icon">📅</div>
+      <div class="hoy-plan-cta-text">
+        <div class="hoy-plan-cta-title">Plan empieza ${_planEscape(diff)}</div>
+        <div class="hoy-plan-cta-sub">${_planEscape(nName)} · ${plan.total_kcal || '?'} kcal</div>
+      </div>
+      <div class="hoy-plan-cta-arrow">›</div>
+    `;
+  } else {
+    // Active o paused: por ahora ocultamos (Fase 3 traerá el pillar/tab del plan)
+    banner.style.display = 'none';
+    banner.onclick = null;
+  }
+}
+
+// Render de la sección "Mi plan nutricional" en Profile
+function renderProfilePlan() {
+  const card = document.getElementById('profile-plan-card');
+  const actionBtn = document.getElementById('profile-plan-action');
+  if (!card) return;
+  const plan = planState.active;
+  const status = planComputeStatus(plan);
+
+  if (!plan) {
+    card.innerHTML = `
+      <div class="profile-plan-empty">
+        <div style="font-size:24px;">📋</div>
+        <div style="font-size:12px; color:#fff; font-weight:700; margin-top:8px;">Sin plan activo</div>
+        <div style="font-size:11px; color:#94A3B8; margin-top:4px; line-height:1.4;">
+          Subí tu plan de nutricionista y SAVIA lo organiza por vos.
+        </div>
+      </div>
+    `;
+    if (actionBtn) { actionBtn.textContent = '+ Subir'; actionBtn.onclick = () => planOpenUpload(); }
+    return;
+  }
+
+  const nutriName = plan.nutritionist_name || 'Plan personalizado';
+  const initials = (plan.nutritionist_name || 'NA').split(' ').filter(s => s && s[0]).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'NA';
+  let metaText = '';
+  let badgeText = '';
+  let actions = '';
+  if (status === 'active') {
+    const since = plan.starts_at ? `Activo desde ${planFormatDatePretty(plan.starts_at)}` : 'Activo';
+    // Solo decir "siguiendo macros del plan" si el plan tiene macros válidos
+    const hasPlanMacros = plan.total_kcal && plan.total_kcal > 0;
+    metaText = since + (hasPlanMacros ? ' · siguiendo macros del plan' : '');
+    badgeText = '● ACTIVO';
+    actions = `
+      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planPause()">Volver a mis macros</button>
+      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="alert('Próximamente: ver detalle del plan en Fase 3.')">Ver plan</button>
+    `;
+  } else if (status === 'scheduled') {
+    metaText = `📅 Empieza el ${planFormatDatePretty(plan.starts_at)} · ${planFormatDateDiff(plan.starts_at)}`;
+    badgeText = 'PROGRAMADO';
+    actions = `
+      <button class="profile-plan-btn profile-plan-btn-primary" onclick="planActivateExisting()">Empezar ya</button>
+      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planChangeDate()">Cambiar fecha</button>
+    `;
+  } else {
+    metaText = 'Pausado · usando tus macros personalizados';
+    badgeText = 'PAUSADO';
+    actions = `
+      <button class="profile-plan-btn profile-plan-btn-primary" onclick="planActivateExisting()">Usar este plan</button>
+      <button class="profile-plan-btn profile-plan-btn-secondary" onclick="planChangeDate()">Programar fecha</button>
+    `;
+  }
+
+  card.innerHTML = `
+    <div class="profile-plan-card is-${status}">
+      <div class="profile-plan-head">
+        <div class="profile-plan-avatar">${_planEscape(initials)}</div>
+        <div class="profile-plan-name">
+          <div class="profile-plan-nutri">${_planEscape(nutriName)}</div>
+          <div class="profile-plan-meta">${_planEscape(metaText)}</div>
+        </div>
+        <span class="profile-plan-badge">${_planEscape(badgeText)}</span>
+      </div>
+      <div class="profile-plan-actions">${actions}</div>
+    </div>
+  `;
+  if (actionBtn) { actionBtn.textContent = '+ Cambiar'; actionBtn.onclick = () => planOpenUpload(); }
+}
+
+// Acciones de Profile para el plan existente
+async function planActivateExisting() {
+  if (!planState.active) return;
+  if (!confirm('¿Activar el plan ahora? Tus macros van a cambiar al plan.')) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const userId = session.user.id;
+    const accessToken = session.access_token;
+    const todayISO = _planDateToISO(_planTodayDateOnly());
+
+    // Desactivar otros activos primero
+    await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${userId}&active=eq.true&id=neq.${planState.active.id}`, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({ active: false }),
+    });
+
+    // Activar este
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?id=eq.${planState.active.id}`, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({ active: true, starts_at: todayISO }),
+    });
+    if (!r.ok) throw new Error('activate_failed: ' + await r.text());
+    const [updated] = await r.json();
+    planState.active = updated;
+    await _planInvalidateAndRefresh();
+    renderProfilePlan();
+    renderProfileMacros();
+    planRefreshHoyBanner().catch(() => {});
+    _planToast('✓ Usando macros del plan');
+  } catch (e) {
+    alert('No se pudo activar: ' + (e.message || 'error'));
+  }
+}
+
+async function planPause() {
+  if (!planState.active) return;
+  if (!confirm('¿Pausar el plan? Vas a volver a tus macros personalizados.')) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?id=eq.${planState.active.id}`, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({ active: false }),
+    });
+    if (!r.ok) throw new Error('pause_failed');
+    const [updated] = await r.json();
+    planState.active = updated;
+    await _planInvalidateAndRefresh();
+    renderProfilePlan();
+    renderProfileMacros();
+    planRefreshHoyBanner().catch(() => {});
+    _planToast('Volviste a tus macros personalizados');
+  } catch (e) {
+    alert('No se pudo pausar: ' + (e.message || 'error'));
+  }
+}
+
+async function planChangeDate() {
+  if (!planState.active) return;
+  const current = planState.active.starts_at || _planDateToISO(_planTodayDateOnly());
+  const newDate = prompt('Nueva fecha de inicio (formato YYYY-MM-DD):', current);
+  if (!newDate) return;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(newDate)) {
+    alert('Formato inválido. Usá YYYY-MM-DD (ej. 2026-06-09).');
+    return;
+  }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?id=eq.${planState.active.id}`, {
+      method: 'PATCH',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({ active: true, starts_at: newDate }),
+    });
+    if (!r.ok) throw new Error('change_date_failed');
+    const [updated] = await r.json();
+    planState.active = updated;
+    await _planInvalidateAndRefresh();
+    renderProfilePlan();
+    renderProfileMacros();
+    planRefreshHoyBanner().catch(() => {});
+    _planToast(`Reprogramado para ${planFormatDatePretty(newDate)}`);
+  } catch (e) {
+    alert('No se pudo cambiar la fecha: ' + (e.message || 'error'));
+  }
+}
+
+function _planToast(msg) {
+  const ok = document.createElement('div');
+  ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
+  ok.textContent = msg;
+  document.body.appendChild(ok);
+  setTimeout(() => { if (ok.parentNode) ok.remove(); }, 2000);
+}
+
+// Después de activar/pausar el plan: invalidar targets cacheados + AI Insight + re-render Hoy data
+async function _planInvalidateAndRefresh() {
+  try {
+    // Forzar re-load de targets (puede venir del plan o de nutrition_targets)
+    nutState.targets = null;
+    const fresh = await nutLoadTargets();
+    if (fresh) nutState.targets = fresh;
+  } catch (e) { console.warn('[PLAN] reload targets failed:', e); }
+  // Invalidar AI Insight cache
+  if (typeof _aiInsightCache !== 'undefined') {
+    _aiInsightCache.data = null;
+    _aiInsightCache.ts = 0;
+    _aiInsightCache.hourBucket = null;
+  }
 }
 
 // Abrir flow de upload
@@ -10171,11 +10721,158 @@ function planRemoveItem(mealIdx, itemIdx) {
   planRenderConfirm();
 }
 
-async function planSave() {
+// ============================================================
+//  PLAN — Helpers de status y fechas
+// ============================================================
+function planComputeStatus(plan) {
+  if (!plan) return null;
+  if (!plan.active) return 'paused';
+  const today = _planTodayDateOnly();
+  const startsAt = plan.starts_at ? new Date(plan.starts_at + 'T00:00:00') : null;
+  if (!startsAt || startsAt <= today) return 'active';
+  return 'scheduled';
+}
+
+function _planTodayDateOnly() {
+  const t = new Date(); t.setHours(0, 0, 0, 0); return t;
+}
+
+function planFormatDateDiff(dateStr) {
+  if (!dateStr) return '';
+  const today = _planTodayDateOnly();
+  const d = new Date(dateStr + 'T00:00:00');
+  const diffDays = Math.round((d - today) / 86400000);
+  if (diffDays === 0) return 'hoy';
+  if (diffDays === 1) return 'mañana';
+  if (diffDays === -1) return 'ayer';
+  if (diffDays < 0) return `hace ${-diffDays} días`;
+  if (diffDays < 7) return `en ${diffDays} días`;
+  if (diffDays < 14) return `en 1 semana`;
+  return `en ${Math.round(diffDays / 7)} semanas`;
+}
+
+const _DOW_LABELS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const _MONTH_LABELS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+
+function planFormatDatePretty(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return `${_DOW_LABELS[d.getDay()]} ${d.getDate()} de ${_MONTH_LABELS[d.getMonth()]}`;
+}
+
+function _planDateToISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function planGetSuggestedDates() {
+  const today = _planTodayDateOnly();
+  const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+  // Próximo lunes (si hoy es lunes, el próximo es +7 días)
+  const nextMonday = new Date(today);
+  const dow = today.getDay(); // 0=dom, 1=lun
+  const daysToMonday = dow === 1 ? 7 : (dow === 0 ? 1 : 8 - dow);
+  nextMonday.setDate(nextMonday.getDate() + daysToMonday);
+  // Próximo día 1
+  const nextFirst = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+  return {
+    tomorrow: _planDateToISO(tomorrow),
+    next_monday: _planDateToISO(nextMonday),
+    next_month: _planDateToISO(nextFirst),
+  };
+}
+
+// State del flow "plan-when-date": fecha seleccionada (ISO)
+let _planScheduledDate = null;
+
+function planRenderWhenScreen() {
+  const p = planState.parsed;
+  const sumEl = document.getElementById('plan-when-summary');
+  if (sumEl && p) {
+    const nutriName = p.nutritionist?.name || 'Plan personalizado';
+    sumEl.textContent = `${nutriName} · ${p.targets?.kcal || '?'} kcal`;
+  }
+  // Sugerencia rápida en el botón "Programar inicio"
+  const suggestEl = document.getElementById('plan-when-suggest');
+  if (suggestEl) {
+    const suggested = planGetSuggestedDates();
+    suggestEl.textContent = `${planFormatDatePretty(suggested.next_monday)} (${planFormatDateDiff(suggested.next_monday)})`;
+  }
+}
+
+function planRenderDateScreen() {
+  const suggested = planGetSuggestedDates();
+  // Pre-seleccionar próximo lunes si no hay selección previa
+  if (!_planScheduledDate) _planScheduledDate = suggested.next_monday;
+
+  // Pintar sugerencias
+  document.getElementById('plan-date-sg-tomorrow').textContent = planFormatDatePretty(suggested.tomorrow);
+  document.getElementById('plan-date-sg-next_monday').textContent = planFormatDatePretty(suggested.next_monday);
+  document.getElementById('plan-date-sg-next_month').textContent = planFormatDatePretty(suggested.next_month);
+
+  // Marcar la sugerencia activa
+  ['tomorrow', 'next_monday', 'next_month'].forEach(k => {
+    const btn = document.querySelector(`.plan-date-suggest[data-key="${k}"]`);
+    if (btn) btn.classList.toggle('selected', _planScheduledDate === suggested[k]);
+  });
+
+  // Pintar el hero
+  document.getElementById('plan-date-pretty').textContent = planFormatDatePretty(_planScheduledDate);
+  document.getElementById('plan-date-diff').textContent = planFormatDateDiff(_planScheduledDate);
+
+  // Sync input nativo
+  const inp = document.getElementById('plan-date-input');
+  if (inp) {
+    inp.value = _planScheduledDate;
+    const todayISO = _planDateToISO(_planTodayDateOnly());
+    inp.min = todayISO;
+  }
+}
+
+function planDateSelect(key, customValue) {
+  if (key === 'custom') {
+    if (!customValue) return;
+    _planScheduledDate = customValue;
+  } else {
+    const suggested = planGetSuggestedDates();
+    _planScheduledDate = suggested[key];
+  }
+  planRenderDateScreen();
+}
+
+// ============================================================
+//  PLAN — Flows de save según decisión del user
+// ============================================================
+function planActivateNow() {
+  _planSaveWithSchedule(true, _planDateToISO(_planTodayDateOnly()));
+}
+
+function planActivateScheduled() {
+  if (!_planScheduledDate) return;
+  _planSaveWithSchedule(true, _planScheduledDate);
+}
+
+function planSavePaused() {
+  _planSaveWithSchedule(false, null);
+}
+
+async function _planSaveWithSchedule(active, startsAt) {
   if (!planState.parsed) return;
-  const btn = document.querySelector('[data-step="plan-confirm"] .em-save-btn');
-  const origText = btn ? btn.textContent : 'Guardar';
-  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  // Routear visualmente al confirm (para que el botón se vea ocupado) — opcional: podemos solo bloquear botones
+  const allBtns = document.querySelectorAll('[data-step="plan-when"] .plan-when-btn, [data-step="plan-when-date"] .em-save-btn');
+  allBtns.forEach(b => { b.disabled = true; b.style.opacity = '0.6'; });
+  try {
+    await planDoSave({ active, startsAt });
+  } finally {
+    allBtns.forEach(b => { b.disabled = false; b.style.opacity = ''; });
+  }
+}
+
+async function planDoSave(opts) {
+  if (!planState.parsed) return;
+  const { active, startsAt } = opts || {};
 
   try {
     const { data: { session } } = await sb.auth.getSession();
@@ -10184,12 +10881,15 @@ async function planSave() {
     const accessToken = session.access_token;
     const p = planState.parsed;
 
-    // 1) Marcar planes anteriores como inactivos (constraint unique active permite solo 1)
-    await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${userId}&active=eq.true`, {
-      method: 'PATCH',
-      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
-      body: JSON.stringify({ active: false }),
-    });
+    // 1) Si el nuevo plan va a quedar active=true, marcar planes anteriores como inactivos
+    //    (el constraint unique WHERE active=TRUE permite solo 1)
+    if (active) {
+      await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?patient_user_id=eq.${userId}&active=eq.true`, {
+        method: 'PATCH',
+        headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+        body: JSON.stringify({ active: false }),
+      });
+    }
 
     // 2) Subir archivo original al bucket meal-plans/{userId}/{timestamp}-{name}
     let sourceFileUrl = null;
@@ -10226,7 +10926,8 @@ async function planSave() {
         protein_per_kg: p.targets?.protein_per_kg || null,
         source_file_url: sourceFileUrl,
         raw_parsed_json: p,
-        active: true,
+        active: active === true,
+        starts_at: startsAt || null,
       }),
     });
     if (!planInsert.ok) {
@@ -10335,26 +11036,37 @@ async function planSave() {
       if (!rIns.ok) console.warn('plan_rules insert error:', await rIns.text());
     }
 
-    // 8) Update state + toast + volver a Hoy
+    // 8) Update state + toast + ir a Profile (con la sección "Mi plan" mostrando el estado)
     planState.active = savedPlan;
     planState.parsed = null;
     planState.uploadFile = null;
     planState.uploadBase64 = null;
+    _planScheduledDate = null;
+
+    // Si quedó activo desde hoy, invalidar caches para que Hoy use macros del plan
+    if (active === true && planComputeStatus(savedPlan) === 'active') {
+      try { await _planInvalidateAndRefresh(); } catch (e) {}
+    }
+
+    const status = planComputeStatus(savedPlan);
+    let toastMsg = '✓ Plan guardado';
+    if (status === 'active') toastMsg = '✓ Plan activado';
+    else if (status === 'scheduled') toastMsg = `✓ Plan programado para ${planFormatDatePretty(savedPlan.starts_at)}`;
+    else toastMsg = '✓ Plan guardado (pausado)';
 
     const ok = document.createElement('div');
-    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);';
-    ok.textContent = '✓ Plan guardado';
+    ok.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translate(-50%,0);background:rgba(132,204,22,0.95);color:#0a0e1a;padding:12px 22px;border-radius:14px;font-size:13px;font-weight:700;z-index:99999;box-shadow:0 12px 40px rgba(0,0,0,0.4);max-width:300px;text-align:center;';
+    ok.textContent = toastMsg;
     document.body.appendChild(ok);
-    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 2200);
+    setTimeout(() => { if (ok.parentNode) ok.remove(); }, 2400);
 
-    // Refresh banner Hoy + ir a Hoy
-    goStep('app');
+    // Ir a Profile (donde se ve el plan ahora). openProfile() re-renderea todo.
+    if (typeof openProfile === 'function') openProfile();
+    else goStep('profile');
     setTimeout(() => { planRefreshHoyBanner().catch(() => {}); }, 200);
   } catch (e) {
     console.error('[PLAN] save failed:', e);
     alert('No se pudo guardar el plan: ' + (e.message || 'error desconocido'));
-  } finally {
-    if (btn) { btn.disabled = false; btn.textContent = origText; }
   }
 }
 
@@ -12011,6 +12723,12 @@ function renderProfile() {
     try { await ensureNutStateLoaded(); } catch (e) {}
     renderProfileMacros();
   })();
+
+  // Mi plan nutricional — fire-and-forget (carga el plan activo y renderiza)
+  (async () => {
+    try { await planLoadActive(); } catch (e) {}
+    renderProfilePlan();
+  })();
 }
 
 function toggleProfileFaceID() {
@@ -12569,6 +13287,7 @@ async function logout() {
     planState.uploadMime = null;
     planState.parsed = null;
   }
+  if (typeof _planScheduledDate !== 'undefined') _planScheduledDate = null;
   if (typeof _aiInsightCache !== 'undefined') {
     _aiInsightCache.data = null;
     _aiInsightCache.ts = 0;
