@@ -3235,6 +3235,82 @@
     font-weight: 700;
   }
 
+  /* Wearables conectados */
+  .wear-connect-btn {
+    width: 100%;
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(135deg, rgba(252,76,2,0.08), rgba(252,76,2,0.03));
+    border: 1px solid rgba(252,76,2,0.3);
+    border-radius: 14px;
+    padding: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wear-connect-btn:active { transform: scale(0.985); }
+  .wear-logo {
+    width: 38px; height: 38px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    background: #FC4C02;
+    color: white;
+    font-weight: 800; font-size: 16px;
+    flex-shrink: 0;
+  }
+  .wear-text { flex: 1; min-width: 0; text-align: left; }
+  .wear-title { font-size: 13px; font-weight: 700; color: #fff; }
+  .wear-sub { font-size: 11px; color: #94A3B8; margin-top: 2px; }
+
+  .wear-connected-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(132,204,22,0.25);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 8px;
+  }
+  .wear-connected-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+  .wear-connected-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(252,76,2,0.15);
+    background-size: cover; background-position: center;
+    flex-shrink: 0;
+    border: 2px solid #FC4C02;
+  }
+  .wear-connected-status {
+    background: rgba(132,204,22,0.18);
+    color: #BEF264;
+    font-size: 9px; font-weight: 700; letter-spacing: 0.4px;
+    padding: 3px 8px; border-radius: 6px;
+  }
+  .wear-connected-actions {
+    display: flex; gap: 6px; margin-top: 4px;
+  }
+  .wear-btn-sync {
+    flex: 1;
+    background: rgba(132,204,22,0.12);
+    border: 1px solid rgba(132,204,22,0.3);
+    color: #BEF264;
+    font-size: 11px; font-weight: 700;
+    padding: 8px;
+    border-radius: 9px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .wear-btn-sync:disabled { opacity: 0.6; cursor: not-allowed; }
+  .wear-btn-disconnect {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #94A3B8;
+    font-size: 11px; font-weight: 600;
+    padding: 8px 12px;
+    border-radius: 9px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
   /* Nutrition LOG MANUAL — rediseño */
   .nlm-section-label {
     font-size: 10px; color: #94A3B8;
@@ -5207,13 +5283,8 @@
     <div class="profile-section">
       <div class="profile-section-header">
         <div class="profile-section-title">Wearables conectados</div>
-        <button class="profile-section-action" onclick="editWearablesFromProfile()">+ Wearable</button>
       </div>
-      <div class="profile-card" id="profile-wearables-card">
-        <div class="profile-row">
-          <div class="profile-row-label">—</div>
-        </div>
-      </div>
+      <div id="profile-wearables-card"></div>
     </div>
 
     <!-- Cuenta -->
@@ -6427,6 +6498,35 @@
     </div>
   </div>
 
+  <!-- ============== STRAVA OAUTH CALLBACK ============== -->
+  <div class="screen nut-screen" data-step="strava-callback">
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:70vh; padding:24px; text-align:center;">
+      <div id="strava-cb-loading">
+        <div class="nut-photo-spinner" style="border-color:rgba(252,76,2,0.25); border-top-color:#FC4C02;"></div>
+        <div style="margin-top:24px; font-size:16px; font-weight:700; color:#fff;">Conectando Strava...</div>
+        <div style="margin-top:6px; font-size:12px; color:#94A3B8; max-width:280px; line-height:1.5;">
+          Validando autorización y guardando tu conexión.
+        </div>
+      </div>
+      <div id="strava-cb-success" style="display:none;">
+        <div style="font-size:48px;">✓</div>
+        <div style="margin-top:14px; font-size:18px; font-weight:700; color:#fff;">¡Strava conectado!</div>
+        <div id="strava-cb-success-detail" style="margin-top:6px; font-size:12px; color:#94A3B8; max-width:280px; line-height:1.5;">
+          Tus actividades van a sincronizar en segundos.
+        </div>
+        <button style="margin-top:24px; background:#BEF264; color:#0a0e1a; border:none; padding:12px 24px; border-radius:12px; font-size:13px; font-weight:700;" onclick="stravaCallbackContinue()">Ir a mi perfil</button>
+      </div>
+      <div id="strava-cb-error" style="display:none;">
+        <div style="font-size:48px;">⚠️</div>
+        <div style="margin-top:14px; font-size:16px; font-weight:700; color:#fff;">No se pudo conectar</div>
+        <div id="strava-cb-error-detail" style="margin-top:6px; font-size:12px; color:#FCA5A5; max-width:280px; line-height:1.5;">
+          —
+        </div>
+        <button style="margin-top:24px; background:rgba(255,255,255,0.08); color:#fff; border:1px solid rgba(255,255,255,0.15); padding:12px 24px; border-radius:12px; font-size:13px; font-weight:600;" onclick="stravaCallbackContinue()">Volver al perfil</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============== InBody: comparar targets actuales vs nuevos ============== -->
   <div class="screen nut-screen" data-step="nut-targets-compare">
     <div class="nut-topbar">
@@ -7022,6 +7122,7 @@ function goStep(n) {
     'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
     'plan-when', 'plan-when-date', 'plan-view', 'plan-today', 'plan-meal-log',
+    'strava-callback',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -8193,6 +8294,214 @@ async function ensureNutStateLoaded() {
 // Tap en el hero Balance Energético — routea según contexto:
 //   - Plan activo → abre Mi Plan Hoy (donde puede marcar comidas o agregar extras)
 //   - Sin plan activo → abre el flow de Nueva Comida (foto/barcode/buscar/manual)
+// ============================================================
+//  WEARABLES — Strava + futuros providers
+// ============================================================
+const STRAVA_CLIENT_ID = '255995';
+const STRAVA_REDIRECT_URI = 'https://usesavia.com/strava-callback';
+const STRAVA_SCOPE = 'activity:read_all';
+
+const wearableState = {
+  connections: [],
+  loading: false,
+};
+
+async function wearableLoadConnections() {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return [];
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/wearable_connections?user_id=eq.${session.user.id}&select=*&order=connected_at.desc`, {
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' },
+    });
+    if (!r.ok) return [];
+    wearableState.connections = await r.json();
+    return wearableState.connections;
+  } catch (e) {
+    console.warn('[WEAR] load failed:', e);
+    return [];
+  }
+}
+
+function renderProfileWearables() {
+  const card = document.getElementById('profile-wearables-card');
+  if (!card) return;
+  const strava = wearableState.connections.find(c => c.provider === 'strava' && c.status === 'active');
+  let html = '';
+  if (strava) {
+    const lastSync = strava.last_sync_at ? _wearTimeAgo(new Date(strava.last_sync_at)) : 'nunca';
+    const avatarStyle = strava.external_avatar_url ? `background-image:url(${_wearEscape(strava.external_avatar_url)});` : '';
+    html += `
+      <div class="wear-connected-card">
+        <div class="wear-connected-head">
+          <div class="wear-connected-avatar" style="${avatarStyle}"></div>
+          <div class="wear-text">
+            <div class="wear-title">Strava</div>
+            <div class="wear-sub">${_wearEscape(strava.external_username || 'conectado')} · ${strava.total_activities_synced || 0} actividades</div>
+          </div>
+          <span class="wear-connected-status">● ACTIVO</span>
+        </div>
+        <div style="font-size:10px; color:#64748B; margin-bottom:8px;">Último sync: ${lastSync}</div>
+        <div class="wear-connected-actions">
+          <button class="wear-btn-sync" onclick="stravaSyncNow(this)">Sincronizar ahora</button>
+          <button class="wear-btn-disconnect" onclick="stravaDisconnect()">Desconectar</button>
+        </div>
+      </div>
+    `;
+  } else {
+    html += `
+      <button class="wear-connect-btn" onclick="stravaConnect()">
+        <div class="wear-logo">SR</div>
+        <div class="wear-text">
+          <div class="wear-title">Conectar Strava</div>
+          <div class="wear-sub">Sync automático de runs, rides, strength y más</div>
+        </div>
+        <div style="color:#FC4C02; font-size:18px;">›</div>
+      </button>
+    `;
+  }
+  card.innerHTML = html;
+}
+
+function _wearEscape(s) {
+  if (s == null) return '';
+  return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+}
+
+function _wearTimeAgo(d) {
+  const diff = Math.round((new Date() - d) / 60000);
+  if (diff < 1) return 'hace segundos';
+  if (diff < 60) return `hace ${diff} min`;
+  const h = Math.floor(diff / 60);
+  if (h < 24) return `hace ${h}h`;
+  const days = Math.floor(h / 24);
+  return `hace ${days}d`;
+}
+
+// ===== Strava OAuth flow =====
+function stravaConnect() {
+  const url = `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT_URI)}&response_type=code&approval_prompt=auto&scope=${STRAVA_SCOPE}`;
+  window.location.href = url;
+}
+
+async function stravaDisconnect() {
+  if (!confirm('¿Desconectar Strava? Las actividades ya sincronizadas se mantienen.')) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/wearable_connections?user_id=eq.${session.user.id}&provider=eq.strava`, {
+      method: 'DELETE',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Prefer: 'return=minimal' },
+    });
+    if (!r.ok) throw new Error('delete_failed');
+    await wearableLoadConnections();
+    renderProfileWearables();
+    if (typeof _planToast === 'function') _planToast('Strava desconectado');
+  } catch (e) {
+    alert('No se pudo desconectar: ' + e.message);
+  }
+}
+
+async function stravaSyncNow(btn) {
+  if (btn) { btn.disabled = true; btn.textContent = 'Sincronizando...'; }
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/strava-sync-activities`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}`, apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ since_days: 30, trigger: 'manual' }),
+    });
+    const result = await r.json();
+    if (!r.ok || result.error) throw new Error(result.error || `http_${r.status}`);
+    await wearableLoadConnections();
+    renderProfileWearables();
+    if (typeof _planToast === 'function') {
+      _planToast(`✓ ${result.inserted} actividades nuevas`);
+    }
+  } catch (e) {
+    alert('Sync falló: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = 'Sincronizar ahora'; }
+  }
+}
+
+// Callback handler: detecta /strava-callback?code=... y dispara el flow
+async function stravaCallbackProcess(code) {
+  const showLoading = () => {
+    document.getElementById('strava-cb-loading').style.display = '';
+    document.getElementById('strava-cb-success').style.display = 'none';
+    document.getElementById('strava-cb-error').style.display = 'none';
+  };
+  const showSuccess = (detail) => {
+    document.getElementById('strava-cb-loading').style.display = 'none';
+    document.getElementById('strava-cb-success').style.display = '';
+    document.getElementById('strava-cb-error').style.display = 'none';
+    if (detail) document.getElementById('strava-cb-success-detail').textContent = detail;
+  };
+  const showError = (msg) => {
+    document.getElementById('strava-cb-loading').style.display = 'none';
+    document.getElementById('strava-cb-success').style.display = 'none';
+    document.getElementById('strava-cb-error').style.display = '';
+    document.getElementById('strava-cb-error-detail').textContent = msg || 'Error desconocido';
+  };
+
+  goStep('strava-callback');
+  showLoading();
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      sessionStorage.setItem('strava_pending_code', code);
+      showError('Iniciá sesión primero para guardar tu conexión.');
+      setTimeout(() => goStep('login'), 1800);
+      return;
+    }
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/strava-oauth-callback`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}`, apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code }),
+    });
+    const result = await r.json();
+    if (!r.ok || result.error) throw new Error(result.error || `http_${r.status}`);
+    const name = result.athlete_name || 'tu cuenta';
+    showSuccess(`Conectado como ${name}. Sincronizando actividades...`);
+    // Disparar el primer sync en background
+    stravaSyncNow(null).catch(() => {});
+  } catch (e) {
+    showError(e.message || 'No se pudo guardar la conexión');
+  }
+}
+
+function stravaCallbackContinue() {
+  // Limpiar el query string del URL (sin reload)
+  if (window.history && window.history.replaceState) {
+    window.history.replaceState({}, '', '/');
+  }
+  if (typeof openProfile === 'function') openProfile();
+  else goStep('profile');
+}
+
+// Detector de callback al inicio (corre en boot)
+function stravaCallbackDetect() {
+  if (window.location.pathname !== '/strava-callback') return false;
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const err = params.get('error');
+  if (err) {
+    setTimeout(() => {
+      goStep('strava-callback');
+      document.getElementById('strava-cb-loading').style.display = 'none';
+      document.getElementById('strava-cb-error').style.display = '';
+      document.getElementById('strava-cb-error-detail').textContent = err === 'access_denied' ? 'No autorizaste el acceso.' : err;
+    }, 300);
+    return true;
+  }
+  if (code) {
+    setTimeout(() => stravaCallbackProcess(code), 300);
+    return true;
+  }
+  return false;
+}
+
 function hoyBalanceTap() {
   try {
     if (planState && planState.active && planComputeStatus(planState.active) === 'active') {
@@ -14330,6 +14639,12 @@ function renderProfile() {
     try { await planLoadActive(); } catch (e) {}
     renderProfilePlan();
   })();
+
+  // Wearables — fire-and-forget
+  (async () => {
+    try { await wearableLoadConnections(); } catch (e) {}
+    renderProfileWearables();
+  })();
 }
 
 function toggleProfileFaceID() {
@@ -14903,6 +15218,10 @@ async function logout() {
     planMealLogState.selectedItemIds = new Set();
   }
   if (typeof _planScheduledDate !== 'undefined') _planScheduledDate = null;
+  if (typeof wearableState !== 'undefined') {
+    wearableState.connections = [];
+    wearableState.loading = false;
+  }
   if (typeof _aiInsightCache !== 'undefined') {
     _aiInsightCache.data = null;
     _aiInsightCache.ts = 0;
@@ -15229,6 +15548,16 @@ async function _doRouteAuthenticatedUser(sessionHint) {
 function showDebugBanner() { /* no-op */ }
 
 (async function init() {
+  // Detectar callback de Strava OAuth ANTES de cualquier routing — si es callback, NO seguir con init normal
+  if (window.location.pathname === '/strava-callback' && typeof stravaCallbackDetect === 'function') {
+    try {
+      if (stravaCallbackDetect()) {
+        document.documentElement.classList.remove('oauth-loading');
+        return;
+      }
+    } catch (e) { console.warn('strava cb detect:', e); }
+  }
+
   // Manejo del link de password reset (Supabase pone el access_token en el hash)
   const urlParams = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -15262,6 +15591,16 @@ function showDebugBanner() { /* no-op */ }
     // Si volvió de OAuth (Google), routear automáticamente
     if (event === 'SIGNED_IN' && (state.step === 0 || state.step === 'auth' || state.step === undefined)) {
       await routeAuthenticatedUser(session);
+    }
+    // Si había un Strava callback pending (user no estaba logueado cuando volvió de Strava), retomarlo ahora
+    if (event === 'SIGNED_IN') {
+      try {
+        const pendingStravaCode = sessionStorage.getItem('strava_pending_code');
+        if (pendingStravaCode && typeof stravaCallbackProcess === 'function') {
+          sessionStorage.removeItem('strava_pending_code');
+          setTimeout(() => stravaCallbackProcess(pendingStravaCode), 600);
+        }
+      } catch (e) { console.warn('strava pending resume:', e); }
     }
   });
 
