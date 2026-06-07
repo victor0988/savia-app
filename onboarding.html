@@ -7,7 +7,7 @@
 <title>SAVIA — Onboarding</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
   // VERY early: si venimos de OAuth callback (hash con access_token), añadir oauth-loading
@@ -4006,6 +4006,403 @@
   }
 
   .hidden { display: none !important; }
+
+  /* ===================================================================
+     WOMEN'S HEALTH · Dashboard "Mi Ciclo"
+     =================================================================== */
+  .wh-dash {
+    --phase-menstrual: #B05670;
+    --phase-follicular: #9DC3A8;
+    --phase-ovulatory: #E9C77B;
+    --phase-luteal-early: #C49FCF;
+    --phase-luteal-late: #8B7AC4;
+    --wh-rose: #E9A8B8;
+    --wh-current-color: var(--phase-ovulatory);
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(233, 199, 123, 0.10) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(196, 159, 207, 0.05) 0%, transparent 50%),
+      #0B0F0E;
+    padding: 0 0 90px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .wh-dash-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 22px 8px;
+    position: sticky; top: 0;
+    background: rgba(11, 15, 14, 0.85);
+    backdrop-filter: blur(12px);
+    z-index: 10;
+  }
+  .wh-dash-back, .wh-dash-menu {
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+    padding: 0;
+  }
+  .wh-dash-menu { font-size: 20px; line-height: 1; }
+  .wh-dash-title {
+    font-family: 'Cormorant Garamond', 'Pagella', Georgia, serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: #F1EDE4;
+    letter-spacing: 0.4px;
+  }
+  /* Hero */
+  .wh-hero {
+    text-align: center;
+    padding: 12px 22px 24px;
+  }
+  .wh-hero-eyebrow {
+    font-size: 10.5px;
+    letter-spacing: 2px;
+    color: var(--wh-current-color);
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .wh-hero-phase {
+    font-family: 'Cormorant Garamond', 'Pagella', Georgia, serif;
+    font-size: 22px;
+    color: #F1EDE4;
+    letter-spacing: 0.3px;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+  .wh-ring-wrap {
+    position: relative;
+    width: 232px;
+    height: 232px;
+    margin: 0 auto;
+  }
+  .wh-ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .wh-ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .wh-ring-day {
+    font-family: 'Cormorant Garamond', 'Pagella', Georgia, serif;
+    font-size: 13px;
+    color: #94A3B8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .wh-ring-num {
+    font-family: 'Cormorant Garamond', 'Pagella', Georgia, serif;
+    font-size: 68px;
+    color: #F1EDE4;
+    font-weight: 400;
+    line-height: 1;
+  }
+  .wh-ring-energy {
+    font-size: 11px;
+    color: var(--wh-current-color);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-top: 14px;
+  }
+  .wh-ring-energy-sub {
+    font-size: 10.5px;
+    color: #64748B;
+    margin-top: 2px;
+  }
+  .wh-next-period {
+    margin-top: 22px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 24px;
+    font-size: 12px;
+    color: #94A3B8;
+  }
+  .wh-next-period strong { color: #F1EDE4; font-weight: 600; }
+  .wh-confidence-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #BEF264;
+    box-shadow: 0 0 8px rgba(190,242,100,0.6);
+  }
+
+  /* Sections */
+  .wh-section { padding: 26px 22px 4px; }
+  .wh-section-label {
+    font-size: 10px;
+    color: #64748B;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    font-weight: 700;
+  }
+  .wh-section-title {
+    font-family: 'Cormorant Garamond', 'Pagella', Georgia, serif;
+    font-size: 21px;
+    color: #F1EDE4;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+    font-style: italic;
+  }
+  .wh-section-sub {
+    font-size: 12px;
+    color: #94A3B8;
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+
+  /* Cross-module insight cards */
+  .wh-mod-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: background 0.18s ease;
+  }
+  .wh-mod-card:active { background: rgba(255,255,255,0.06); }
+  .wh-mod-icon {
+    width: 34px; height: 34px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .wh-mod-icon.workout    { background: rgba(244, 114, 182, 0.10); }
+  .wh-mod-icon.nutrition  { background: rgba(190, 242, 100, 0.10); }
+  .wh-mod-icon.sleep      { background: rgba(167, 139, 250, 0.10); }
+  .wh-mod-icon.recovery   { background: rgba(52, 211, 153, 0.10); }
+  .wh-mod-body { flex: 1; min-width: 0; }
+  .wh-mod-cat {
+    font-size: 10px;
+    color: #64748B;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .wh-mod-text {
+    font-size: 13px;
+    color: #F8FAFC;
+    line-height: 1.45;
+    margin-bottom: 3px;
+  }
+  .wh-mod-meta {
+    font-size: 11px;
+    color: #64748B;
+  }
+  .wh-mod-chev { color: #475569; font-size: 18px; align-self: center; }
+
+  /* Hormone bars */
+  .wh-hormone-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 16px 16px 12px;
+  }
+  .wh-hormone-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .wh-hormone-row:last-child { margin-bottom: 0; }
+  .wh-hormone-label {
+    font-size: 12px;
+    color: #94A3B8;
+    width: 110px;
+    flex-shrink: 0;
+  }
+  .wh-hormone-bar {
+    flex: 1;
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .wh-hormone-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease;
+  }
+  .wh-hormone-fill.high { background: linear-gradient(90deg, var(--phase-ovulatory), var(--wh-rose)); }
+  .wh-hormone-fill.mid  { background: linear-gradient(90deg, var(--phase-follicular), var(--phase-luteal-early)); }
+  .wh-hormone-fill.low  { background: linear-gradient(90deg, var(--phase-luteal-early), var(--phase-luteal-late)); opacity: 0.6; }
+  .wh-hormone-value {
+    font-size: 11px;
+    color: #94A3B8;
+    width: 42px;
+    text-align: right;
+  }
+  .wh-disclaimer {
+    font-size: 10.5px;
+    color: #64748B;
+    margin-top: 10px;
+    line-height: 1.5;
+    padding: 0 4px;
+  }
+
+  /* Forecast heatmap */
+  .wh-forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    gap: 4px;
+    margin-bottom: 12px;
+  }
+  .wh-day-cell {
+    aspect-ratio: 1 / 1.4;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: 700;
+    background: rgba(255,255,255,0.04);
+    color: #64748B;
+  }
+  .wh-day-cell.today { box-shadow: 0 0 0 1.5px #F1EDE4; }
+  .wh-day-cell.ovulatory       { background: var(--phase-ovulatory); color: #2a1f08; }
+  .wh-day-cell.luteal_early    { background: var(--phase-luteal-early); color: #2a1a35; }
+  .wh-day-cell.luteal_late     { background: var(--phase-luteal-late); color: #20133f; }
+  .wh-day-cell.menstrual       { background: var(--phase-menstrual); color: #2a0d18; }
+  .wh-day-cell.follicular_early, .wh-day-cell.follicular { background: var(--phase-follicular); color: #0e2018; }
+  .wh-forecast-legend {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 10px;
+    color: #64748B;
+    margin-top: 6px;
+  }
+  .wh-legend-item { display: flex; align-items: center; gap: 5px; }
+  .wh-legend-dot { width: 7px; height: 7px; border-radius: 2px; }
+
+  /* Pattern AI cards */
+  .wh-pattern-card {
+    background: linear-gradient(135deg, rgba(233, 199, 123, 0.04) 0%, rgba(196, 159, 207, 0.04) 100%);
+    border: 1px solid rgba(233, 199, 123, 0.18);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .wh-pattern-card::before {
+    content: 'IA';
+    position: absolute;
+    top: 12px; right: 14px;
+    font-size: 9px;
+    color: var(--phase-ovulatory);
+    letter-spacing: 1.2px;
+    font-weight: 700;
+    background: rgba(233, 199, 123, 0.10);
+    padding: 3px 7px;
+    border-radius: 4px;
+  }
+  .wh-pattern-headline {
+    font-family: 'Cormorant Garamond', 'Pagella', Georgia, serif;
+    font-size: 15px;
+    color: #F1EDE4;
+    line-height: 1.4;
+    margin-bottom: 6px;
+    padding-right: 36px;
+    font-style: italic;
+  }
+  .wh-pattern-detail {
+    font-size: 11.5px;
+    color: #94A3B8;
+    line-height: 1.5;
+  }
+  .wh-pattern-detail strong { color: #F1EDE4; font-weight: 600; }
+
+  /* Empty state (pattern card, no patterns yet) */
+  .wh-empty-patterns {
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed rgba(255,255,255,0.10);
+    border-radius: 14px;
+    padding: 20px 16px;
+    text-align: center;
+    font-size: 12px;
+    color: #94A3B8;
+    line-height: 1.55;
+  }
+  .wh-empty-patterns strong { color: #F1EDE4; font-weight: 600; display: block; margin-bottom: 4px; font-size: 13px; }
+
+  /* Symptom chips */
+  .wh-symptom-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .wh-symptom-chip {
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    font-size: 12px;
+    color: #94A3B8;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .wh-chip-count {
+    background: rgba(190, 242, 100, 0.10);
+    color: #BEF264;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+  }
+
+  /* FAB */
+  .wh-fab-wrap {
+    position: sticky;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 22px 22px;
+    background: linear-gradient(to top, #0B0F0E 70%, transparent);
+    margin-top: 14px;
+    z-index: 10;
+  }
+  .wh-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 15px;
+    background: #F1EDE4;
+    color: #0B0F0E;
+    border: none;
+    border-radius: 18px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(241, 237, 228, 0.15);
+    font-family: inherit;
+  }
+
 </style>
 </head>
 <body>
@@ -7317,6 +7714,122 @@
     <button class="nut-onb-continue" id="wh-onb-6-btn" onclick="whOnbConfirmActivate()">Activar Women's Health</button>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- WOMEN'S HEALTH — Dashboard "Mi Ciclo"                          -->
+  <!-- ============================================================ -->
+  <div class="screen wh-dash" data-step="wh-dashboard">
+
+    <div class="wh-dash-topbar">
+      <button class="wh-dash-back" id="wh-dash-back-btn" onclick="whDashBack()">‹ Hoy</button>
+      <div class="wh-dash-title">Mi Ciclo</div>
+      <button class="wh-dash-menu" onclick="whOpenOnboardingFromProfile()" title="Editar">⋯</button>
+    </div>
+
+    <!-- Hero ring -->
+    <section class="wh-hero">
+      <div class="wh-hero-eyebrow" id="wh-dash-eyebrow">CARGANDO…</div>
+      <div class="wh-hero-phase" id="wh-dash-subhead">—</div>
+
+      <div class="wh-ring-wrap">
+        <svg viewBox="0 0 240 240">
+          <defs>
+            <linearGradient id="whPhaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stop-color="#E9C77B" id="whGradStop1" />
+              <stop offset="50%" stop-color="#E9A8B8" id="whGradStop2" />
+              <stop offset="100%" stop-color="#C49FCF" id="whGradStop3" />
+            </linearGradient>
+            <linearGradient id="whBgRing" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+              <stop offset="100%" stop-color="rgba(255,255,255,0.02)" />
+            </linearGradient>
+          </defs>
+          <circle cx="120" cy="120" r="100" fill="none" stroke="url(#whBgRing)" stroke-width="14" />
+          <circle id="wh-ring-arc" cx="120" cy="120" r="100"
+            fill="none" stroke="url(#whPhaseGrad)" stroke-width="14" stroke-linecap="round"
+            stroke-dasharray="628" stroke-dashoffset="628" />
+          <circle id="wh-ring-dot" cx="120" cy="20" r="7" fill="#F1EDE4" stroke="#0B0F0E" stroke-width="2" />
+        </svg>
+        <div class="wh-ring-inner">
+          <div class="wh-ring-day">DÍA</div>
+          <div class="wh-ring-num" id="wh-ring-num">—</div>
+          <div class="wh-ring-energy" id="wh-ring-energy">—</div>
+          <div class="wh-ring-energy-sub" id="wh-ring-energy-sub">—</div>
+        </div>
+      </div>
+
+      <div class="wh-next-period" id="wh-next-period-wrap">
+        <span class="wh-confidence-dot"></span>
+        <span id="wh-next-period-text">—</span>
+      </div>
+    </section>
+
+    <!-- Cross-module insights -->
+    <section class="wh-section">
+      <div class="wh-section-label">HOY · TU CICLO DICE</div>
+      <div class="wh-section-title" id="wh-mod-title">Recomendaciones del día</div>
+      <div class="wh-section-sub" id="wh-mod-sub">Adaptado a tu fase actual.</div>
+      <div id="wh-mod-cards">
+        <!-- Cards rendered by whRenderModuleInsights() -->
+      </div>
+    </section>
+
+    <!-- Hormonal state estimation -->
+    <section class="wh-section">
+      <div class="wh-section-label">ESTADO HORMONAL ESTIMADO</div>
+      <div class="wh-section-title">Hoy tus señales</div>
+      <div class="wh-section-sub">Aproximación basada en fase + biomarcadores. No es lab-grade.</div>
+      <div class="wh-hormone-card" id="wh-hormone-card">
+        <!-- Bars rendered by whRenderHormones() -->
+      </div>
+      <div class="wh-disclaimer">Para mediciones exactas consultá con tu ginecóloga.</div>
+    </section>
+
+    <!-- 14-day forecast -->
+    <section class="wh-section">
+      <div class="wh-section-label">PRÓXIMOS 14 DÍAS</div>
+      <div class="wh-section-title">Tu mapa hormonal</div>
+      <div class="wh-section-sub">Fase esperada por día.</div>
+      <div class="wh-forecast-grid" id="wh-forecast-grid">
+        <!-- 14 cells rendered by whRenderForecast() -->
+      </div>
+      <div class="wh-forecast-legend">
+        <span class="wh-legend-item"><span class="wh-legend-dot" style="background:var(--phase-menstrual)"></span>Período</span>
+        <span class="wh-legend-item"><span class="wh-legend-dot" style="background:var(--phase-follicular)"></span>Folicular</span>
+        <span class="wh-legend-item"><span class="wh-legend-dot" style="background:var(--phase-ovulatory)"></span>Pico</span>
+        <span class="wh-legend-item"><span class="wh-legend-dot" style="background:var(--phase-luteal-late)"></span>Lútea</span>
+      </div>
+    </section>
+
+    <!-- Pattern insights (AI discoveries) -->
+    <section class="wh-section">
+      <div class="wh-section-label">PATRONES DESCUBIERTOS</div>
+      <div class="wh-section-title">Tu cuerpo, tus reglas</div>
+      <div class="wh-section-sub">SAVIA aprende de cada ciclo. Estos patrones son únicos a vos.</div>
+      <div id="wh-patterns-list">
+        <div class="wh-empty-patterns">
+          <strong>Patrones en camino</strong>
+          Registrá síntomas y completá 2 ciclos para que la IA descubra tus patrones únicos.
+        </div>
+      </div>
+    </section>
+
+    <!-- Symptoms this cycle -->
+    <section class="wh-section" id="wh-symptoms-section" style="display:none;">
+      <div class="wh-section-label">REGISTRADO ESTE CICLO</div>
+      <div class="wh-section-title">Cómo te has sentido</div>
+      <div class="wh-section-sub">Tap un chip para ver evolución.</div>
+      <div class="wh-symptom-chips" id="wh-symptom-chips"></div>
+    </section>
+
+    <!-- FAB -->
+    <div class="wh-fab-wrap">
+      <button class="wh-fab" onclick="alert('Quick log próximo sprint')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Registrar hoy
+      </button>
+    </div>
+  </div>
+
   <!-- ============== PHOTO CROPPER MODAL ============== -->
   <div class="cropper-overlay" id="cropper-overlay">
     <div class="cropper-topbar">
@@ -7512,7 +8025,7 @@ function goStep(n) {
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
     'plan-when', 'plan-when-date', 'plan-view', 'plan-today', 'plan-meal-log',
     'strava-callback',
-    'wh-onb-1', 'wh-onb-2', 'wh-onb-3', 'wh-onb-4', 'wh-onb-5', 'wh-onb-6',
+    'wh-onb-1', 'wh-onb-2', 'wh-onb-3', 'wh-onb-4', 'wh-onb-5', 'wh-onb-6', 'wh-dashboard',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -16881,9 +17394,8 @@ async function whOnbConfirmActivate() {
       alert('No se pudo guardar. Revisá tu conexión e intentá de nuevo.');
       return;
     }
-    // Success: vuelvo a profile y re-render
-    goStep('profile');
-    await whRenderProfileSection();
+    // Success: directo al dashboard
+    await whOpenDashboard();
     if (btn) {
       btn.disabled = false;
       btn.textContent = "Activar Women's Health";
@@ -16986,9 +17498,407 @@ async function whRenderProfileSection() {
       <div class="profile-row-value"><span style="font-size:12px;">${conds}</span></div>
     </div>`);
   }
-  card.innerHTML = rows.join('');
+  // Cuando ya está activo: card es tap-target para abrir dashboard,
+  // header action lleva al edit del onboarding.
+  card.innerHTML = `
+    <div onclick="whOpenDashboard()" style="cursor:pointer;">
+      ${rows.join('')}
+      <div style="padding:14px 16px 4px; display:flex; align-items:center; justify-content:space-between; border-top:1px solid rgba(255,255,255,0.06); margin-top:8px;">
+        <span style="font-size:12px; color:#BEF264; font-weight:700; letter-spacing:0.5px;">VER MI CICLO →</span>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BEF264" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>`;
   action.textContent = 'Editar';
   action.onclick = whOpenOnboardingFromProfile;
+}
+
+// ====================================================================
+// WOMEN'S HEALTH — Predictor (calendar-based) + Dashboard render
+// ====================================================================
+
+const WH_PHASE_LABELS = {
+  menstrual:        'Menstrual',
+  follicular_early: 'Folicular temprana',
+  follicular:       'Folicular',
+  ovulatory:        'Ovulatoria',
+  luteal_early:     'Lútea temprana',
+  luteal_late:      'Lútea tardía'
+};
+
+const WH_PHASE_COLORS = {
+  menstrual:        '#B05670',
+  follicular_early: '#9DC3A8',
+  follicular:       '#9DC3A8',
+  ovulatory:        '#E9C77B',
+  luteal_early:     '#C49FCF',
+  luteal_late:      '#8B7AC4'
+};
+
+const WH_PHASE_ENERGY = {
+  menstrual:        { score: 45, label: 'BAJA', sub: 'Honrá el descanso' },
+  follicular_early: { score: 65, label: 'CRECIENDO', sub: 'Energía subiendo' },
+  follicular:       { score: 78, label: 'ALTA', sub: 'Listo para entrenar' },
+  ovulatory:        { score: 88, label: 'PICO', sub: 'Día para empujar' },
+  luteal_early:     { score: 72, label: 'BUENA', sub: 'Endurance sólido' },
+  luteal_late:      { score: 52, label: 'BAJANDO', sub: 'Prioridad: recovery' }
+};
+
+const WH_HORMONE_ESTIMATES = {
+  // E2 (estradiol), P4 (progesterona), LH (luteinizing hormone) — relative scores 0-100
+  menstrual:        { e2: 18, p4: 12, lh: 15 },
+  follicular_early: { e2: 35, p4: 12, lh: 22 },
+  follicular:       { e2: 65, p4: 14, lh: 30 },
+  ovulatory:        { e2: 88, p4: 18, lh: 92 },
+  luteal_early:     { e2: 60, p4: 75, lh: 25 },
+  luteal_late:      { e2: 38, p4: 55, lh: 20 }
+};
+
+const WH_MODULE_INSIGHTS = {
+  // Recomendaciones contextuales por fase × módulo
+  workout: {
+    menstrual:        { text: 'Intensidad gentle. Mobility, yoga o caminata.', meta: 'Honrá la baja' },
+    follicular_early: { text: 'Volumen moderado OK. Cardio ligero ideal.', meta: 'Energía subiendo' },
+    follicular:       { text: 'Strength alto. PRs posibles. Push duro.', meta: '+10% fuerza esperada' },
+    ovulatory:        { text: 'Pico de fuerza. Apuntá PR en sentadilla o press.', meta: '+12% vs baseline' },
+    luteal_early:     { text: 'Endurance OK. Strength a 90%. Bajá volumen.', meta: 'P4 sube, RHR sube' },
+    luteal_late:      { text: 'Intensidad -20%. Foco walks + mobility.', meta: 'Recovery primero' }
+  },
+  nutrition: {
+    menstrual:        { text: 'Iron-rich foods. Magnesio para cólicos.', meta: 'Hígado, lentejas, semillas' },
+    follicular_early: { text: 'Protein high. Carbs OK pre-entreno.', meta: 'Aprovechá la energía' },
+    follicular:       { text: 'Macros normales. Carbs OK para fuerza.', meta: 'Tu plan funciona ideal' },
+    ovulatory:        { text: 'Carbs OK para entreno fuerte. Hidratá +500ml.', meta: 'Demand calórica peak' },
+    luteal_early:     { text: 'Protein alta. Carbs complejos. Fiber +.', meta: 'Estabilizá glicemia' },
+    luteal_late:      { text: '+20g carbs complejos pm. -alcohol/cafeína.', meta: 'Manejá antojos' }
+  },
+  sleep: {
+    menstrual:        { text: 'Prioriza horario fijo. -REM esperado.', meta: 'Magnesio pre-sleep' },
+    follicular_early: { text: 'Sueño normal/excelente esperado.', meta: '7-8h ideal' },
+    follicular:       { text: 'Sueño profundo. Aprovechá los REM.', meta: 'Recovery óptimo' },
+    ovulatory:        { text: '7-8h ideal hoy. Temperatura sube esta noche.', meta: 'Acostate antes 11pm' },
+    luteal_early:     { text: 'Sueño OK pero temperatura sube.', meta: 'Ambiente fresco' },
+    luteal_late:      { text: '-REM, -deep sleep. Insomnia común.', meta: 'Magnesio + ventana abierta' }
+  },
+  recovery: {
+    menstrual:        { text: 'HRV baja esperada. Honrá el descanso.', meta: 'RHR alto normal' },
+    follicular_early: { text: 'HRV se recupera. Empujá gradual.', meta: 'Buena adaptación' },
+    follicular:       { text: 'HRV alta. Push duro hoy.', meta: 'Estás recovered' },
+    ovulatory:        { text: 'HRV en pico. Es tu día para empujar.', meta: 'Apple Watch sincronizado' },
+    luteal_early:     { text: 'HRV cae gradual. RHR sube.', meta: 'Normal en esta fase' },
+    luteal_late:      { text: 'HRV baja, fatiga alta.', meta: 'Día extra de recovery' }
+  }
+};
+
+// ─────── Predictor ───────
+
+/**
+ * Calcula días transcurridos desde el último período (día del ciclo).
+ * Si no hay last_period, retorna null.
+ */
+function whCalcCycleDay(lastPeriodIso, cycleLength) {
+  if (!lastPeriodIso) return null;
+  // QA Fix #2: guard against divide-by-zero / NaN
+  cycleLength = cycleLength || 28;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const last = new Date(lastPeriodIso + 'T00:00:00');
+  const diffMs = today - last;
+  const diffDays = Math.floor(diffMs / (24 * 60 * 60 * 1000));
+  if (diffDays < 0) return null;  // future date, invalid
+  // Wrap around cycles: si ya pasó más de un ciclo completo
+  return (diffDays % cycleLength) + 1;
+}
+
+/**
+ * Determina la fase del ciclo dado el día actual.
+ * Ovulación se asume ~14 días ANTES del próximo período (regla luteal-phase).
+ */
+function whCalcPhase(cycleDay, cycleLength, periodLength) {
+  if (cycleDay === null) return 'follicular';  // unknown → default safe
+  cycleLength = cycleLength || 28;
+  periodLength = periodLength || 5;
+
+  if (cycleDay <= periodLength) return 'menstrual';
+
+  const ovulationDay = cycleLength - 14;
+  const ovWindow = 2;
+
+  if (cycleDay < ovulationDay - ovWindow) {
+    // Folicular: subdividimos early/late para más resolución
+    return (cycleDay <= periodLength + 3) ? 'follicular_early' : 'follicular';
+  }
+  if (cycleDay >= ovulationDay - ovWindow && cycleDay <= ovulationDay + ovWindow) {
+    return 'ovulatory';
+  }
+  const lutealStart = ovulationDay + ovWindow + 1;
+  const lutealMid = Math.floor((lutealStart + cycleLength) / 2);
+  return cycleDay <= lutealMid ? 'luteal_early' : 'luteal_late';
+}
+
+function whDaysUntilNextPeriod(cycleDay, cycleLength) {
+  if (cycleDay === null) return null;
+  return Math.max(0, (cycleLength || 28) - cycleDay);
+}
+
+function whPredictionConfidence(profile) {
+  // MVP: base 70% si hay last_period, +10 si cycleLength registrado, +10 si has period_length, +5 si edad
+  // V2: ajustar por variance histórica de cycle_logs
+  let c = 0;
+  if (profile?.last_period_start_date) c += 70;
+  if (profile?.avg_cycle_length_days) c += 10;
+  if (profile?.avg_period_length_days) c += 10;
+  if (profile?.age) c += 5;
+  return Math.min(95, c);
+}
+
+// ─────── Dashboard open + render ───────
+
+async function whOpenDashboard() {
+  // QA Fix #8: track entry point so back button vuelve donde corresponde
+  state._whDashFrom = state.step || 'app';
+  // QA Fix #7: refresh profile to avoid stale state after edits
+  await whLoadProfile();
+  const profile = state.women_health;
+  if (!profile || !profile.enabled) {
+    whOpenOnboardingFromProfile();
+    return;
+  }
+  goStep('wh-dashboard');
+  // Update back button label based on entry point
+  const backBtn = document.getElementById('wh-dash-back-btn');
+  if (backBtn) {
+    backBtn.textContent = state._whDashFrom === 'profile' ? '‹ Perfil' : '‹ Hoy';
+  }
+  // Render after screen activation
+  setTimeout(() => whRenderDashboard(profile), 30);
+}
+
+function whDashBack() {
+  goStep(state._whDashFrom === 'profile' ? 'profile' : 'app');
+}
+
+function whRenderDashboard(profile) {
+  // QA Fix #3: if user is NOT in cycle tracking mode (pregnancy/menopause/etc),
+  // render a status-specific layout instead of fake cycle data.
+  if (!WH_CYCLE_STATUSES.includes(profile.status)) {
+    whRenderNonCycleDashboard(profile);
+    return;
+  }
+  const cycleLen = profile.avg_cycle_length_days || 28;
+  const periodLen = profile.avg_period_length_days || 5;
+  const cycleDay = whCalcCycleDay(profile.last_period_start_date, cycleLen);
+  const phase = whCalcPhase(cycleDay, cycleLen, periodLen);
+  const phaseLabel = WH_PHASE_LABELS[phase];
+  const phaseColor = WH_PHASE_COLORS[phase];
+  const energy = WH_PHASE_ENERGY[phase];
+  const hormones = WH_HORMONE_ESTIMATES[phase];
+  const daysUntil = whDaysUntilNextPeriod(cycleDay, cycleLen);
+  const confidence = whPredictionConfidence(profile);
+
+  // Override --wh-current-color para tematizar el dashboard según fase
+  const dashEl = document.querySelector('[data-step="wh-dashboard"]');
+  if (dashEl) dashEl.style.setProperty('--wh-current-color', phaseColor);
+
+  // Hero
+  const eyebrowTxt = cycleDay
+    ? `FASE ${phaseLabel.toUpperCase()} · DÍA ${cycleDay}`
+    : `MODO ${(profile.status || '').replace('_', ' ').toUpperCase()}`;
+  setText('wh-dash-eyebrow', eyebrowTxt);
+  setText('wh-dash-subhead', whGetPhaseSubhead(phase));
+  setText('wh-ring-num', cycleDay !== null ? String(cycleDay) : '—');
+  setText('wh-ring-energy', energy.label);
+  setText('wh-ring-energy-sub', `${energy.score} · ${energy.sub}`);
+
+  // Ring arc — % progress through cycle
+  const arc = document.getElementById('wh-ring-arc');
+  if (arc && cycleDay !== null) {
+    const progress = cycleDay / cycleLen;
+    const dashLength = 628;
+    arc.setAttribute('stroke-dashoffset', String(dashLength * (1 - progress)));
+  }
+  // Today dot position on ring.
+  // QA Fix #1: SVG ya tiene transform: rotate(-90deg). No restamos π/2 acá.
+  // angle 0 = derecha del círculo no-rotado → top visualmente. cycleDay/cycleLen
+  // avanza el dot CW alrededor del aro.
+  const dot = document.getElementById('wh-ring-dot');
+  if (dot && cycleDay !== null) {
+    const angleRad = (cycleDay / cycleLen) * 2 * Math.PI;
+    const cx = 120 + 100 * Math.cos(angleRad);
+    const cy = 120 + 100 * Math.sin(angleRad);
+    dot.setAttribute('cx', String(cx));
+    dot.setAttribute('cy', String(cy));
+  }
+
+  // Next period pill
+  const nextTxt = daysUntil !== null
+    ? `Próximo período · <strong>${daysUntil} ${daysUntil === 1 ? 'día' : 'días'}</strong> · ${confidence}% confianza`
+    : 'Registrá tu último período para ver predicción';
+  const nextEl = document.getElementById('wh-next-period-text');
+  if (nextEl) nextEl.innerHTML = nextTxt;
+
+  // Cross-module insights
+  whRenderModuleInsights(phase);
+
+  // Hormonal state
+  whRenderHormones(hormones);
+
+  // 14-day forecast
+  whRenderForecast(cycleDay, cycleLen, periodLen);
+
+  // Section title for module insights (phase-aware)
+  setText('wh-mod-title', whGetModuleTitle(phase));
+  setText('wh-mod-sub', `Adaptado a tu fase ${phaseLabel.toLowerCase()}.`);
+}
+
+function setText(id, txt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt;
+}
+
+function whGetPhaseSubhead(phase) {
+  const subs = {
+    menstrual: 'Día de honrar tu cuerpo',
+    follicular_early: 'Energía subiendo',
+    follicular: 'Fase de construir',
+    ovulatory: 'Pico de E2 · ventana fértil',
+    luteal_early: 'P4 sube · estabilidad',
+    luteal_late: 'Recovery sobre push'
+  };
+  return subs[phase] || '';
+}
+
+function whGetModuleTitle(phase) {
+  const titles = {
+    menstrual: 'Honrá el descanso',
+    follicular_early: 'Subiendo gradual',
+    follicular: 'Tu cuerpo está listo',
+    ovulatory: 'Aprovechá tu ventana',
+    luteal_early: 'Sostener el ritmo',
+    luteal_late: 'Recovery primero'
+  };
+  return titles[phase] || 'Recomendaciones del día';
+}
+
+function whRenderModuleInsights(phase) {
+  const container = document.getElementById('wh-mod-cards');
+  if (!container) return;
+  const mods = [
+    { key: 'workout',   label: 'WORKOUT',   icon: whIconWorkout(),   class: 'workout' },
+    { key: 'nutrition', label: 'NUTRICIÓN', icon: whIconNutrition(), class: 'nutrition' },
+    { key: 'sleep',     label: 'SUEÑO',     icon: whIconSleep(),     class: 'sleep' },
+    { key: 'recovery',  label: 'RECOVERY',  icon: whIconRecovery(),  class: 'recovery' }
+  ];
+  container.innerHTML = mods.map(m => {
+    const rec = (WH_MODULE_INSIGHTS[m.key] && WH_MODULE_INSIGHTS[m.key][phase]) || { text: '—', meta: '' };
+    return `<div class="wh-mod-card">
+      <div class="wh-mod-icon ${m.class}">${m.icon}</div>
+      <div class="wh-mod-body">
+        <div class="wh-mod-cat">${m.label}</div>
+        <div class="wh-mod-text">${_nutEscape(rec.text)}</div>
+        <div class="wh-mod-meta">${_nutEscape(rec.meta || '')}</div>
+      </div>
+      <div class="wh-mod-chev">›</div>
+    </div>`;
+  }).join('');
+}
+
+function whIconWorkout() {
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F472B6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5L4 4M17.5 17.5L20 20M2 6l4 4M22 18l-4-4M14 4l-4 4M20 10l-4 4M10 14l-4 4"/></svg>`;
+}
+function whIconNutrition() {
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BEF264" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 8 10 12 14c4-4 4-8 0-12z"/><path d="M5 14c-1 4 2 7 7 7s8-3 7-7"/></svg>`;
+}
+function whIconSleep() {
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+}
+function whIconRecovery() {
+  return `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`;
+}
+
+function whRenderHormones(hormones) {
+  const card = document.getElementById('wh-hormone-card');
+  if (!card) return;
+  const row = (label, val, badge) => {
+    const cls = val >= 70 ? 'high' : (val >= 40 ? 'mid' : 'low');
+    return `<div class="wh-hormone-row">
+      <div class="wh-hormone-label">${label}</div>
+      <div class="wh-hormone-bar"><div class="wh-hormone-fill ${cls}" style="width:${val}%;"></div></div>
+      <div class="wh-hormone-value">${badge}</div>
+    </div>`;
+  };
+  const label = v => v >= 80 ? 'Pico' : v >= 60 ? 'Alto' : v >= 40 ? 'Medio' : v >= 20 ? 'Bajo' : 'Muy bajo';
+  card.innerHTML = [
+    row('Estradiol (E2)', hormones.e2, label(hormones.e2)),
+    row('Progesterona (P4)', hormones.p4, label(hormones.p4)),
+    row('LH (estimada)', hormones.lh, hormones.lh >= 80 ? 'Surge' : label(hormones.lh))
+  ].join('');
+}
+
+function whRenderNonCycleDashboard(profile) {
+  // QA Fix #3: layout vacío gracioso para pregnancy/postpartum/peri/menopause.
+  // No fake hormone bars, no fake forecast, no fake "fuerza esperada".
+  const statusLabel = WH_STATUS_LABELS[profile.status] || 'Tu modo';
+
+  setText('wh-dash-eyebrow', `MODO ${statusLabel.toUpperCase()}`);
+  setText('wh-dash-subhead', 'Coaching especializado en camino');
+  setText('wh-ring-num', '·');
+  setText('wh-ring-energy', '—');
+  setText('wh-ring-energy-sub', statusLabel);
+
+  // Reset ring arc + dot (sin progreso)
+  const arc = document.getElementById('wh-ring-arc');
+  if (arc) arc.setAttribute('stroke-dashoffset', '628');
+  const dot = document.getElementById('wh-ring-dot');
+  if (dot) { dot.setAttribute('cx', '120'); dot.setAttribute('cy', '20'); }
+
+  // Next-period pill irrelevante en estos modos
+  const nextEl = document.getElementById('wh-next-period-text');
+  if (nextEl) nextEl.innerHTML = 'Sin predicción · modo activo';
+
+  // Sustituir cross-module por mensaje específico
+  const modCards = document.getElementById('wh-mod-cards');
+  if (modCards) {
+    const messages = {
+      pregnancy: 'En embarazo, las recomendaciones se adaptarán por trimestre. Coaching prenatal en V2.',
+      postpartum: 'En postparto, prioridad: descanso, hidratación, recovery hormonal. Coaching especializado en V2.',
+      perimenopause: 'En perimenopausia, ciclos irregulares son normales. Tracking de síntomas + manejo en V2.',
+      menopause: 'Post-menopausia: foco en salud ósea, recovery, sleep. Coaching adaptado en V2.'
+    };
+    const msg = messages[profile.status] || 'Tu coaching personalizado está en camino.';
+    modCards.innerHTML = `<div class="wh-empty-patterns" style="background:rgba(196,159,207,0.05); border:1px solid rgba(196,159,207,0.20);">
+      <strong>${statusLabel}</strong>
+      ${msg}
+    </div>`;
+  }
+  setText('wh-mod-title', 'En desarrollo para vos');
+  setText('wh-mod-sub', 'Tu modo requiere coaching distinto. Próximas versiones.');
+
+  // Ocultar hormonas y forecast (no aplican)
+  const hormoneCard = document.getElementById('wh-hormone-card');
+  if (hormoneCard) {
+    hormoneCard.innerHTML = `<div style="text-align:center; padding:10px; font-size:12px; color:#94A3B8; line-height:1.5;">Estimaciones hormonales no aplican en ${statusLabel.toLowerCase()}.</div>`;
+  }
+  const grid = document.getElementById('wh-forecast-grid');
+  if (grid) grid.innerHTML = `<div style="grid-column:1/-1; padding:10px; font-size:12px; color:#94A3B8; text-align:center;">Mapa de fases no aplica en ${statusLabel.toLowerCase()}</div>`;
+}
+
+function whRenderForecast(cycleDay, cycleLen, periodLen) {
+  const grid = document.getElementById('wh-forecast-grid');
+  if (!grid) return;
+  if (cycleDay === null) {
+    grid.innerHTML = '<div style="grid-column:1/-1; padding:14px; font-size:11px; color:#94A3B8; text-align:center;">Registrá tu último período para ver tu mapa</div>';
+    return;
+  }
+  const cells = [];
+  for (let i = 0; i < 14; i++) {
+    let day = cycleDay + i;
+    let dayInCycle = day;
+    if (day > cycleLen) dayInCycle = day - cycleLen;
+    const phase = whCalcPhase(dayInCycle, cycleLen, periodLen);
+    const isToday = i === 0 ? 'today' : '';
+    cells.push(`<div class="wh-day-cell ${phase} ${isToday}">${dayInCycle}</div>`);
+  }
+  grid.innerHTML = cells.join('');
 }
 
 </script>

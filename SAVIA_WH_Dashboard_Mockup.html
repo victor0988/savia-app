@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAVIA · Mi Ciclo · Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    /* SAVIA base palette */
+    --bg-deep: #0B0F0E;
+    --bg-surface: rgba(255, 255, 255, 0.04);
+    --bg-surface-strong: rgba(255, 255, 255, 0.06);
+    --border-soft: rgba(255, 255, 255, 0.08);
+    --border-mid: rgba(255, 255, 255, 0.12);
+
+    --text-linen: #F1EDE4;
+    --text-primary: #F8FAFC;
+    --text-muted: #94A3B8;
+    --text-faint: #64748B;
+
+    --moss: #4A5D38;
+    --lime: #BEF264;
+
+    /* Women's Health phase palette — sutil, NO Flo pink */
+    --phase-menstrual: #B05670;       /* dusty rose */
+    --phase-follicular: #9DC3A8;      /* soft sage */
+    --phase-ovulatory: #E9C77B;       /* warm gold */
+    --phase-luteal-early: #C49FCF;    /* soft lavender */
+    --phase-luteal-late: #8B7AC4;     /* deeper violet */
+
+    --rose-accent: #E9A8B8;
+    --rose-soft: rgba(233, 168, 184, 0.10);
+    --rose-border: rgba(233, 168, 184, 0.22);
+  }
+
+  html, body {
+    background: #1a1410;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text-linen);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+
+  /* ── Wrapper: shows phone with caption ─────────────────────────── */
+  .stage {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 16px 80px;
+  }
+
+  .caption {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: #B8AE9C;
+    font-size: 15px;
+    margin-bottom: 24px;
+    letter-spacing: 0.3px;
+    text-align: center;
+    max-width: 380px;
+    line-height: 1.5;
+  }
+  .caption strong { font-style: normal; color: var(--text-linen); font-weight: 600; letter-spacing: 0.5px; }
+
+  .device {
+    width: 390px;
+    height: 844px;
+    background: var(--bg-deep);
+    border-radius: 48px;
+    box-shadow:
+      0 0 0 12px #0a0a0a,
+      0 0 0 13px #2a2a2a,
+      0 40px 80px rgba(0,0,0,0.6),
+      0 20px 40px rgba(0,0,0,0.4);
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Device notch */
+  .device::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 110px; height: 32px;
+    background: #000;
+    border-radius: 20px;
+    z-index: 100;
+  }
+
+  .app {
+    width: 100%;
+    height: 100%;
+    overflow-y: auto;
+    padding-top: 54px;
+    padding-bottom: 100px;
+    background:
+      radial-gradient(ellipse at 50% 0%, rgba(233, 199, 123, 0.10) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 100%, rgba(196, 159, 207, 0.05) 0%, transparent 50%),
+      var(--bg-deep);
+    scrollbar-width: none;
+  }
+  .app::-webkit-scrollbar { display: none; }
+
+  /* ── Top bar ───────────────────────────────────────────────────── */
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 22px 16px;
+  }
+  .topbar .back, .topbar .menu {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    letter-spacing: 0.2px;
+  }
+  .topbar .menu { font-size: 18px; }
+  .topbar .title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--text-linen);
+    letter-spacing: 0.4px;
+  }
+
+  /* ── Hero section ──────────────────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 8px 22px 24px;
+  }
+  .hero-eyebrow {
+    font-size: 11px;
+    letter-spacing: 2px;
+    color: var(--phase-ovulatory);
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+  .hero-phase {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    color: var(--text-linen);
+    letter-spacing: 0.4px;
+    margin-bottom: 26px;
+  }
+
+  .ring-wrap {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    margin: 0 auto;
+  }
+  .ring-wrap svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+  .ring-inner {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  .ring-day {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px;
+    color: var(--text-muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .ring-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 72px;
+    color: var(--text-linen);
+    font-weight: 400;
+    line-height: 1;
+  }
+  .ring-energy {
+    font-size: 12px;
+    color: var(--phase-ovulatory);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-top: 14px;
+  }
+  .ring-energy-label {
+    font-size: 11px;
+    color: var(--text-faint);
+    margin-top: 2px;
+  }
+
+  .next-period {
+    margin-top: 24px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 24px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  .next-period strong { color: var(--text-linen); font-weight: 600; }
+  .confidence-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--lime);
+    box-shadow: 0 0 8px var(--lime);
+  }
+
+  /* ── Section labels ────────────────────────────────────────────── */
+  .section {
+    padding: 28px 22px 8px;
+  }
+  .section-label {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--text-linen);
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+  .section-sub {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+
+  /* ── Cross-module insight cards ─────────────────────────────────── */
+  .insight-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 18px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    margin-bottom: 10px;
+    transition: all 0.2s ease;
+  }
+  .insight-card:hover { background: var(--bg-surface-strong); }
+
+  .insight-icon {
+    width: 36px; height: 36px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .insight-icon.workout    { background: rgba(244, 114, 182, 0.08); }
+  .insight-icon.nutrition  { background: rgba(190, 242, 100, 0.08); }
+  .insight-icon.sleep      { background: rgba(167, 139, 250, 0.08); }
+  .insight-icon.recovery   { background: rgba(52, 211, 153, 0.08); }
+
+  .insight-body { flex: 1; min-width: 0; }
+  .insight-cat {
+    font-size: 10px;
+    color: var(--text-faint);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 3px;
+  }
+  .insight-text {
+    font-size: 13px;
+    color: var(--text-primary);
+    line-height: 1.45;
+    margin-bottom: 4px;
+  }
+  .insight-meta {
+    font-size: 11px;
+    color: var(--text-faint);
+  }
+  .insight-chevron {
+    color: var(--text-faint);
+    font-size: 18px;
+    align-self: center;
+  }
+
+  /* ── Hormonal bars ──────────────────────────────────────────────── */
+  .hormone-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 18px;
+    padding: 18px 18px 14px;
+  }
+  .hormone-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .hormone-row:last-child { margin-bottom: 0; }
+  .hormone-label {
+    font-size: 12px;
+    color: var(--text-muted);
+    width: 100px;
+    flex-shrink: 0;
+  }
+  .hormone-bar {
+    flex: 1;
+    height: 5px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .hormone-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--phase-ovulatory), var(--rose-accent));
+    transition: width 0.4s ease;
+  }
+  .hormone-fill.low {
+    background: linear-gradient(90deg, var(--phase-luteal-early), var(--phase-luteal-late));
+    opacity: 0.5;
+  }
+  .hormone-value {
+    font-size: 11px;
+    color: var(--text-muted);
+    width: 38px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── 14-day forecast heatmap ───────────────────────────────────── */
+  .forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(14, 1fr);
+    gap: 4px;
+    margin-bottom: 14px;
+  }
+  .day-cell {
+    aspect-ratio: 1 / 1.4;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    color: var(--bg-deep);
+    font-weight: 600;
+    background: rgba(255,255,255,0.04);
+    color: var(--text-faint);
+    position: relative;
+  }
+  .day-cell.today {
+    box-shadow: 0 0 0 1.5px var(--text-linen);
+    color: var(--bg-deep);
+  }
+  .day-cell.ovulatory  { background: var(--phase-ovulatory); color: #2a1f08; }
+  .day-cell.luteal-e   { background: var(--phase-luteal-early); color: #2a1a35; }
+  .day-cell.luteal-l   { background: var(--phase-luteal-late); color: #20133f; }
+  .day-cell.menstrual  { background: var(--phase-menstrual); color: #2a0d18; }
+  .day-cell.follicular { background: var(--phase-follicular); color: #0e2018; }
+
+  .forecast-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-faint);
+    margin-top: 8px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .legend-dot {
+    width: 8px; height: 8px;
+    border-radius: 2px;
+  }
+
+  /* ── Pattern insights (AI discoveries) ──────────────────────────── */
+  .pattern-card {
+    background: linear-gradient(135deg, rgba(233, 199, 123, 0.04) 0%, rgba(196, 159, 207, 0.04) 100%);
+    border: 1px solid rgba(233, 199, 123, 0.18);
+    border-radius: 16px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    position: relative;
+  }
+  .pattern-card::before {
+    content: 'IA';
+    position: absolute;
+    top: 12px; right: 14px;
+    font-size: 9px;
+    color: var(--phase-ovulatory);
+    letter-spacing: 1.2px;
+    font-weight: 700;
+    background: rgba(233, 199, 123, 0.08);
+    padding: 3px 7px;
+    border-radius: 4px;
+  }
+  .pattern-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    color: var(--text-linen);
+    line-height: 1.4;
+    margin-bottom: 6px;
+    padding-right: 32px;
+    font-style: italic;
+  }
+  .pattern-detail {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.5;
+  }
+  .pattern-detail strong { color: var(--text-linen); font-weight: 600; }
+
+  /* ── Symptoms chips ─────────────────────────────────────────────── */
+  .symptom-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .symptom-chip {
+    padding: 8px 14px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .symptom-chip-count {
+    background: rgba(190, 242, 100, 0.10);
+    color: var(--lime);
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Floating Action Button ─────────────────────────────────────── */
+  .fab-wrap {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 16px 22px 28px;
+    background: linear-gradient(to top, var(--bg-deep) 70%, transparent);
+    pointer-events: none;
+  }
+  .fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 16px;
+    background: var(--text-linen);
+    color: var(--bg-deep);
+    border: none;
+    border-radius: 18px;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    pointer-events: auto;
+    box-shadow: 0 8px 30px rgba(241, 237, 228, 0.15);
+    font-family: inherit;
+  }
+
+  /* Caption right of phone (desktop only) */
+  .layout {
+    display: flex;
+    gap: 48px;
+    align-items: flex-start;
+    justify-content: center;
+  }
+  .legend-card {
+    margin-top: 60px;
+    max-width: 320px;
+    color: #B8AE9C;
+    font-size: 13px;
+    line-height: 1.7;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+  }
+  .legend-card h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: normal;
+    font-size: 22px;
+    color: var(--text-linen);
+    margin-bottom: 12px;
+    letter-spacing: 0.4px;
+  }
+  .legend-card p { margin-bottom: 14px; }
+  .legend-card .swatches {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+  .legend-card .sw {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    position: relative;
+  }
+  .legend-card .sw::after {
+    content: attr(data-label);
+    position: absolute;
+    bottom: -16px; left: 0; right: 0;
+    text-align: center;
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    font-size: 9px;
+    color: #8a8175;
+    letter-spacing: 0.3px;
+  }
+  .legend-card .swatches-label {
+    font-size: 10px;
+    letter-spacing: 1.5px;
+    color: #8a8175;
+    text-transform: uppercase;
+    font-family: 'Inter', sans-serif;
+    font-style: normal;
+    margin-bottom: 6px;
+    margin-top: 24px;
+  }
+
+  @media (max-width: 900px) {
+    .layout { flex-direction: column; }
+    .legend-card { margin-top: 24px; }
+  }
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="caption">
+    <strong>SAVIA · MOCKUP</strong><br>
+    Mi Ciclo — Hormonal Intelligence Dashboard
+  </div>
+
+  <div class="layout">
+    <div class="device">
+      <div class="app">
+
+        <!-- ─────── Top bar ─────── -->
+        <div class="topbar">
+          <button class="back">‹ Hoy</button>
+          <div class="title">Mi Ciclo</div>
+          <button class="menu">⋯</button>
+        </div>
+
+        <!-- ─────── Hero ring ─────── -->
+        <section class="hero">
+          <div class="hero-eyebrow">FASE OVULATORIA · DÍA 14</div>
+          <div class="hero-phase"><em>Pico de E2 · ventana fértil</em></div>
+
+          <div class="ring-wrap">
+            <svg viewBox="0 0 240 240">
+              <defs>
+                <linearGradient id="phaseGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#E9C77B" />
+                  <stop offset="50%" stop-color="#E9A8B8" />
+                  <stop offset="100%" stop-color="#C49FCF" />
+                </linearGradient>
+                <linearGradient id="bgRing" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(255,255,255,0.05)" />
+                  <stop offset="100%" stop-color="rgba(255,255,255,0.02)" />
+                </linearGradient>
+              </defs>
+              <!-- Background ring -->
+              <circle cx="120" cy="120" r="100" fill="none" stroke="url(#bgRing)" stroke-width="14" />
+              <!-- Active phase arc (day 14 of 28 = 50%) -->
+              <circle cx="120" cy="120" r="100"
+                fill="none"
+                stroke="url(#phaseGrad)"
+                stroke-width="14"
+                stroke-linecap="round"
+                stroke-dasharray="628"
+                stroke-dashoffset="314" />
+              <!-- Today marker dot -->
+              <circle cx="120" cy="20" r="7" fill="#F1EDE4" stroke="#0B0F0E" stroke-width="2" />
+            </svg>
+            <div class="ring-inner">
+              <div class="ring-day">DÍA</div>
+              <div class="ring-num">14</div>
+              <div class="ring-energy">ENERGÍA ALTA</div>
+              <div class="ring-energy-label">85 · pico esperado</div>
+            </div>
+          </div>
+
+          <div class="next-period">
+            <span class="confidence-dot"></span>
+            Próximo período · <strong>14 días</strong> · 87% confianza
+          </div>
+        </section>
+
+        <!-- ─────── Cross-module insights ─────── -->
+        <section class="section">
+          <div class="section-label">HOY · TU CICLO DICE</div>
+          <div class="section-title"><em>Aprovechá tu ventana</em></div>
+          <div class="section-sub">Recomendaciones adaptadas a tu fase ovulatoria.</div>
+
+          <div class="insight-card">
+            <div class="insight-icon workout">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F472B6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5L4 4l-2 2 2.5 2.5M17.5 17.5L20 20l2-2-2.5-2.5"/><path d="M2 6l4 4M22 18l-4-4M14 4l-4 4M20 10l-4 4M10 14l-4 4"/></svg>
+            </div>
+            <div class="insight-body">
+              <div class="insight-cat">WORKOUT</div>
+              <div class="insight-text">Pico de fuerza esperado. Apuntá a PR en sentadilla o press.</div>
+              <div class="insight-meta">+12% vs tu baseline en ciclos anteriores</div>
+            </div>
+            <div class="insight-chevron">›</div>
+          </div>
+
+          <div class="insight-card">
+            <div class="insight-icon nutrition">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#BEF264" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C8 6 8 10 12 14c4-4 4-8 0-12z"/><path d="M5 14c-1 4 2 7 7 7s8-3 7-7"/></svg>
+            </div>
+            <div class="insight-body">
+              <div class="insight-cat">NUTRICIÓN</div>
+              <div class="insight-text">Carbs OK para entreno fuerte. Hidratá +500ml.</div>
+              <div class="insight-meta">Plan Sofía López — 200g P / 255g C / 75g G</div>
+            </div>
+            <div class="insight-chevron">›</div>
+          </div>
+
+          <div class="insight-card">
+            <div class="insight-icon sleep">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </div>
+            <div class="insight-body">
+              <div class="insight-cat">SUEÑO</div>
+              <div class="insight-text">Sueño 7-8h ideal hoy. Tu temperatura sube esta noche.</div>
+              <div class="insight-meta">Acostate antes de las 11pm</div>
+            </div>
+            <div class="insight-chevron">›</div>
+          </div>
+
+          <div class="insight-card">
+            <div class="insight-icon recovery">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#34D399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            </div>
+            <div class="insight-body">
+              <div class="insight-cat">RECOVERY</div>
+              <div class="insight-text">HRV en pico (68ms). Es tu día para empujar.</div>
+              <div class="insight-meta">Apple Watch · sincronizado hace 12 min</div>
+            </div>
+            <div class="insight-chevron">›</div>
+          </div>
+        </section>
+
+        <!-- ─────── Hormonal state ─────── -->
+        <section class="section">
+          <div class="section-label">ESTADO HORMONAL ESTIMADO</div>
+          <div class="section-title"><em>Hoy tus señales</em></div>
+          <div class="section-sub">Aproximación basada en fase + HRV + sueño. No es lab-grade.</div>
+
+          <div class="hormone-card">
+            <div class="hormone-row">
+              <div class="hormone-label">Estradiol (E2)</div>
+              <div class="hormone-bar"><div class="hormone-fill" style="width:88%"></div></div>
+              <div class="hormone-value">Pico</div>
+            </div>
+            <div class="hormone-row">
+              <div class="hormone-label">Progesterona (P4)</div>
+              <div class="hormone-bar"><div class="hormone-fill low" style="width:18%"></div></div>
+              <div class="hormone-value">Bajo</div>
+            </div>
+            <div class="hormone-row">
+              <div class="hormone-label">LH (estimada)</div>
+              <div class="hormone-bar"><div class="hormone-fill" style="width:92%"></div></div>
+              <div class="hormone-value">Surge</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ─────── 14-day forecast heatmap ─────── -->
+        <section class="section">
+          <div class="section-label">PRÓXIMOS 14 DÍAS</div>
+          <div class="section-title"><em>Tu mapa hormonal</em></div>
+          <div class="section-sub">Energía esperada por día · tap para ver detalle.</div>
+
+          <div class="forecast-grid">
+            <div class="day-cell ovulatory today">14</div>
+            <div class="day-cell ovulatory">15</div>
+            <div class="day-cell luteal-e">16</div>
+            <div class="day-cell luteal-e">17</div>
+            <div class="day-cell luteal-e">18</div>
+            <div class="day-cell luteal-e">19</div>
+            <div class="day-cell luteal-e">20</div>
+            <div class="day-cell luteal-e">21</div>
+            <div class="day-cell luteal-l">22</div>
+            <div class="day-cell luteal-l">23</div>
+            <div class="day-cell luteal-l">24</div>
+            <div class="day-cell luteal-l">25</div>
+            <div class="day-cell luteal-l">26</div>
+            <div class="day-cell luteal-l">27</div>
+          </div>
+
+          <div class="forecast-legend">
+            <span class="legend-item"><span class="legend-dot" style="background:var(--phase-ovulatory)"></span>Pico</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--phase-luteal-early)"></span>Lútea temp.</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--phase-luteal-late)"></span>Lútea tardía</span>
+            <span class="legend-item"><span class="legend-dot" style="background:var(--phase-menstrual)"></span>Período</span>
+          </div>
+        </section>
+
+        <!-- ─────── Pattern insights (AI discoveries) ─────── -->
+        <section class="section">
+          <div class="section-label">PATRONES DESCUBIERTOS</div>
+          <div class="section-title"><em>Tu cuerpo, tus reglas</em></div>
+          <div class="section-sub">SAVIA aprende de cada ciclo. Estos patrones son únicos a vos.</div>
+
+          <div class="pattern-card">
+            <div class="pattern-headline">"Tu fuerza es +12% durante esta fase"</div>
+            <div class="pattern-detail">Confirmado en <strong>3 ciclos consecutivos</strong>. Tu mejor sentadilla y press han caído entre el día 12 y 15.</div>
+          </div>
+
+          <div class="pattern-card">
+            <div class="pattern-headline">"Tu sueño cae 18% los 3 días antes del período"</div>
+            <div class="pattern-detail">Apple Watch detectó <strong>menos REM</strong> en días 23-25 de los últimos 2 ciclos. Activá magnesio + dormí 30min antes.</div>
+          </div>
+
+          <div class="pattern-card">
+            <div class="pattern-headline">"Antojos de dulce suben el día 22"</div>
+            <div class="pattern-detail">Consistente en <strong>3 ciclos</strong>. Sumá 20g de carbs complejos (avena o camote) al snack PM esa semana.</div>
+          </div>
+        </section>
+
+        <!-- ─────── Symptoms this cycle ─────── -->
+        <section class="section">
+          <div class="section-label">REGISTRADO ESTE CICLO</div>
+          <div class="section-title"><em>Cómo te has sentido</em></div>
+          <div class="section-sub">Tap un chip para ver evolución.</div>
+
+          <div class="symptom-chips">
+            <span class="symptom-chip">Cólicos <span class="symptom-chip-count">3</span></span>
+            <span class="symptom-chip">Cravings <span class="symptom-chip-count">5</span></span>
+            <span class="symptom-chip">Energía baja <span class="symptom-chip-count">2</span></span>
+            <span class="symptom-chip">Sueño off <span class="symptom-chip-count">2</span></span>
+            <span class="symptom-chip">Headache <span class="symptom-chip-count">1</span></span>
+            <span class="symptom-chip">Bloating <span class="symptom-chip-count">4</span></span>
+          </div>
+        </section>
+
+        <div style="height:30px;"></div>
+
+      </div>
+
+      <!-- FAB -->
+      <div class="fab-wrap">
+        <button class="fab">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Registrar hoy
+        </button>
+      </div>
+    </div>
+
+    <!-- Caption / design notes side panel -->
+    <div class="legend-card">
+      <h3>Diseño · Mi Ciclo</h3>
+      <p>
+        Inspirado en Apple Activity + Oura readiness + Aesop branding.
+        Tipografía: <strong style="font-style:normal;">Cormorant Garamond</strong> en títulos (eco del logo SAVIA),
+        Inter en body.
+      </p>
+      <p>
+        Filosofía: la mujer no debe interpretar datos.
+        La IA traduce su ciclo a 4 recomendaciones simples por día,
+        cross-módulo (Workout · Nutrición · Sueño · Recovery).
+      </p>
+
+      <div class="swatches-label">PALETA DE FASES</div>
+      <div class="swatches">
+        <div class="sw" data-label="Menstr." style="background:#B05670"></div>
+        <div class="sw" data-label="Folic." style="background:#9DC3A8"></div>
+        <div class="sw" data-label="Ovul." style="background:#E9C77B"></div>
+        <div class="sw" data-label="Lút.t" style="background:#C49FCF"></div>
+        <div class="sw" data-label="Lút.l" style="background:#8B7AC4"></div>
+      </div>
+      <p style="margin-top:32px; font-size:12px;">
+        Las fases tienen <strong style="font-style:normal;">color, no emoji</strong>.
+        Nada de rosa Flo, nada de íconos uterinos.
+        Estética de boutique wellness, no app médica.
+      </p>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
