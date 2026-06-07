@@ -2135,6 +2135,17 @@
     border-radius: 18px;
     padding: 18px;
     margin-bottom: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.12s ease, background 0.12s ease;
+  }
+  .hoy-balance-hero:active {
+    transform: scale(0.99);
+    background: linear-gradient(135deg, rgba(132,204,22,0.1), rgba(96,165,250,0.05));
+  }
+  .hoy-balance-hero:focus-visible {
+    outline: 2px solid rgba(132,204,22,0.4);
+    outline-offset: 2px;
   }
   .hoy-balance-label {
     font-size: 10px; font-weight: 700; color: #BEF264;
@@ -4876,8 +4887,8 @@
 
     <!-- Scrollable content -->
     <div class="hoy-content" id="hoy-tab-content">
-      <!-- HERO: Balance Energético -->
-      <div class="hoy-balance-hero">
+      <!-- HERO: Balance Energético — tap para agregar comida -->
+      <div class="hoy-balance-hero" onclick="hoyBalanceTap()" role="button" tabindex="0">
         <div class="hoy-balance-label">BALANCE ENERGÉTICO HOY</div>
         <div class="hoy-balance-row">
           <div class="hoy-balance-ring-wrap">
@@ -8179,6 +8190,21 @@ async function ensureNutStateLoaded() {
 }
 
 // Calcula y pinta el Balance Energético hero
+// Tap en el hero Balance Energético — routea según contexto:
+//   - Plan activo → abre Mi Plan Hoy (donde puede marcar comidas o agregar extras)
+//   - Sin plan activo → abre el flow de Nueva Comida (foto/barcode/buscar/manual)
+function hoyBalanceTap() {
+  try {
+    if (planState && planState.active && planComputeStatus(planState.active) === 'active') {
+      planTodayOpen();
+      return;
+    }
+  } catch (e) { console.warn('[HOY] balance tap routing failed:', e); }
+  // Fallback: ir directo al método de log
+  if (typeof openModule === 'function') openModule('nutrition');
+  else goStep('nut-meal-method');
+}
+
 async function renderHoyBalance() {
   // Cargar targets + meals + perfil base
   let targets = nutState.targets;
