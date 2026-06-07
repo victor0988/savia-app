@@ -4403,6 +4403,64 @@
     font-family: inherit;
   }
 
+  /* ── Hoy · Women's Health compact pill ───────────────────────── */
+  .hoy-wh-pill {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid var(--wh-pill-accent, #C49FCF);
+    border-radius: 14px;
+    margin-top: 12px;
+    cursor: pointer;
+    transition: background 0.18s ease, border-color 0.18s ease;
+    font-family: inherit;
+  }
+  .hoy-wh-pill:active { background: rgba(255,255,255,0.06); }
+  .hoy-wh-pill:focus-visible { outline: 2px solid var(--wh-pill-accent, #C49FCF); outline-offset: 2px; }
+
+  .hoy-wh-pill-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .hoy-wh-pill-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--wh-pill-accent, #C49FCF);
+    box-shadow: 0 0 8px var(--wh-pill-accent-glow, rgba(196,159,207,0.4));
+  }
+  .hoy-wh-pill-label {
+    font-size: 10px;
+    color: #94A3B8;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .hoy-wh-pill-mid {
+    flex: 1;
+    font-size: 13px;
+    color: #F1EDE4;
+    font-weight: 500;
+    text-align: right;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .hoy-wh-pill-sep {
+    color: #475569;
+    margin: 0 8px;
+  }
+  .hoy-wh-pill-chev {
+    color: #64748B;
+    font-size: 18px;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
   /* ── Quick Log pills ─────────────────────────────────────────── */
   .wh-log-group { margin-bottom: 22px; }
   .wh-log-label {
@@ -5483,6 +5541,20 @@
             <div class="hoy-balance-macro-pct" id="hoy-pmac-f-pct">—</div>
           </div>
         </div>
+      </div>
+
+      <!-- Women's Health · Mi Ciclo pill (solo si activado) -->
+      <div class="hoy-wh-pill" id="hoy-wh-pill" style="display:none;" onclick="whOpenDashboard()" role="button" tabindex="0">
+        <div class="hoy-wh-pill-left">
+          <span class="hoy-wh-pill-dot" id="hoy-wh-pill-dot"></span>
+          <span class="hoy-wh-pill-label">MI CICLO</span>
+        </div>
+        <div class="hoy-wh-pill-mid">
+          <span id="hoy-wh-pill-day">—</span>
+          <span class="hoy-wh-pill-sep">·</span>
+          <span id="hoy-wh-pill-phase">—</span>
+        </div>
+        <div class="hoy-wh-pill-chev">›</div>
       </div>
 
       <!-- AI Insight Card -->
@@ -9309,6 +9381,11 @@ async function renderDailyPulse() {
 
   // 4) Next Action contextual
   try { renderHoyNextAction(); } catch (e) { console.warn('next render:', e); }
+
+  // 5) Women's Health pill (fire-and-forget — sólo aparece si módulo activo)
+  if (typeof whRenderHoyPill === 'function') {
+    whRenderHoyPill().catch(e => console.warn('[WH hoy pill]:', e));
+  }
 }
 
 // Actualiza subgreeting "Día N" + pill "Calibrando N/7" o lo oculta si calibración terminó.
@@ -18258,6 +18335,66 @@ function whLogSelectSleep(val, el) {
   whLogState.sleep_quality_self = val;
   document.querySelectorAll('[data-wh-sleep]').forEach(e => e.classList.remove('selected'));
   if (el) el.classList.add('selected');
+}
+
+// ─────── Hoy · compact pill render ───────
+
+const WH_PHASE_PILL_ACCENT = {
+  menstrual:        { color: '#B05670', glow: 'rgba(176,86,112,0.45)' },
+  follicular_early: { color: '#9DC3A8', glow: 'rgba(157,195,168,0.45)' },
+  follicular:       { color: '#9DC3A8', glow: 'rgba(157,195,168,0.45)' },
+  ovulatory:        { color: '#E9C77B', glow: 'rgba(233,199,123,0.50)' },
+  luteal_early:     { color: '#C49FCF', glow: 'rgba(196,159,207,0.45)' },
+  luteal_late:      { color: '#8B7AC4', glow: 'rgba(139,122,196,0.45)' }
+};
+
+async function whRenderHoyPill() {
+  const pill = document.getElementById('hoy-wh-pill');
+  if (!pill) return;
+
+  // Asegurar profile cargado
+  if (!state.women_health) {
+    await whLoadProfile();
+  }
+  const profile = state.women_health;
+
+  // Si no está activo → ocultar pill
+  if (!profile || !profile.enabled) {
+    pill.style.display = 'none';
+    return;
+  }
+
+  // Calcular contenido según status
+  let dayTxt = '';
+  let phaseTxt = '';
+  let accent = WH_PHASE_PILL_ACCENT.luteal_early;  // default soft lavender
+
+  if (WH_CYCLE_STATUSES.includes(profile.status)) {
+    const cycleLen = profile.avg_cycle_length_days || 28;
+    const periodLen = profile.avg_period_length_days || 5;
+    const cycleDay = whCalcCycleDay(profile.last_period_start_date, cycleLen);
+    if (cycleDay !== null) {
+      const phase = whCalcPhase(cycleDay, cycleLen, periodLen);
+      dayTxt = `Día ${cycleDay}`;
+      phaseTxt = WH_PHASE_LABELS[phase];
+      accent = WH_PHASE_PILL_ACCENT[phase] || accent;
+    } else {
+      // Active pero sin último período registrado
+      dayTxt = 'Registrá';
+      phaseTxt = 'tu último período';
+    }
+  } else {
+    // Non-cycle status
+    dayTxt = 'Modo';
+    phaseTxt = WH_STATUS_LABELS[profile.status] || 'activo';
+  }
+
+  // Update DOM
+  setText('hoy-wh-pill-day', dayTxt);
+  setText('hoy-wh-pill-phase', phaseTxt);
+  pill.style.setProperty('--wh-pill-accent', accent.color);
+  pill.style.setProperty('--wh-pill-accent-glow', accent.glow);
+  pill.style.display = 'flex';
 }
 
 async function whLogSave() {
