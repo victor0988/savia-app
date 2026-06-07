@@ -4403,6 +4403,250 @@
     font-family: inherit;
   }
 
+  /* ===================================================================
+     SAVIA COACH · Chat UI
+     =================================================================== */
+  .coach-screen {
+    background: #0B0F0E;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .coach-screen.active {
+    display: flex !important;
+  }
+  .coach-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px 12px;
+    background: rgba(11, 15, 14, 0.92);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .coach-back-btn {
+    background: transparent; border: none; padding: 0;
+    color: #94A3B8; font-size: 14px; font-family: inherit;
+    cursor: pointer; display: flex; align-items: center; gap: 4px;
+  }
+  .coach-title {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 17px; font-weight: 500;
+    color: #F1EDE4; letter-spacing: 0.4px;
+  }
+  .coach-title-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #BEF264;
+    box-shadow: 0 0 8px rgba(190,242,100,0.6);
+  }
+  .coach-menu-btn {
+    background: transparent; border: none;
+    color: #94A3B8; font-size: 20px; line-height: 1;
+    cursor: pointer; padding: 0; width: 32px;
+  }
+
+  .coach-messages {
+    flex: 1; min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 16px 16px;
+    display: flex; flex-direction: column; gap: 12px;
+    scrollbar-width: none;
+  }
+  .coach-messages::-webkit-scrollbar { display: none; }
+
+  /* Empty state (intro message) */
+  .coach-empty {
+    text-align: center;
+    padding: 40px 24px 20px;
+    display: flex; flex-direction: column; align-items: center; gap: 16px;
+  }
+  .coach-empty-orb {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #BEF264 0%, #4A5D38 60%, #0B0F0E 100%);
+    box-shadow: 0 0 40px rgba(190,242,100,0.30), inset 0 -8px 20px rgba(0,0,0,0.4);
+    position: relative;
+    animation: coach-orb-breathe 4s ease-in-out infinite;
+  }
+  @keyframes coach-orb-breathe {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 40px rgba(190,242,100,0.30), inset 0 -8px 20px rgba(0,0,0,0.4); }
+    50% { transform: scale(1.04); box-shadow: 0 0 56px rgba(190,242,100,0.45), inset 0 -8px 20px rgba(0,0,0,0.4); }
+  }
+  .coach-empty-title {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 24px; color: #F1EDE4;
+    letter-spacing: 0.3px; line-height: 1.3;
+    font-style: italic;
+  }
+  .coach-empty-sub {
+    font-size: 13px; color: #94A3B8; line-height: 1.5;
+    max-width: 280px;
+  }
+  .coach-suggestions {
+    margin-top: 12px;
+    display: flex; flex-direction: column; gap: 8px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .coach-suggestion {
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    font-size: 13px;
+    color: #CBD5E1;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.18s ease;
+    line-height: 1.4;
+  }
+  .coach-suggestion:hover, .coach-suggestion:active {
+    background: rgba(255,255,255,0.06);
+  }
+
+  /* Message bubbles */
+  .coach-msg {
+    display: flex; max-width: 85%;
+  }
+  .coach-msg.user { align-self: flex-end; }
+  .coach-msg.assistant, .coach-msg.tool { align-self: flex-start; }
+
+  .coach-bubble {
+    padding: 11px 14px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #F1EDE4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .coach-msg.user .coach-bubble {
+    background: #BEF264;
+    color: #0B0F0E;
+    border-bottom-right-radius: 6px;
+    font-weight: 500;
+  }
+  .coach-msg.assistant .coach-bubble {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-bottom-left-radius: 6px;
+  }
+
+  /* Tool call card (compact, inline) */
+  .coach-tool-card {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px;
+    background: rgba(132,204,22,0.06);
+    border: 1px solid rgba(132,204,22,0.18);
+    border-radius: 14px;
+    font-size: 12.5px;
+    color: #CBD5E1;
+    max-width: 85%;
+    align-self: flex-start;
+  }
+  .coach-tool-icon { color: #BEF264; flex-shrink: 0; }
+  .coach-tool-body strong { color: #BEF264; font-weight: 600; }
+
+  /* Typing indicator */
+  .coach-typing {
+    display: flex; gap: 4px; padding: 14px 16px;
+    background: rgba(255,255,255,0.05);
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    align-self: flex-start;
+    width: fit-content;
+  }
+  .coach-typing-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #94A3B8;
+    animation: coach-typing 1.4s infinite ease-in-out;
+  }
+  .coach-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+  .coach-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes coach-typing {
+    0%, 80%, 100% { opacity: 0.3; transform: scale(0.85); }
+    40% { opacity: 1; transform: scale(1); }
+  }
+
+  /* Input bar */
+  .coach-input-bar {
+    display: flex; align-items: flex-end; gap: 8px;
+    padding: 10px 14px 18px;
+    background: rgba(11, 15, 14, 0.95);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .coach-input-wrap {
+    flex: 1; position: relative;
+  }
+  .coach-input {
+    width: 100%;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    padding: 11px 16px;
+    color: #F1EDE4;
+    font-size: 14px;
+    font-family: inherit;
+    resize: none;
+    line-height: 1.4;
+    max-height: 110px;
+    min-height: 42px;
+    outline: none;
+  }
+  .coach-input:focus {
+    border-color: rgba(190,242,100,0.30);
+    background: rgba(255,255,255,0.07);
+  }
+  .coach-send-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    background: #BEF264;
+    color: #0B0F0E;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .coach-send-btn:disabled {
+    background: rgba(255,255,255,0.08);
+    color: #475569;
+    cursor: not-allowed;
+  }
+  .coach-send-btn:not(:disabled):active { transform: scale(0.92); }
+
+  /* FAB en Hoy */
+  .hoy-coach-fab {
+    position: fixed;
+    bottom: 90px;  /* arriba del tab bar */
+    right: 18px;
+    width: 56px; height: 56px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #BEF264 0%, #4A5D38 70%);
+    color: #0B0F0E;
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 8px 24px rgba(190,242,100,0.25), 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 50;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+  }
+  .hoy-coach-fab:active {
+    transform: scale(0.94);
+  }
+  .hoy-coach-fab:hover {
+    box-shadow: 0 10px 32px rgba(190,242,100,0.35), 0 4px 12px rgba(0,0,0,0.3);
+  }
+
   /* ── Hoy · Women's Health compact pill ───────────────────────── */
   .hoy-wh-pill {
     display: flex;
@@ -5542,6 +5786,13 @@
           </div>
         </div>
       </div>
+
+      <!-- SAVIA Coach · FAB flotante -->
+      <button class="hoy-coach-fab" id="hoy-coach-fab" onclick="coachOpen()" aria-label="Hablar con SAVIA">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+        </svg>
+      </button>
 
       <!-- Women's Health · Mi Ciclo pill (solo si activado) -->
       <div class="hoy-wh-pill" id="hoy-wh-pill" style="display:none;" onclick="whOpenDashboard()" role="button" tabindex="0">
@@ -8054,6 +8305,62 @@
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- SAVIA COACH — Chat AI                                          -->
+  <!-- ============================================================ -->
+  <div class="screen coach-screen" data-step="coach-chat">
+    <div class="coach-topbar">
+      <button class="coach-back-btn" onclick="coachClose()">‹ Hoy</button>
+      <div class="coach-title">
+        <span class="coach-title-dot"></span>
+        SAVIA
+      </div>
+      <button class="coach-menu-btn" onclick="coachOpenMenu()" aria-label="Menú">⋯</button>
+    </div>
+
+    <div class="coach-messages" id="coach-messages">
+      <!-- Empty state (mostrado si no hay mensajes) -->
+      <div class="coach-empty" id="coach-empty">
+        <div class="coach-empty-orb"></div>
+        <div class="coach-empty-title"><em>Hola, soy SAVIA</em></div>
+        <div class="coach-empty-sub">
+          Tu copiloto wellness. Preguntame cualquier cosa, registrá comidas, agua o entrenos por voz o texto.
+        </div>
+        <div class="coach-suggestions">
+          <button class="coach-suggestion" onclick="coachSendSuggestion('¿Cómo voy hoy?')">
+            ¿Cómo voy hoy?
+          </button>
+          <button class="coach-suggestion" onclick="coachSendSuggestion('Registrá 200g de pollo con 100g de arroz')">
+            Registrá 200g de pollo con 100g de arroz
+          </button>
+          <button class="coach-suggestion" onclick="coachSendSuggestion('¿Qué debería comer esta noche?')">
+            ¿Qué debería comer esta noche?
+          </button>
+        </div>
+      </div>
+      <!-- Mensajes reales se inyectan acá -->
+    </div>
+
+    <div class="coach-input-bar">
+      <div class="coach-input-wrap">
+        <textarea
+          id="coach-input"
+          class="coach-input"
+          placeholder="Preguntale a SAVIA..."
+          rows="1"
+          oninput="coachOnInput(event)"
+          onkeydown="coachOnKeydown(event)"
+        ></textarea>
+      </div>
+      <button class="coach-send-btn" id="coach-send-btn" onclick="coachSend()" disabled aria-label="Enviar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"/>
+          <polyline points="5 12 12 5 19 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
   <!-- ============== PHOTO CROPPER MODAL ============== -->
   <div class="cropper-overlay" id="cropper-overlay">
     <div class="cropper-topbar">
@@ -8249,7 +8556,7 @@ function goStep(n) {
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
     'plan-when', 'plan-when-date', 'plan-view', 'plan-today', 'plan-meal-log',
     'strava-callback',
-    'wh-onb-1', 'wh-onb-2', 'wh-onb-3', 'wh-onb-4', 'wh-onb-5', 'wh-onb-6', 'wh-dashboard', 'wh-quicklog',
+    'wh-onb-1', 'wh-onb-2', 'wh-onb-3', 'wh-onb-4', 'wh-onb-5', 'wh-onb-6', 'wh-dashboard', 'wh-quicklog', 'coach-chat',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -18395,6 +18702,200 @@ async function whRenderHoyPill() {
   pill.style.setProperty('--wh-pill-accent', accent.color);
   pill.style.setProperty('--wh-pill-accent-glow', accent.glow);
   pill.style.display = 'flex';
+}
+
+// ====================================================================
+// SAVIA COACH — Chat UI (Sprint 1.1.c)
+// Edge Function + streaming en Sprint 1.2 — por ahora mock responses
+// ====================================================================
+
+let coachState = {
+  threadId: null,
+  messages: [],   // [{role, content, tool_name?, tool_input?, tool_output?}]
+  sending: false
+};
+
+function coachOpen() {
+  state._coachFrom = state.step || 'app';
+  goStep('coach-chat');
+  // Focus input después de animación
+  setTimeout(() => {
+    const input = document.getElementById('coach-input');
+    if (input) input.focus();
+  }, 100);
+}
+
+function coachClose() {
+  goStep(state._coachFrom || 'app');
+}
+
+function coachOpenMenu() {
+  // V2: settings, new chat, history. MVP: solo new chat
+  if (coachState.messages.length === 0) return;
+  if (confirm('¿Empezar conversación nueva? La actual se guarda en historial.')) {
+    coachStartNewThread();
+  }
+}
+
+function coachStartNewThread() {
+  coachState.threadId = null;
+  coachState.messages = [];
+  coachRenderMessages();
+}
+
+function coachOnInput(e) {
+  const input = e.target;
+  const btn = document.getElementById('coach-send-btn');
+  // Auto-resize textarea
+  input.style.height = 'auto';
+  input.style.height = Math.min(input.scrollHeight, 110) + 'px';
+  // Enable send button if has text
+  if (btn) btn.disabled = !input.value.trim() || coachState.sending;
+}
+
+function coachOnKeydown(e) {
+  // Enter sin shift = enviar
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    coachSend();
+  }
+}
+
+function coachSendSuggestion(text) {
+  const input = document.getElementById('coach-input');
+  if (input) {
+    input.value = text;
+    coachOnInput({ target: input });
+  }
+  coachSend();
+}
+
+async function coachSend() {
+  if (coachState.sending) return;
+  const input = document.getElementById('coach-input');
+  if (!input) return;
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Hide empty state
+  const empty = document.getElementById('coach-empty');
+  if (empty) empty.style.display = 'none';
+
+  // Add user message
+  coachState.messages.push({ role: 'user', content: text });
+  coachRenderMessages();
+  input.value = '';
+  input.style.height = 'auto';
+
+  const btn = document.getElementById('coach-send-btn');
+  if (btn) btn.disabled = true;
+  coachState.sending = true;
+
+  // Show typing
+  coachShowTyping();
+
+  try {
+    // TODO Sprint 1.2: llamar Edge Function ai-chat-stream
+    // Por ahora: mock response
+    const reply = await coachMockReply(text);
+    coachHideTyping();
+    coachState.messages.push({ role: 'assistant', content: reply });
+    coachRenderMessages();
+  } catch (e) {
+    console.error('[coach] send failed:', e);
+    coachHideTyping();
+    coachState.messages.push({
+      role: 'assistant',
+      content: 'Disculpá, algo falló. Intentá de nuevo en unos segundos.'
+    });
+    coachRenderMessages();
+  } finally {
+    coachState.sending = false;
+    if (btn) btn.disabled = !input.value.trim();
+  }
+}
+
+async function coachMockReply(userText) {
+  // Mock responses para testing UI sin Edge Function
+  await new Promise(r => setTimeout(r, 900 + Math.random() * 800));
+  const t = userText.toLowerCase();
+  if (t.includes('cómo voy') || t.includes('como voy')) {
+    return 'Hoy llevás 1,450 kcal de tu meta de 2,495. Vas bien en proteína (140g de 200g) pero te faltan ~50g de carbs y 1 vaso de agua. Si entrenás hoy, sumá ~400 kcal post-workout.';
+  }
+  if (t.includes('pollo') || t.includes('arroz')) {
+    return 'Listo, registré 200g de pollo (~470 kcal, 60g P) + 100g de arroz cocido (~130 kcal, 28g C). Tu Balance actualizado: +600 kcal hoy.\n\n(Estoy en modo mock — el log real arranca con Sprint 1.3.)';
+  }
+  if (t.includes('comer') && t.includes('noche')) {
+    return 'Te faltan ~1,050 kcal y 60g de proteína para cerrar tu meta. Sugerencia: 200g salmón al horno + ensalada + ½ camote. ~520 kcal, 45g P. Quedan ~530 kcal libres para postre o snack.';
+  }
+  if (t.includes('hola')) {
+    return 'Hola Victor 👋 ¿En qué te ayudo hoy? Puedo registrar comidas, decirte cómo vas con tu plan de Sofía López, o sugerirte qué entrenar según tu recovery.';
+  }
+  return 'Recibido. Soy una versión preliminar — en los próximos sprints voy a poder registrar comidas, agua, workouts, ver tu balance energético y tu ciclo. Esta versión solo conversa con respuestas de prueba.';
+}
+
+function coachShowTyping() {
+  const container = document.getElementById('coach-messages');
+  if (!container) return;
+  // Remove previous typing if any
+  coachHideTyping();
+  const el = document.createElement('div');
+  el.id = 'coach-typing-indicator';
+  el.className = 'coach-typing';
+  el.innerHTML = '<span class="coach-typing-dot"></span><span class="coach-typing-dot"></span><span class="coach-typing-dot"></span>';
+  container.appendChild(el);
+  coachScrollToBottom();
+}
+
+function coachHideTyping() {
+  const el = document.getElementById('coach-typing-indicator');
+  if (el) el.remove();
+}
+
+function coachRenderMessages() {
+  const container = document.getElementById('coach-messages');
+  if (!container) return;
+  const empty = document.getElementById('coach-empty');
+
+  // Remove all existing message bubbles (keep empty state element)
+  Array.from(container.querySelectorAll('.coach-msg, .coach-tool-card, .coach-typing'))
+    .forEach(el => el.remove());
+
+  if (coachState.messages.length === 0) {
+    if (empty) empty.style.display = '';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+
+  coachState.messages.forEach(m => {
+    if (m.role === 'tool') {
+      const el = document.createElement('div');
+      el.className = 'coach-tool-card';
+      el.innerHTML = `<span class="coach-tool-icon">⚡</span><div class="coach-tool-body"><strong>${_escapeHtml(m.tool_name || '')}</strong> · ${_escapeHtml(m.summary || 'ejecutado')}</div>`;
+      container.appendChild(el);
+    } else {
+      const el = document.createElement('div');
+      el.className = `coach-msg ${m.role}`;
+      const bubble = document.createElement('div');
+      bubble.className = 'coach-bubble';
+      bubble.textContent = m.content || '';
+      el.appendChild(bubble);
+      container.appendChild(el);
+    }
+  });
+
+  coachScrollToBottom();
+}
+
+function coachScrollToBottom() {
+  const container = document.getElementById('coach-messages');
+  if (container) {
+    setTimeout(() => { container.scrollTop = container.scrollHeight; }, 30);
+  }
+}
+
+function _escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 }
 
 async function whLogSave() {
