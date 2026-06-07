@@ -3224,6 +3224,82 @@
     font-weight: 700;
   }
 
+  /* Nutrition LOG MANUAL — rediseño */
+  .nlm-section-label {
+    font-size: 10px; color: #94A3B8;
+    font-weight: 700; letter-spacing: 0.5px;
+    margin-bottom: 8px; padding-left: 2px;
+  }
+  .nlm-name-field {
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid rgba(132,204,22,0.3);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    transition: border-color 0.15s ease;
+  }
+  .nlm-name-field:focus-within {
+    border-color: rgba(132,204,22,0.55);
+  }
+  .nlm-name-field input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    outline: none;
+    padding: 0;
+    font-family: inherit;
+  }
+  .nlm-name-field input::placeholder { color: #64748B; font-weight: 500; }
+
+  .nlm-macro-card {
+    border: 1px solid;
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px;
+  }
+  .nlm-macro-label {
+    font-size: 11px; font-weight: 700;
+    letter-spacing: 0.4px;
+  }
+  .nlm-macro-hint {
+    font-size: 9px; color: #64748B; margin-top: 2px;
+  }
+  .nlm-macro-input-wrap {
+    display: flex; align-items: baseline; gap: 4px;
+    flex-shrink: 0;
+  }
+  .nlm-macro-input {
+    width: 64px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 18px; font-weight: 700;
+    text-align: right;
+    outline: none;
+    font-family: inherit;
+    -moz-appearance: textfield;
+  }
+  .nlm-macro-input::-webkit-outer-spin-button,
+  .nlm-macro-input::-webkit-inner-spin-button {
+    -webkit-appearance: none; margin: 0;
+  }
+  .nlm-macro-unit { font-size: 12px; color: #94A3B8; }
+
+  .nlm-kcal-card {
+    background: linear-gradient(135deg, rgba(132,204,22,0.1), rgba(132,204,22,0.03));
+    border: 1.5px solid rgba(132,204,22,0.35);
+    border-radius: 18px;
+    padding: 18px 20px;
+    margin-top: 12px;
+    margin-bottom: 12px;
+  }
+
   /* Photo analyzing spinner */
   .nut-photo-spinner {
     width: 56px; height: 56px;
@@ -6655,49 +6731,88 @@
   <!-- ============== NUTRITION — Meal log form ============== -->
   <div class="screen nut-screen" data-step="nut-log">
     <div class="nut-topbar">
-      <button class="nut-back-btn" onclick="goStep('nutrition')">
+      <button class="nut-back-btn" onclick="goStep('nut-meal-method')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
         Cancelar
       </button>
       <div class="nut-title">Nueva comida</div>
-      <div style="width:56px;"></div>
+      <button class="em-save-btn" id="nut-log-save-btn-top" disabled onclick="nutSaveMealLog()">Guardar</button>
     </div>
-    <div class="nut-log-form">
-      <div class="nut-onb-field-label">Categoría</div>
-      <div class="nut-log-cat-row" id="nut-log-cat-row">
+    <div class="nut-onb-content" style="padding-bottom:90px;">
+
+      <div class="nlm-section-label">NOMBRE</div>
+      <div class="nlm-name-field">
+        <input type="text" id="nut-log-items" placeholder="Ej: Casado con corvina" oninput="nutLogValidate()" autocomplete="off"/>
+      </div>
+
+      <div class="nlm-section-label">CATEGORÍA</div>
+      <div class="nut-log-cat-row" id="nut-log-cat-row" style="margin-bottom:18px;">
         <div class="nut-log-cat-pill" data-cat="breakfast" onclick="nutLogSelectCat('breakfast', this)">🍳 Desayuno</div>
-        <div class="nut-log-cat-pill" data-cat="snack_am" onclick="nutLogSelectCat('snack_am', this)">🍎 Snack mañana</div>
+        <div class="nut-log-cat-pill" data-cat="snack_am" onclick="nutLogSelectCat('snack_am', this)">🍎 Snack AM</div>
         <div class="nut-log-cat-pill" data-cat="lunch" onclick="nutLogSelectCat('lunch', this)">🥗 Almuerzo</div>
-        <div class="nut-log-cat-pill" data-cat="snack_pm" onclick="nutLogSelectCat('snack_pm', this)">🥜 Snack tarde</div>
+        <div class="nut-log-cat-pill" data-cat="snack_pm" onclick="nutLogSelectCat('snack_pm', this)">🥜 Snack PM</div>
         <div class="nut-log-cat-pill" data-cat="dinner" onclick="nutLogSelectCat('dinner', this)">🌙 Cena</div>
         <div class="nut-log-cat-pill" data-cat="post_workout" onclick="nutLogSelectCat('post_workout', this)">⚡ Post-workout</div>
       </div>
 
-      <div class="nut-onb-field-label" style="margin-top:16px;">¿Qué comiste?</div>
-      <textarea class="nut-log-textarea" id="nut-log-items" placeholder="Ej: pollo a la plancha, arroz, ensalada" oninput="nutLogValidate()"></textarea>
-      <div class="nut-log-textarea-hint">Describilo en una línea. En el futuro la IA va a estimar los macros desde la foto. Por ahora ingresalos a mano abajo.</div>
+      <div class="nlm-section-label">MACROS</div>
 
-      <div class="nut-onb-field-label" style="margin-top:8px;">Calorías y macros</div>
-      <div class="nut-log-macros-row">
-        <div class="nut-onb-field">
-          <div class="nut-onb-field-label" style="font-size:10px;">Kcal</div>
-          <input type="number" inputmode="numeric" class="nut-onb-field-input" id="nut-log-kcal" placeholder="0" oninput="nutLogValidate()"/>
+      <div class="nlm-macro-card" style="background:rgba(244,114,182,0.04); border-color:rgba(244,114,182,0.2);">
+        <div>
+          <div class="nlm-macro-label" style="color:#F472B6;">● PROTEÍNA</div>
+          <div class="nlm-macro-hint">4 kcal por gramo</div>
         </div>
-        <div class="nut-onb-field">
-          <div class="nut-onb-field-label" style="font-size:10px;">Proteína (g)</div>
-          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-log-p" placeholder="0" oninput="nutLogValidate()"/>
-        </div>
-      </div>
-      <div class="nut-log-macros-row">
-        <div class="nut-onb-field">
-          <div class="nut-onb-field-label" style="font-size:10px;">Carbs (g)</div>
-          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-log-c" placeholder="0" oninput="nutLogValidate()"/>
-        </div>
-        <div class="nut-onb-field">
-          <div class="nut-onb-field-label" style="font-size:10px;">Grasas (g)</div>
-          <input type="number" inputmode="decimal" class="nut-onb-field-input" id="nut-log-f" placeholder="0" oninput="nutLogValidate()"/>
+        <div class="nlm-macro-input-wrap">
+          <input type="number" inputmode="decimal" id="nut-log-p" class="nlm-macro-input" style="color:#F472B6; border-color:rgba(244,114,182,0.3);" placeholder="0" oninput="nutLogManualRecompute()"/>
+          <span class="nlm-macro-unit">g</span>
         </div>
       </div>
+
+      <div class="nlm-macro-card" style="background:rgba(251,191,36,0.04); border-color:rgba(251,191,36,0.2);">
+        <div>
+          <div class="nlm-macro-label" style="color:#FBBF24;">● CARBOHIDRATOS</div>
+          <div class="nlm-macro-hint">4 kcal por gramo</div>
+        </div>
+        <div class="nlm-macro-input-wrap">
+          <input type="number" inputmode="decimal" id="nut-log-c" class="nlm-macro-input" style="color:#FBBF24; border-color:rgba(251,191,36,0.3);" placeholder="0" oninput="nutLogManualRecompute()"/>
+          <span class="nlm-macro-unit">g</span>
+        </div>
+      </div>
+
+      <div class="nlm-macro-card" style="background:rgba(167,139,250,0.04); border-color:rgba(167,139,250,0.2);">
+        <div>
+          <div class="nlm-macro-label" style="color:#A78BFA;">● GRASA</div>
+          <div class="nlm-macro-hint">9 kcal por gramo</div>
+        </div>
+        <div class="nlm-macro-input-wrap">
+          <input type="number" inputmode="decimal" id="nut-log-f" class="nlm-macro-input" style="color:#A78BFA; border-color:rgba(167,139,250,0.3);" placeholder="0" oninput="nutLogManualRecompute()"/>
+          <span class="nlm-macro-unit">g</span>
+        </div>
+      </div>
+
+      <div class="nlm-kcal-card">
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div>
+            <div style="font-size:10px; color:#BEF264; font-weight:700; letter-spacing:0.5px; margin-bottom:4px;">CALORÍAS · AUTO</div>
+            <div style="font-size:11px; color:#94A3B8;" id="nut-log-kcal-formula">0 × 4 + 0 × 4 + 0 × 9</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:28px; color:#BEF264; font-weight:700; line-height:1;" id="nut-log-kcal-display">0</div>
+            <div style="font-size:10px; color:#94A3B8; margin-top:2px;">kcal</div>
+          </div>
+        </div>
+        <div style="display:flex; height:4px; border-radius:2px; overflow:hidden; margin-top:14px; background:rgba(255,255,255,0.06);">
+          <div id="nut-log-dist-p" style="background:#F472B6; width:0%; transition:width 0.18s ease;"></div>
+          <div id="nut-log-dist-c" style="background:#FBBF24; width:0%; transition:width 0.18s ease;"></div>
+          <div id="nut-log-dist-f" style="background:#A78BFA; width:0%; transition:width 0.18s ease;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:6px; font-size:9px; color:#64748B;">
+          <span>P <span id="nut-log-pct-p">0</span>%</span>
+          <span>C <span id="nut-log-pct-c">0</span>%</span>
+          <span>G <span id="nut-log-pct-f">0</span>%</span>
+        </div>
+      </div>
+
     </div>
     <button class="nut-onb-continue" id="nut-log-save-btn" disabled onclick="nutSaveMealLog()">Guardar comida</button>
   </div>
@@ -13762,30 +13877,24 @@ async function nutUndoHydration(ml, logId) {
   setTimeout(() => { if (ok.parentNode) ok.remove(); }, 1400);
 }
 
-// --- MEAL LOG ---
+// --- MEAL LOG MANUAL ---
 function nutOpenMealLog() {
   // Reset form
-  ['nut-log-items', 'nut-log-kcal', 'nut-log-p', 'nut-log-c', 'nut-log-f'].forEach(id => {
+  ['nut-log-items', 'nut-log-p', 'nut-log-c', 'nut-log-f'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
   document.querySelectorAll('.nut-log-cat-pill').forEach(p => p.classList.remove('selected'));
   nutState.selectedLogCategory = null;
   // Auto-seleccionar categoría según hora del día
-  const h = new Date().getHours();
-  let cat;
-  if (h >= 5 && h < 10) cat = 'breakfast';
-  else if (h >= 10 && h < 12) cat = 'snack_am';
-  else if (h >= 12 && h < 15) cat = 'lunch';
-  else if (h >= 15 && h < 18) cat = 'snack_pm';
-  else if (h >= 18 && h < 22) cat = 'dinner';
-  else cat = 'snack_pm'; // 22:00-04:59 default sin auto-asumir desayuno
+  const cat = nutGuessCategoryByHour();
   const catPill = document.querySelector(`.nut-log-cat-pill[data-cat="${cat}"]`);
   if (catPill) {
     catPill.classList.add('selected');
     nutState.selectedLogCategory = cat;
   }
-  document.getElementById('nut-log-save-btn').disabled = true;
+  // Reset kcal calculada y barra
+  nutLogManualRecompute();
   goStep('nut-log');
 }
 
@@ -13795,22 +13904,64 @@ function nutLogSelectCat(cat, el) {
   nutLogValidate();
 }
 
+// Lee macros, calcula kcal en vivo, actualiza UI + valida
+function nutLogManualRecompute() {
+  const p = parseFloat(document.getElementById('nut-log-p').value) || 0;
+  const c = parseFloat(document.getElementById('nut-log-c').value) || 0;
+  const f = parseFloat(document.getElementById('nut-log-f').value) || 0;
+  const kcal = Math.round(p * 4 + c * 4 + f * 9);
+
+  const setText = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  setText('nut-log-kcal-display', kcal.toLocaleString());
+  setText('nut-log-kcal-formula', `${_nlmRound(p)} × 4 + ${_nlmRound(c)} × 4 + ${_nlmRound(f)} × 9`);
+
+  // Distribución %: P*4 / kcal, C*4 / kcal, F*9 / kcal (todos redondeados, suman 100 exacto)
+  let pPctR = 0, cPctR = 0, fPctR = 0;
+  if (kcal > 0) {
+    pPctR = Math.round((p * 4 / kcal) * 100);
+    cPctR = Math.round((c * 4 / kcal) * 100);
+    fPctR = Math.max(0, 100 - pPctR - cPctR);
+  }
+  const distP = document.getElementById('nut-log-dist-p');
+  const distC = document.getElementById('nut-log-dist-c');
+  const distF = document.getElementById('nut-log-dist-f');
+  if (distP) distP.style.width = pPctR + '%';
+  if (distC) distC.style.width = cPctR + '%';
+  if (distF) distF.style.width = fPctR + '%';
+  setText('nut-log-pct-p', pPctR);
+  setText('nut-log-pct-c', cPctR);
+  setText('nut-log-pct-f', fPctR);
+
+  nutLogValidate();
+}
+
+function _nlmRound(n) { return Math.round((parseFloat(n) || 0) * 10) / 10; }
+
 function nutLogValidate() {
-  const items = (document.getElementById('nut-log-items').value || '').trim();
-  const kcal = parseInt(document.getElementById('nut-log-kcal').value, 10);
-  const valid = items.length >= 2 && kcal > 0 && nutState.selectedLogCategory;
-  document.getElementById('nut-log-save-btn').disabled = !valid;
+  const name = (document.getElementById('nut-log-items').value || '').trim();
+  const p = parseFloat(document.getElementById('nut-log-p').value) || 0;
+  const c = parseFloat(document.getElementById('nut-log-c').value) || 0;
+  const f = parseFloat(document.getElementById('nut-log-f').value) || 0;
+  const hasMacros = (p + c + f) > 0;
+  const valid = name.length >= 2 && hasMacros && nutState.selectedLogCategory;
+  const btn = document.getElementById('nut-log-save-btn');
+  const btnTop = document.getElementById('nut-log-save-btn-top');
+  if (btn) btn.disabled = !valid;
+  if (btnTop) btnTop.disabled = !valid;
 }
 
 async function nutSaveMealLog() {
   const btn = document.getElementById('nut-log-save-btn');
-  btn.disabled = true;
-  btn.textContent = 'Guardando...';
-  const items = document.getElementById('nut-log-items').value.trim();
-  const kcal = parseInt(document.getElementById('nut-log-kcal').value, 10) || 0;
+  const btnTop = document.getElementById('nut-log-save-btn-top');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando...'; }
+  if (btnTop) { btnTop.disabled = true; btnTop.textContent = '...'; }
+
+  const name = document.getElementById('nut-log-items').value.trim();
   const p = parseFloat(document.getElementById('nut-log-p').value) || 0;
   const c = parseFloat(document.getElementById('nut-log-c').value) || 0;
   const f = parseFloat(document.getElementById('nut-log-f').value) || 0;
+  const kcal = Math.round(p * 4 + c * 4 + f * 9);
+
   try {
     const { data: { user } } = await sb.auth.getUser();
     if (user) {
@@ -13818,15 +13969,20 @@ async function nutSaveMealLog() {
         user_id: user.id,
         meal_category: nutState.selectedLogCategory,
         source: 'manual',
-        items_text: items,
+        items_text: name,
+        notes: name,
         total_kcal: kcal,
-        total_protein_g: p,
-        total_carbs_g: c,
-        total_fat_g: f,
+        total_protein_g: Math.round(p * 10) / 10,
+        total_carbs_g: Math.round(c * 10) / 10,
+        total_fat_g: Math.round(f * 10) / 10,
+        from_plan: false,
       });
     }
   } catch (e) { console.warn('[NUT] save meal failed:', e); }
-  btn.textContent = 'Guardar comida';
+
+  if (btn) btn.textContent = 'Guardar comida';
+  if (btnTop) btnTop.textContent = 'Guardar';
+
   // Recargar y volver al dashboard
   await nutLoadTodayData();
   nutRenderDashboard();
