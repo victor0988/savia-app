@@ -7159,7 +7159,12 @@
       </div>
       <div class="nut-onb-eyebrow">Paso 4 de 6</div>
       <div class="nut-onb-title">¿Qué buscás de este módulo?</div>
-      <div class="nut-onb-hint">Elegí tu objetivo principal. Define el foco del coaching.</div>
+      <div class="nut-onb-hint">Elegí todos los que apliquen. Define el foco del coaching.</div>
+
+      <div id="wh-goals-counter" style="display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:rgba(255,255,255,0.04); border-radius:10px; margin-bottom:14px; font-size:13px; color:#94A3B8;">
+        <span><span id="wh-goals-count">0</span> seleccionados</span>
+        <span style="font-size:11px; color:#64748B;">Tap para alternar</span>
+      </div>
 
       <div class="nut-onb-option" data-wh-goal="know_body" onclick="whSelectGoal('know_body', this)">
         <div class="nut-onb-option-icon">🧬</div>
@@ -16584,7 +16589,7 @@ let whOnbState = {
   avg_cycle_length_days: 28,
   avg_period_length_days: 5,
   last_period_start_date: null,
-  goal_primary: null,
+  goals: [],  // multi-select: ['optimize_training','optimize_nutrition','manage_symptoms']
   conditions: []
 };
 
@@ -16595,7 +16600,7 @@ function whResetOnbState() {
     avg_cycle_length_days: 28,
     avg_period_length_days: 5,
     last_period_start_date: null,
-    goal_primary: null,
+    goals: [],
     conditions: []
   };
 }
@@ -16612,6 +16617,9 @@ function whClearAllSelectedClasses() {
   // Step 3 and 5 buttons are always enabled (skip-friendly)
   const b6 = document.getElementById('wh-onb-6-btn');
   if (b6) { b6.disabled = false; b6.textContent = "Activar Women's Health"; }
+  // Reset goals counter
+  const goalsCnt = document.getElementById('wh-goals-count');
+  if (goalsCnt) goalsCnt.textContent = '0';
 }
 
 function whOpenOnboardingFromProfile() {
@@ -16619,13 +16627,20 @@ function whOpenOnboardingFromProfile() {
   whClearAllSelectedClasses();
   // Pre-fill from existing profile if any
   if (state.women_health && state.women_health.enabled) {
+    // Hydrate goals: prefer new goals[] array; fallback a goal_primary legacy
+    let goalsArr = [];
+    if (Array.isArray(state.women_health.goals) && state.women_health.goals.length > 0) {
+      goalsArr = [...state.women_health.goals];
+    } else if (state.women_health.goal_primary) {
+      goalsArr = [state.women_health.goal_primary];
+    }
     whOnbState = {
       status: state.women_health.status || null,
       age: state.women_health.age || null,
       avg_cycle_length_days: state.women_health.avg_cycle_length_days || 28,
       avg_period_length_days: state.women_health.avg_period_length_days || 5,
       last_period_start_date: state.women_health.last_period_start_date || null,
-      goal_primary: state.women_health.goal_primary || null,
+      goals: goalsArr,
       conditions: Array.isArray(state.women_health.conditions) ? [...state.women_health.conditions] : []
     };
   } else {
@@ -16701,11 +16716,24 @@ function whSkipLastPeriod() {
 }
 
 function whSelectGoal(val, el) {
-  whOnbState.goal_primary = val;
-  document.querySelectorAll('[data-wh-goal]').forEach(e => e.classList.remove('selected'));
-  if (el) el.classList.add('selected');
+  // Multi-select toggle
+  const i = whOnbState.goals.indexOf(val);
+  if (i >= 0) {
+    whOnbState.goals.splice(i, 1);
+    if (el) el.classList.remove('selected');
+  } else {
+    whOnbState.goals.push(val);
+    if (el) el.classList.add('selected');
+  }
+  whUpdateGoalsCounter();
+}
+
+function whUpdateGoalsCounter() {
+  const cnt = whOnbState.goals.length;
+  const el = document.getElementById('wh-goals-count');
+  if (el) el.textContent = cnt;
   const btn = document.getElementById('wh-onb-4-btn');
-  if (btn) btn.disabled = false;
+  if (btn) btn.disabled = cnt === 0;
 }
 
 function whToggleCondition(val, el) {
@@ -16724,6 +16752,17 @@ function whOnbNext(currentStep) {
   let next;
   if (currentStep === 1) {
     next = isCycle ? 'wh-onb-2' : 'wh-onb-4';
+    // Hydrate goals UI si vamos directo a step 4 (non-cycle path)
+    if (next === 'wh-onb-4') {
+      setTimeout(() => {
+        document.querySelectorAll('[data-wh-goal]').forEach(e => e.classList.remove('selected'));
+        (whOnbState.goals || []).forEach(g => {
+          const el = document.querySelector(`[data-wh-goal="${g}"]`);
+          if (el) el.classList.add('selected');
+        });
+        whUpdateGoalsCounter();
+      }, 30);
+    }
   } else if (currentStep === 2) {
     // Hydrate UI for step 3 if date exists
     next = 'wh-onb-3';
@@ -16734,15 +16773,13 @@ function whOnbNext(currentStep) {
   } else if (currentStep === 3) {
     next = 'wh-onb-4';
     setTimeout(() => {
-      if (whOnbState.goal_primary) {
-        const el = document.querySelector(`[data-wh-goal="${whOnbState.goal_primary}"]`);
-        if (el) {
-          document.querySelectorAll('[data-wh-goal]').forEach(e => e.classList.remove('selected'));
-          el.classList.add('selected');
-          const btn = document.getElementById('wh-onb-4-btn');
-          if (btn) btn.disabled = false;
-        }
-      }
+      // Hydrate multi-select goals from state
+      document.querySelectorAll('[data-wh-goal]').forEach(e => e.classList.remove('selected'));
+      (whOnbState.goals || []).forEach(g => {
+        const el = document.querySelector(`[data-wh-goal="${g}"]`);
+        if (el) el.classList.add('selected');
+      });
+      whUpdateGoalsCounter();
     }, 30);
   } else if (currentStep === 4) {
     next = 'wh-onb-5';
@@ -16807,7 +16844,8 @@ function whRenderOnbSummary() {
       rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Último período</span><span style="${valueStyle}">${whOnbState.last_period_start_date}</span></div>`);
     }
   }
-  rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Objetivo</span><span style="${valueStyle}">${WH_GOAL_LABELS[whOnbState.goal_primary] || '—'}</span></div>`);
+  const goalsTxt = (whOnbState.goals || []).map(g => WH_GOAL_LABELS[g] || g).join(', ') || '—';
+  rows.push(`<div style="${rowStyle}"><span style="${labelStyle}">Objetivos</span><span style="${valueStyle}; text-align:right; max-width:60%;">${goalsTxt}</span></div>`);
   if (whOnbState.conditions.length > 0) {
     const conds = whOnbState.conditions.map(c => WH_COND_LABELS[c] || c).join(', ');
     const lastRowStyle = rowStyle.replace('border-bottom:1px solid rgba(255,255,255,0.06);', '');
@@ -16830,7 +16868,8 @@ async function whOnbConfirmActivate() {
       avg_cycle_length_days: whOnbState.avg_cycle_length_days,
       avg_period_length_days: whOnbState.avg_period_length_days,
       last_period_start_date: whOnbState.last_period_start_date,
-      goal_primary: whOnbState.goal_primary,
+      goals: whOnbState.goals,
+      goal_primary: (whOnbState.goals && whOnbState.goals[0]) || null,  // legacy compat
       conditions: whOnbState.conditions,
       enabled_at: new Date().toISOString()
     });
@@ -16929,10 +16968,15 @@ async function whRenderProfileSection() {
       </div>`);
     }
   }
-  if (profile.goal_primary) {
+  // Goals (multi-select). Fallback a goal_primary legacy si no hay goals[].
+  let goalsList = [];
+  if (Array.isArray(profile.goals) && profile.goals.length > 0) goalsList = profile.goals;
+  else if (profile.goal_primary) goalsList = [profile.goal_primary];
+  if (goalsList.length > 0) {
+    const goalsTxt = goalsList.map(g => WH_GOAL_LABELS[g] || g).join(', ');
     rows.push(`<div class="profile-row">
-      <div class="profile-row-label">Objetivo</div>
-      <div class="profile-row-value"><span>${WH_GOAL_LABELS[profile.goal_primary] || profile.goal_primary}</span></div>
+      <div class="profile-row-label">Objetivos</div>
+      <div class="profile-row-value"><span style="font-size:12px; text-align:right; max-width:60%;">${goalsTxt}</span></div>
     </div>`);
   }
   if (Array.isArray(profile.conditions) && profile.conditions.length > 0) {
