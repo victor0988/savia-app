@@ -2974,6 +2974,256 @@
   }
   .hoy-plan-cta.is-scheduled .hoy-plan-cta-arrow { color: #FBBF24; }
 
+  /* Hoy plan active card (cuando plan está active = mostramos preview prominente) */
+  .hoy-plan-active {
+    background: linear-gradient(135deg, rgba(132,204,22,0.1), rgba(132,204,22,0.03));
+    border: 1px solid rgba(132,204,22,0.3);
+    border-radius: 18px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hoy-plan-active:active { transform: scale(0.99); }
+  .hoy-plan-active-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .hoy-plan-active-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: linear-gradient(135deg, #A7F3D0, #6EE7B7);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #064E3B;
+  }
+  .hoy-plan-active-progress {
+    display: flex; gap: 4px; height: 6px;
+    margin-bottom: 8px;
+  }
+  .hoy-plan-active-progress-seg {
+    flex: 1;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+  }
+  .hoy-plan-active-progress-seg.is-done { background: #BEF264; }
+  .hoy-plan-active-progress-seg.is-next { background: rgba(132,204,22,0.4); }
+
+  /* Plan TODAY: dashboard del plan del día */
+  .plan-today-header-card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+  }
+  .plan-today-ring {
+    position: relative;
+    width: 64px; height: 64px; flex-shrink: 0;
+  }
+  .plan-today-ring svg { transform: rotate(-90deg); }
+  .plan-today-ring-content {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+  }
+  .plan-today-header-info { flex: 1; min-width: 0; }
+
+  .plan-today-extra-btn {
+    width: 100%;
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.15);
+    color: #94A3B8;
+    padding: 12px;
+    border-radius: 14px;
+    font-size: 12px; font-weight: 600;
+    margin-bottom: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-today-extra-btn:active { transform: scale(0.985); }
+
+  .plan-today-meal-card {
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    border: 1px solid;
+  }
+  .plan-today-meal-card.is-eaten {
+    background: rgba(132,204,22,0.04);
+    border-color: rgba(132,204,22,0.18);
+  }
+  .plan-today-meal-card.is-next {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(132,204,22,0.5);
+    border-width: 1.5px;
+  }
+  .plan-today-meal-card.is-pending {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(255,255,255,0.06);
+    opacity: 0.75;
+  }
+  .plan-today-meal-card.is-overdue {
+    background: rgba(255,255,255,0.03);
+    border-color: rgba(248,113,113,0.18);
+    opacity: 0.85;
+  }
+  .plan-today-meal-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+  }
+  .plan-today-meal-check {
+    width: 20px; height: 20px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .plan-today-meal-check.is-eaten {
+    background: #BEF264; color: #0a0e1a;
+  }
+  .plan-today-meal-check.is-next {
+    border: 2px solid rgba(132,204,22,0.5);
+  }
+  .plan-today-meal-check.is-pending {
+    border: 2px solid rgba(255,255,255,0.15);
+  }
+  .plan-today-meal-badge {
+    font-size: 9px; font-weight: 700; letter-spacing: 0.3px;
+    padding: 2px 6px; border-radius: 5px;
+  }
+  .plan-today-meal-badge.is-eaten { background: rgba(132,204,22,0.18); color: #BEF264; }
+  .plan-today-meal-badge.is-next { background: rgba(132,204,22,0.18); color: #BEF264; }
+  .plan-today-meal-badge.is-overdue { background: rgba(248,113,113,0.15); color: #FCA5A5; }
+  .plan-today-log-btn {
+    width: 100%;
+    background: #BEF264;
+    border: none;
+    color: #0a0e1a;
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 12px; font-weight: 700;
+    margin-top: 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-today-log-btn:active { transform: scale(0.985); }
+  .plan-today-log-btn.is-overdue {
+    background: rgba(248,113,113,0.15);
+    color: #FCA5A5;
+    border: 1px solid rgba(248,113,113,0.3);
+  }
+  .plan-today-undo-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.08);
+    color: #94A3B8;
+    padding: 6px;
+    border-radius: 8px;
+    font-size: 11px;
+    margin-top: 8px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .plan-today-supps-btn {
+    width: 100%;
+    background: rgba(167,139,250,0.04);
+    border: 1px solid rgba(167,139,250,0.18);
+    border-radius: 14px;
+    padding: 10px 14px;
+    margin-top: 14px;
+    display: flex; align-items: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-today-supps-btn:active { transform: scale(0.99); }
+
+  /* Plan MEAL LOG: sub-pantalla "Lo comí" */
+  .plan-meal-log-group-label {
+    font-size: 10px; color: #94A3B8;
+    font-weight: 700; letter-spacing: 0.5px;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+  }
+  .plan-meal-log-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 11px;
+    padding: 10px 12px;
+    margin-bottom: 5px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-meal-log-item:active { transform: scale(0.99); }
+  .plan-meal-log-item.is-selected {
+    background: rgba(132,204,22,0.1);
+    border-color: rgba(132,204,22,0.5);
+    border-width: 1.5px;
+  }
+  .plan-meal-log-item.is-fixed {
+    background: rgba(132,204,22,0.06);
+    border-color: rgba(132,204,22,0.2);
+    cursor: default;
+  }
+  .plan-meal-log-item.is-free {
+    background: rgba(255,255,255,0.03);
+    border-style: dashed;
+    border-color: rgba(255,255,255,0.1);
+    cursor: default;
+  }
+  .plan-meal-log-item-text { flex: 1; min-width: 0; }
+  .plan-meal-log-item-name {
+    font-size: 11px; font-weight: 600; color: #fff;
+  }
+  .plan-meal-log-item.is-free .plan-meal-log-item-name { color: #64748B; font-weight: 500; }
+  .plan-meal-log-item-macros {
+    font-size: 9px; color: #94A3B8; margin-top: 2px;
+  }
+  .plan-meal-log-radio {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .plan-meal-log-radio.is-selected {
+    background: #BEF264;
+    border-color: #BEF264;
+    color: #0a0e1a;
+  }
+  .plan-meal-log-total-card {
+    background: rgba(132,204,22,0.06);
+    border: 1px solid rgba(132,204,22,0.25);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-top: 14px;
+  }
+  .plan-meal-log-section { margin-bottom: 14px; }
+  .plan-meal-log-alt-tabs {
+    display: flex; gap: 6px;
+    margin-bottom: 12px;
+    padding: 4px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 12px;
+  }
+  .plan-meal-log-alt-tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #94A3B8;
+    padding: 8px;
+    border-radius: 8px;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .plan-meal-log-alt-tab.is-active {
+    background: rgba(132,204,22,0.15);
+    color: #BEF264;
+    font-weight: 700;
+  }
+
   /* Photo analyzing spinner */
   .nut-photo-spinner {
     width: 56px; height: 56px;
@@ -5989,6 +6239,60 @@
     </div>
   </div>
 
+  <!-- ============== PLAN HOY: dashboard del plan del día ============== -->
+  <div class="screen nut-screen" data-step="plan-today">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="goStep('app')">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Hoy
+      </button>
+      <div class="nut-title">Mi plan</div>
+      <button class="em-save-btn" onclick="planViewOpen()" style="color:#94A3B8;">···</button>
+    </div>
+    <div class="nut-onb-content" style="padding-bottom:90px;">
+      <div id="plan-today-header"></div>
+
+      <button id="plan-today-extra-btn" class="plan-today-extra-btn" onclick="planTodayAddExtra()">
+        + Comida extra (fuera del plan)
+      </button>
+
+      <div id="plan-today-meals"></div>
+
+      <div id="plan-today-supps-wrap" style="display:none;">
+        <button class="plan-today-supps-btn" onclick="planViewOpen()">
+          <span style="font-size:14px;">💊</span>
+          <span style="flex:1; text-align:left; padding:0 8px;">
+            <span style="font-size:11px; color:#C4B5FD; font-weight:600;">Suplementos: </span>
+            <span style="font-size:10px; color:#94A3B8;" id="plan-today-supps-count">— hoy</span>
+          </span>
+          <span style="color:#A78BFA; font-size:13px;">›</span>
+        </button>
+      </div>
+
+      <div id="plan-today-empty" style="display:none; text-align:center; padding:60px 16px; color:#94A3B8;">
+        <div style="font-size:32px; margin-bottom:8px;">⏳</div>
+        <div style="font-size:13px; font-weight:600;">Cargando plan del día...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============== PLAN MEAL LOG: sub-pantalla "Lo comí" ============== -->
+  <div class="screen nut-screen" data-step="plan-meal-log">
+    <div class="nut-topbar">
+      <button class="nut-back-btn" onclick="planMealLogCancel()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+        Atrás
+      </button>
+      <div class="nut-title">¿Qué comiste?</div>
+      <button class="em-save-btn" id="plan-meal-log-save-btn" onclick="planMealLogSave()">Loguear</button>
+    </div>
+    <div class="nut-onb-content" style="padding-bottom:80px;">
+      <div id="plan-meal-log-header" style="text-align:center; margin-bottom:14px;"></div>
+      <div id="plan-meal-log-groups"></div>
+      <div id="plan-meal-log-total" style="display:none;"></div>
+    </div>
+  </div>
+
   <!-- ============== PLAN: ver plan completo (read-only) ============== -->
   <div class="screen nut-screen" data-step="plan-view">
     <div class="nut-topbar">
@@ -6591,7 +6895,7 @@ function goStep(n) {
     'nut-meal-method', 'nut-barcode-scan', 'nut-barcode-result', 'nut-search', 'nut-meal-edit', 'nut-meal-edit-portion',
     'nut-photo-analyzing', 'nut-photo-result', 'nut-inbody-analyzing', 'nut-inbody-confirm', 'nut-targets-compare',
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
-    'plan-when', 'plan-when-date', 'plan-view',
+    'plan-when', 'plan-when-date', 'plan-view', 'plan-today', 'plan-meal-log',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -10359,8 +10663,8 @@ async function planRefreshHoyBanner() {
   const plan = await planLoadActive();
   const status = planComputeStatus(plan);
 
-  // Reset classes
-  banner.classList.remove('is-scheduled');
+  // Reset clases (porque cambiamos entre hoy-plan-cta y hoy-plan-active)
+  banner.className = 'hoy-plan-cta';
 
   if (!plan) {
     // Sin plan: banner default "¿Tenés un plan?"
@@ -10389,11 +10693,106 @@ async function planRefreshHoyBanner() {
       </div>
       <div class="hoy-plan-cta-arrow">›</div>
     `;
+  } else if (status === 'active') {
+    // Activo: card prominente con preview del plan del día
+    banner.className = 'hoy-plan-active';
+    banner.style.display = '';
+    banner.onclick = () => planTodayOpen();
+    await _planRefreshHoyActiveContent(plan, banner);
   } else {
-    // Active o paused: por ahora ocultamos (Fase 3 traerá el pillar/tab del plan)
+    // Paused: ocultamos (se gestiona desde Profile)
     banner.style.display = 'none';
     banner.onclick = null;
   }
+}
+
+// Pinta el contenido de la card activa con conteo de comidas hechas hoy
+async function _planRefreshHoyActiveContent(plan, banner) {
+  const nName = plan.nutritionist_name || 'Mi plan';
+  const initials = (plan.nutritionist_name || 'MP').split(' ').filter(s => s && s[0]).slice(0, 2).map(s => s[0].toUpperCase()).join('') || 'MP';
+
+  // Por defecto sin contar comidas (lo pinta plano)
+  let eaten = 0, total = 0, consumedKcal = 0, nextLabel = '';
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      const userId = session.user.id;
+      const today = new Date(); today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+      const auth = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' };
+      const [mealsResp, logsResp] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/plan_meals?plan_id=eq.${plan.id}&select=id,slot,custom_label,scheduled_time,scheduled_time_label,alternative_group&order=display_order.asc`, { headers: auth }),
+        fetch(`${SUPABASE_URL}/rest/v1/meal_logs?user_id=eq.${userId}&ts=gte.${encodeURIComponent(today.toISOString())}&ts=lt.${encodeURIComponent(tomorrow.toISOString())}&from_plan=eq.true&select=plan_meal_id,total_kcal&order=ts.asc`, { headers: auth }),
+      ]);
+      if (mealsResp.ok && logsResp.ok) {
+        const meals = await mealsResp.json();
+        const logs = await logsResp.json();
+        consumedKcal = logs.reduce((s, l) => s + (parseFloat(l.total_kcal) || 0), 0);
+        // Agrupar alternativas
+        const groups = {};
+        meals.forEach(m => {
+          const key = m.alternative_group || `s_${m.id}`;
+          if (!groups[key]) groups[key] = { meals: [], eaten: false };
+          groups[key].meals.push(m);
+          if (logs.some(l => l.plan_meal_id === m.id)) groups[key].eaten = true;
+        });
+        total = Object.keys(groups).length;
+        eaten = Object.values(groups).filter(g => g.eaten).length;
+
+        // Próxima comida pendiente con horario
+        const now = new Date();
+        let nextMeal = null;
+        let nextDiff = Infinity;
+        Object.values(groups).forEach(g => {
+          if (g.eaten) return;
+          g.meals.forEach(m => {
+            if (!m.scheduled_time) return;
+            const [hh, mm] = m.scheduled_time.split(':').map(n => parseInt(n, 10));
+            const slot = new Date(now);
+            slot.setHours(hh, mm || 0, 0, 0);
+            const diff = slot - now;
+            if (diff > -2 * 60 * 60 * 1000 && diff < nextDiff) {
+              nextDiff = diff;
+              nextMeal = m;
+            }
+          });
+        });
+        if (nextMeal) {
+          const slotLabel = SLOT_LABELS[nextMeal.slot] || nextMeal.custom_label || nextMeal.slot;
+          nextLabel = `próximo: ${slotLabel}${nextMeal.scheduled_time_label ? ' ' + nextMeal.scheduled_time_label : ''}`;
+        }
+      }
+    }
+  } catch (e) { console.warn('[PLAN] hoy active content load:', e); }
+
+  const segs = [];
+  const groupsForBar = Math.max(total, 1);
+  for (let i = 0; i < groupsForBar; i++) {
+    const cls = i < eaten ? 'is-done' : '';
+    segs.push(`<div class="hoy-plan-active-progress-seg ${cls}"></div>`);
+  }
+
+  const planKcal = plan.total_kcal || 0;
+  const subParts = [`${Math.round(consumedKcal).toLocaleString()} / ${planKcal.toLocaleString()} kcal`];
+  if (nextLabel) subParts.push(nextLabel);
+
+  banner.innerHTML = `
+    <div class="hoy-plan-active-head">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="hoy-plan-active-avatar">${_planEscape(initials)}</div>
+        <div>
+          <div style="font-size:10px; color:#BEF264; font-weight:600; letter-spacing:0.4px;">MI PLAN DE HOY</div>
+          <div style="font-size:13px; font-weight:700; color:#fff;">${_planEscape(nName)}</div>
+        </div>
+      </div>
+      <div style="background:rgba(132,204,22,0.18); color:#BEF264; font-size:11px; font-weight:700; padding:4px 10px; border-radius:8px;">${eaten} / ${total || '?'}</div>
+    </div>
+    <div class="hoy-plan-active-progress">${segs.join('')}</div>
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div style="font-size:11px; color:#94A3B8;">${_planEscape(subParts.join(' · '))}</div>
+      <div style="color:#BEF264; font-size:14px;">›</div>
+    </div>
+  `;
 }
 
 // Render de la sección "Mi plan nutricional" en Profile
@@ -10807,6 +11206,634 @@ function planViewRender() {
   } else {
     btn.textContent = '▶ Usar este plan';
     btn.className = 'plan-view-action-btn is-activate';
+  }
+}
+
+// ============================================================
+//  PLAN TODAY — Dashboard del plan del día actual
+// ============================================================
+const planTodayState = {
+  plan: null,
+  meals: [],        // plan_meals del plan
+  items: [],        // plan_meal_items
+  supplements: [],
+  todayLogs: [],    // meal_logs de hoy con from_plan=true
+};
+
+async function planTodayOpen() {
+  if (!planState.active) {
+    alert('No hay plan activo.');
+    return;
+  }
+  const status = planComputeStatus(planState.active);
+  if (status !== 'active') {
+    // Si está programado o pausado, mejor ir a Profile para activarlo
+    if (typeof openProfile === 'function') openProfile();
+    else goStep('profile');
+    return;
+  }
+  document.getElementById('plan-today-empty').style.display = '';
+  document.getElementById('plan-today-empty').innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⏳</div><div style="font-size:13px; font-weight:600;">Cargando plan del día...</div>';
+  document.getElementById('plan-today-header').innerHTML = '';
+  document.getElementById('plan-today-meals').innerHTML = '';
+  document.getElementById('plan-today-supps-wrap').style.display = 'none';
+
+  goStep('plan-today');
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const planId = planState.active.id;
+    const userId = session.user.id;
+    const auth = { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Accept: 'application/json' };
+
+    // Fechas de hoy (00:00 a 23:59 local)
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+    const todayISO = today.toISOString();
+    const tomorrowISO = tomorrow.toISOString();
+
+    const [mealsResp, suppsResp, logsResp] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/plan_meals?plan_id=eq.${planId}&select=*&order=display_order.asc`, { headers: auth }),
+      fetch(`${SUPABASE_URL}/rest/v1/plan_supplements?plan_id=eq.${planId}&select=*&order=display_order.asc`, { headers: auth }),
+      fetch(`${SUPABASE_URL}/rest/v1/meal_logs?user_id=eq.${userId}&ts=gte.${encodeURIComponent(todayISO)}&ts=lt.${encodeURIComponent(tomorrowISO)}&select=*&order=ts.asc`, { headers: auth }),
+    ]);
+    if (!mealsResp.ok || !suppsResp.ok || !logsResp.ok) throw new Error('fetch_failed');
+
+    planTodayState.plan = planState.active;
+    planTodayState.meals = await mealsResp.json();
+    planTodayState.supplements = await suppsResp.json();
+    planTodayState.todayLogs = await logsResp.json();
+
+    // Cargar items de las comidas
+    const mealIds = planTodayState.meals.map(m => m.id);
+    if (mealIds.length > 0) {
+      const itemsResp = await fetch(`${SUPABASE_URL}/rest/v1/plan_meal_items?meal_id=in.(${mealIds.join(',')})&select=*&order=display_order.asc`, { headers: auth });
+      if (itemsResp.ok) planTodayState.items = await itemsResp.json();
+    } else {
+      planTodayState.items = [];
+    }
+
+    planTodayRender();
+  } catch (e) {
+    console.error('[PLAN TODAY] load failed:', e);
+    document.getElementById('plan-today-empty').innerHTML = '<div style="font-size:32px; margin-bottom:8px;">⚠️</div><div style="font-size:13px; font-weight:600;">No se pudo cargar.</div>';
+  }
+}
+
+// Computa el status visual de una comida
+function _planTodayMealStatus(meal, log, now) {
+  if (log) return 'eaten';
+  const slotTime = meal.scheduled_time; // HH:MM:SS o null
+  if (!slotTime) return 'pending';
+  const [hh, mm] = slotTime.split(':').map(n => parseInt(n, 10));
+  const slotDate = new Date(now);
+  slotDate.setHours(hh, mm || 0, 0, 0);
+  const diffMin = (slotDate - now) / 60000;
+  if (diffMin < -120) return 'overdue';   // pasaron >2h del horario
+  if (diffMin >= -60 && diffMin <= 90) return 'next';  // dentro de la ventana
+  return 'pending';
+}
+
+// Encuentra el log existente para una comida del plan (o null)
+function _planTodayLogForMeal(mealId) {
+  return planTodayState.todayLogs.find(l => l.plan_meal_id === mealId && l.from_plan === true);
+}
+
+// Calcula adherencia: comidas comidas / comidas planeadas (excluyendo alternativas duplicadas)
+function _planTodayAdherence() {
+  // Si hay alternativas A/B con mismo alternative_group, contamos como 1 slot total
+  const groups = {};
+  planTodayState.meals.forEach(m => {
+    const key = m.alternative_group || m.id;
+    if (!groups[key]) groups[key] = { meals: [], eaten: false };
+    groups[key].meals.push(m);
+    if (_planTodayLogForMeal(m.id)) groups[key].eaten = true;
+  });
+  const total = Object.keys(groups).length;
+  const eaten = Object.values(groups).filter(g => g.eaten).length;
+  return { eaten, total };
+}
+
+function planTodayRender() {
+  const p = planTodayState.plan;
+  if (!p) return;
+  document.getElementById('plan-today-empty').style.display = 'none';
+
+  const adh = _planTodayAdherence();
+  const pct = adh.total > 0 ? Math.round((adh.eaten / adh.total) * 100) : 0;
+
+  // Total de macros consumidos hoy (de meal_logs con from_plan)
+  const consumed = planTodayState.todayLogs
+    .filter(l => l.from_plan)
+    .reduce((a, l) => ({
+      kcal: a.kcal + (parseFloat(l.total_kcal) || 0),
+      p: a.p + (parseFloat(l.total_protein_g) || 0),
+      c: a.c + (parseFloat(l.total_carbs_g) || 0),
+      f: a.f + (parseFloat(l.total_fat_g) || 0),
+    }), { kcal: 0, p: 0, c: 0, f: 0 });
+
+  // Header: anillo de adherencia
+  const CIRC = 176; // 2π·28
+  const dash = (pct / 100) * CIRC;
+  const planKcal = p.total_kcal || 2000;
+  const planP = p.total_protein_g || 0;
+  const planC = p.total_carbs_g || 0;
+  const planF = p.total_fat_g || 0;
+
+  document.getElementById('plan-today-header').innerHTML = `
+    <div class="plan-today-header-card">
+      <div class="plan-today-ring">
+        <svg viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="28" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="5"/>
+          <circle cx="32" cy="32" r="28" fill="none" stroke="#BEF264" stroke-width="5" stroke-linecap="round" stroke-dasharray="${dash} ${CIRC}"/>
+        </svg>
+        <div class="plan-today-ring-content">
+          <div style="font-size:14px; font-weight:700; color:#fff;">${pct}%</div>
+          <div style="font-size:8px; color:#94A3B8; letter-spacing:0.5px;">PLAN</div>
+        </div>
+      </div>
+      <div class="plan-today-header-info">
+        <div style="font-size:13px; color:#fff; font-weight:700;">${adh.eaten} de ${adh.total} comidas</div>
+        <div style="font-size:11px; color:#94A3B8; margin-top:2px;">${Math.round(consumed.kcal).toLocaleString()} / ${planKcal.toLocaleString()} kcal</div>
+        <div style="display:flex; gap:8px; margin-top:6px; font-size:10px;">
+          <span style="color:#F472B6;">P ${Math.round(consumed.p)}/${Math.round(planP)}g</span>
+          <span style="color:#FBBF24;">C ${Math.round(consumed.c)}/${Math.round(planC)}g</span>
+          <span style="color:#A78BFA;">G ${Math.round(consumed.f)}/${Math.round(planF)}g</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Cards de comidas (agrupando alternativas)
+  const now = new Date();
+  const groupedMeals = {};
+  planTodayState.meals.forEach(m => {
+    const key = m.alternative_group || `single_${m.id}`;
+    if (!groupedMeals[key]) groupedMeals[key] = [];
+    groupedMeals[key].push(m);
+  });
+
+  // Determinar cuál es la "next" — la próxima comida no comida con horario más cercano
+  let nextGroupKey = null;
+  let nextDiffMin = Infinity;
+  Object.entries(groupedMeals).forEach(([key, meals]) => {
+    const anyEaten = meals.some(m => _planTodayLogForMeal(m.id));
+    if (anyEaten) return;
+    meals.forEach(m => {
+      if (!m.scheduled_time) return;
+      const [hh, mm] = m.scheduled_time.split(':').map(n => parseInt(n, 10));
+      const slotDate = new Date(now);
+      slotDate.setHours(hh, mm || 0, 0, 0);
+      const diff = slotDate - now;
+      if (diff > -2 * 60 * 60 * 1000 && diff < nextDiffMin) {
+        nextDiffMin = diff;
+        nextGroupKey = key;
+      }
+    });
+  });
+
+  let mealsHtml = '';
+  Object.entries(groupedMeals).forEach(([key, meals]) => {
+    // Tomar la primera meal del grupo para los metadatos básicos
+    const primaryMeal = meals[0];
+    const slotLabel = SLOT_LABELS[primaryMeal.slot] || primaryMeal.custom_label || primaryMeal.slot;
+    const emoji = SLOT_EMOJI[primaryMeal.slot] || '🍴';
+    const timeLabel = primaryMeal.scheduled_time_label || '';
+
+    // Estado: si alguna meal del grupo tiene log, está eaten
+    const eatenMeal = meals.find(m => _planTodayLogForMeal(m.id));
+    const log = eatenMeal ? _planTodayLogForMeal(eatenMeal.id) : null;
+    let status;
+    if (eatenMeal) status = 'eaten';
+    else if (key === nextGroupKey) status = 'next';
+    else {
+      // Compute si overdue o pending
+      const anyOverdue = meals.some(m => _planTodayMealStatus(m, null, now) === 'overdue');
+      status = anyOverdue ? 'overdue' : 'pending';
+    }
+
+    let checkClass = 'is-pending';
+    let badgeHtml = '';
+    let bodyHtml = '';
+    let actionHtml = '';
+
+    if (status === 'eaten') {
+      checkClass = 'is-eaten';
+      const timeAgo = log && log.ts ? _planTimeAgo(new Date(log.ts)) : '';
+      badgeHtml = `<span class="plan-today-meal-badge is-eaten">COMIDO</span>`;
+      const kcal = Math.round(parseFloat(log.total_kcal) || 0);
+      const preview = log.items_text || log.notes || '';
+      bodyHtml = `<div style="font-size:10px; color:#64748B; padding-left:28px; margin-top:2px;">${_planEscape(preview)}${timeAgo ? ' · ' + timeAgo : ''}</div>`;
+      actionHtml = `
+        <div style="font-size:11px; color:#BEF264; font-weight:700;">${kcal} kcal</div>
+      `;
+    } else if (status === 'next') {
+      checkClass = 'is-next';
+      badgeHtml = `<span class="plan-today-meal-badge is-next">PRÓXIMA${timeLabel ? ' · ' + _planEscape(timeLabel) : ''}</span>`;
+      // Preview de items
+      const previewItems = planTodayState.items
+        .filter(it => meals.some(m => m.id === it.meal_id))
+        .slice(0, 4)
+        .map(it => it.name)
+        .join(' · ');
+      bodyHtml = `<div style="font-size:10px; color:#94A3B8; padding-left:28px; margin-top:4px;">${_planEscape(previewItems)}</div>`;
+      // Botón Lo comí — pasa keys del grupo para abrir sub-pantalla
+      const mealIdsStr = meals.map(m => m.id).join(',');
+      actionHtml = '';
+      const btnHtml = `<button class="plan-today-log-btn" onclick="planMealLogStart('${_planEscape(mealIdsStr)}')">✓ Lo comí</button>`;
+      mealsHtml += `
+        <div class="plan-today-meal-card is-${status}">
+          <div class="plan-today-meal-head">
+            <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+              <div class="plan-today-meal-check ${checkClass}"></div>
+              <span style="font-size:13px; font-weight:700; color:#fff;">${_planEscape(slotLabel)}</span>
+              ${badgeHtml}
+            </div>
+          </div>
+          ${bodyHtml}
+          ${btnHtml}
+        </div>
+      `;
+      return;
+    } else if (status === 'overdue') {
+      badgeHtml = `<span class="plan-today-meal-badge is-overdue">VENCIDA${timeLabel ? ' · ' + _planEscape(timeLabel) : ''}</span>`;
+      const mealIdsStr = meals.map(m => m.id).join(',');
+      const btnHtml = `<button class="plan-today-log-btn is-overdue" onclick="planMealLogStart('${_planEscape(mealIdsStr)}')">¿La comiste? Marcar</button>`;
+      mealsHtml += `
+        <div class="plan-today-meal-card is-${status}">
+          <div class="plan-today-meal-head">
+            <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+              <div class="plan-today-meal-check ${checkClass}"></div>
+              <span style="font-size:13px; color:#CBD5E1; font-weight:600;">${_planEscape(slotLabel)}</span>
+              ${badgeHtml}
+            </div>
+          </div>
+          ${btnHtml}
+        </div>
+      `;
+      return;
+    } else {
+      // pending
+      const mealIdsStr = meals.map(m => m.id).join(',');
+      mealsHtml += `
+        <div class="plan-today-meal-card is-${status}" onclick="planMealLogStart('${_planEscape(mealIdsStr)}')">
+          <div class="plan-today-meal-head">
+            <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+              <div class="plan-today-meal-check ${checkClass}"></div>
+              <span style="font-size:13px; color:#CBD5E1;">${_planEscape(slotLabel)}</span>
+              ${timeLabel ? `<span style="font-size:10px; color:#64748B;">${_planEscape(timeLabel)}</span>` : ''}
+            </div>
+            ${primaryMeal.total_kcal_est ? `<div style="font-size:11px; color:#64748B;">${primaryMeal.total_kcal_est} kcal</div>` : ''}
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    // Estado eaten (cae acá si no era next/overdue/pending)
+    mealsHtml += `
+      <div class="plan-today-meal-card is-${status}">
+        <div class="plan-today-meal-head">
+          <div style="display:flex; align-items:center; gap:8px; flex:1; min-width:0;">
+            <div class="plan-today-meal-check ${checkClass}">✓</div>
+            <span style="font-size:13px; font-weight:700; color:#fff;">${_planEscape(slotLabel)}</span>
+            ${badgeHtml}
+          </div>
+          ${actionHtml}
+        </div>
+        ${bodyHtml}
+        <button class="plan-today-undo-btn" onclick="planTodayUndo('${log.id}')">Deshacer</button>
+      </div>
+    `;
+  });
+
+  document.getElementById('plan-today-meals').innerHTML = mealsHtml || '<div style="color:#64748B; font-size:12px; text-align:center; padding:20px;">Tu plan no tiene comidas configuradas.</div>';
+
+  // Suplementos
+  if (planTodayState.supplements.length > 0) {
+    document.getElementById('plan-today-supps-wrap').style.display = '';
+    document.getElementById('plan-today-supps-count').textContent = `${planTodayState.supplements.length} hoy`;
+  }
+}
+
+function _planTimeAgo(date) {
+  const diffMin = Math.round((new Date() - date) / 60000);
+  if (diffMin < 1) return 'ahora';
+  if (diffMin < 60) return `hace ${diffMin}min`;
+  const h = Math.floor(diffMin / 60);
+  if (h < 24) return `hace ${h}h`;
+  return _planDateToISO(date);
+}
+
+async function planTodayUndo(logId) {
+  if (!confirm('¿Borrar este registro de comida?')) return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const r = await fetch(`${SUPABASE_URL}/rest/v1/meal_logs?id=eq.${logId}`, {
+      method: 'DELETE',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, Prefer: 'return=minimal' },
+    });
+    if (!r.ok) throw new Error('delete_failed');
+    // Refresh
+    await planTodayOpen();
+    _planToast('Deshecho');
+  } catch (e) {
+    alert('No se pudo deshacer: ' + e.message);
+  }
+}
+
+function planTodayAddExtra() {
+  // Marca que la siguiente comida que se logue es "extra" — pero para MVP simple,
+  // reutilizamos el flow normal: el log se hace SIN plan_id, así queda fuera del plan.
+  if (typeof openModule === 'function') {
+    openModule('nutrition');
+  } else {
+    goStep('nut-meal-method');
+  }
+}
+
+// ============================================================
+//  PLAN MEAL LOG — Sub-pantalla para marcar comida con selección de opciones
+// ============================================================
+const planMealLogState = {
+  mealIds: [],          // ids de las meals del grupo (puede ser 1 o N si hay alternativas)
+  activeMealId: null,   // cuál meal del grupo está seleccionada (si hay alternativas)
+  meal: null,
+  items: [],
+  selectedItemIds: new Set(),
+};
+
+function planMealLogStart(mealIdsStr) {
+  if (!mealIdsStr) return;
+  const mealIds = mealIdsStr.split(',');
+  planMealLogState.mealIds = mealIds;
+  planMealLogState.activeMealId = mealIds[0];
+  planMealLogState.selectedItemIds = new Set();
+  planMealLogPrepareSelections();
+  planMealLogRender();
+  goStep('plan-meal-log');
+}
+
+function planMealLogPrepareSelections() {
+  // Pre-seleccionar items requeridos + el primer item de cada grupo de opciones
+  const meal = planTodayState.meals.find(m => m.id === planMealLogState.activeMealId);
+  if (!meal) return;
+  const items = planTodayState.items.filter(it => it.meal_id === meal.id);
+  const sel = new Set();
+  // Items requeridos siempre incluidos
+  items.filter(it => it.is_required && !it.is_free_quantity).forEach(it => sel.add(it.id));
+  // Por grupo de opciones, pre-seleccionar el primero
+  const groups = {};
+  items.filter(it => !it.is_required && !it.is_free_quantity).forEach(it => {
+    const g = it.selection_group || 'free';
+    if (!groups[g]) groups[g] = [];
+    groups[g].push(it);
+  });
+  Object.values(groups).forEach(group => {
+    if (group.length > 0) sel.add(group[0].id);
+  });
+  planMealLogState.meal = meal;
+  planMealLogState.items = items;
+  planMealLogState.selectedItemIds = sel;
+}
+
+function planMealLogSwitchAlternative(mealId) {
+  planMealLogState.activeMealId = mealId;
+  planMealLogPrepareSelections();
+  planMealLogRender();
+}
+
+function planMealLogToggle(itemId) {
+  const item = planMealLogState.items.find(it => it.id === itemId);
+  if (!item) return;
+  if (item.is_required || item.is_free_quantity) return; // fijos/libres no se togglean
+  const group = item.selection_group || 'free';
+  const sameGroup = planMealLogState.items.filter(it => (it.selection_group || 'free') === group && !it.is_required && !it.is_free_quantity);
+  // Radio behavior: deselecciona otros del mismo grupo, selecciona este
+  sameGroup.forEach(it => planMealLogState.selectedItemIds.delete(it.id));
+  planMealLogState.selectedItemIds.add(itemId);
+  planMealLogRender();
+}
+
+const _GROUP_LABEL_FULL = {
+  protein: 'Proteína',
+  carb: 'Carbohidrato',
+  fruit: 'Fruta',
+  fat: 'Grasa',
+  vegetable: 'Vegetales',
+  dairy: 'Lácteo',
+  beverage: 'Bebida',
+  free: 'Otros',
+};
+
+function planMealLogRender() {
+  const meal = planMealLogState.meal;
+  if (!meal) return;
+  const slotLabel = SLOT_LABELS[meal.slot] || meal.custom_label || meal.slot;
+  const emoji = SLOT_EMOJI[meal.slot] || '🍴';
+  const timeLabel = meal.scheduled_time_label || '';
+
+  // Header
+  let altTabs = '';
+  if (planMealLogState.mealIds.length > 1) {
+    altTabs = '<div class="plan-meal-log-alt-tabs">' + planMealLogState.mealIds.map(mid => {
+      const m = planTodayState.meals.find(mm => mm.id === mid);
+      if (!m) return '';
+      const labelOpt = m.alternative_label ? `Opción ${m.alternative_label}` : (m.custom_label || 'Opción');
+      const cls = mid === planMealLogState.activeMealId ? 'is-active' : '';
+      return `<button class="plan-meal-log-alt-tab ${cls}" onclick="planMealLogSwitchAlternative('${mid}')">${_planEscape(labelOpt)}</button>`;
+    }).join('') + '</div>';
+  }
+
+  document.getElementById('plan-meal-log-header').innerHTML = `
+    <div style="font-size:22px;">${emoji}</div>
+    <div style="font-size:14px; font-weight:700; color:#fff; margin-top:2px;">${_planEscape(slotLabel)}</div>
+    ${timeLabel ? `<div style="font-size:11px; color:#94A3B8;">${_planEscape(timeLabel)}</div>` : ''}
+    ${altTabs ? altTabs : ''}
+  `;
+
+  // Agrupar items por selection_group y por requerido/opcional/libre
+  const required = planMealLogState.items.filter(it => it.is_required && !it.is_free_quantity);
+  const free = planMealLogState.items.filter(it => it.is_free_quantity);
+  const optionalGroups = {};
+  planMealLogState.items.filter(it => !it.is_required && !it.is_free_quantity).forEach(it => {
+    const g = it.selection_group || 'free';
+    if (!optionalGroups[g]) optionalGroups[g] = [];
+    optionalGroups[g].push(it);
+  });
+
+  let groupsHtml = '';
+
+  // Grupos de opciones (ELEGÍ 1)
+  Object.entries(optionalGroups).forEach(([group, items]) => {
+    if (items.length === 0) return;
+    const groupLabel = _GROUP_LABEL_FULL[group] || group;
+    groupsHtml += `<div class="plan-meal-log-section">
+      <div class="plan-meal-log-group-label">${_planEscape(groupLabel)} · elegí 1</div>`;
+    items.forEach(it => {
+      const isSelected = planMealLogState.selectedItemIds.has(it.id);
+      const qty = it.quantity_text ? _planEscape(it.quantity_text) + ' ' : '';
+      const macros = `${it.kcal_est} kcal · ${_planRound(it.protein_g_est)}g P · ${_planRound(it.carbs_g_est)}g C · ${_planRound(it.fat_g_est)}g G`;
+      groupsHtml += `
+        <div class="plan-meal-log-item ${isSelected ? 'is-selected' : ''}" onclick="planMealLogToggle('${it.id}')">
+          <div class="plan-meal-log-item-text">
+            <div class="plan-meal-log-item-name">${qty}${_planEscape(it.name)}</div>
+            <div class="plan-meal-log-item-macros">${macros}</div>
+          </div>
+          <div class="plan-meal-log-radio ${isSelected ? 'is-selected' : ''}">${isSelected ? '✓' : ''}</div>
+        </div>
+      `;
+    });
+    groupsHtml += `</div>`;
+  });
+
+  // Items requeridos (FIJOS)
+  if (required.length > 0) {
+    groupsHtml += `<div class="plan-meal-log-section">
+      <div class="plan-meal-log-group-label">Incluido</div>`;
+    required.forEach(it => {
+      const qty = it.quantity_text ? _planEscape(it.quantity_text) + ' ' : '';
+      const macros = `${it.kcal_est} kcal · ${_planRound(it.protein_g_est)}g P · ${_planRound(it.carbs_g_est)}g C · ${_planRound(it.fat_g_est)}g G`;
+      groupsHtml += `
+        <div class="plan-meal-log-item is-fixed">
+          <div class="plan-meal-log-item-text">
+            <div class="plan-meal-log-item-name">${qty}${_planEscape(it.name)}</div>
+            <div class="plan-meal-log-item-macros">${macros}</div>
+          </div>
+        </div>
+      `;
+    });
+    groupsHtml += `</div>`;
+  }
+
+  // Items libres (vegetales, café, etc.)
+  if (free.length > 0) {
+    groupsHtml += `<div class="plan-meal-log-section">
+      <div class="plan-meal-log-group-label">Libre · no afecta macros</div>`;
+    const names = free.map(it => _planEscape(it.name)).join(' · ');
+    groupsHtml += `
+      <div class="plan-meal-log-item is-free">
+        <div class="plan-meal-log-item-text">
+          <div class="plan-meal-log-item-name">${names}</div>
+        </div>
+      </div>
+    `;
+    groupsHtml += `</div>`;
+  }
+
+  document.getElementById('plan-meal-log-groups').innerHTML = groupsHtml;
+
+  // Total
+  const selectedItems = planMealLogState.items.filter(it => planMealLogState.selectedItemIds.has(it.id));
+  const totals = selectedItems.reduce((a, it) => ({
+    kcal: a.kcal + (parseFloat(it.kcal_est) || 0),
+    p: a.p + (parseFloat(it.protein_g_est) || 0),
+    c: a.c + (parseFloat(it.carbs_g_est) || 0),
+    f: a.f + (parseFloat(it.fat_g_est) || 0),
+  }), { kcal: 0, p: 0, c: 0, f: 0 });
+
+  document.getElementById('plan-meal-log-total').style.display = '';
+  document.getElementById('plan-meal-log-total').innerHTML = `
+    <div class="plan-meal-log-total-card">
+      <div style="font-size:10px; color:#94A3B8; font-weight:700; letter-spacing:0.5px;">TOTAL</div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline; margin-top:4px;">
+        <div style="font-size:18px; color:#BEF264; font-weight:700;">${Math.round(totals.kcal)} kcal</div>
+        <div style="font-size:10px; color:#94A3B8;">P ${Math.round(totals.p)}g · C ${Math.round(totals.c)}g · G ${Math.round(totals.f)}g</div>
+      </div>
+    </div>
+  `;
+}
+
+function _planRound(n) { return Math.round(parseFloat(n) || 0); }
+
+function planMealLogCancel() {
+  goStep('plan-today');
+}
+
+async function planMealLogSave() {
+  if (!planMealLogState.meal) return;
+  const selectedItems = planMealLogState.items.filter(it => planMealLogState.selectedItemIds.has(it.id));
+  if (selectedItems.length === 0) {
+    alert('Seleccioná al menos un ítem.');
+    return;
+  }
+  const btn = document.getElementById('plan-meal-log-save-btn');
+  const origText = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = 'Guardando...';
+
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) throw new Error('no_session');
+    const meal = planMealLogState.meal;
+
+    // Calcular totales
+    const totals = selectedItems.reduce((a, it) => ({
+      kcal: a.kcal + (parseFloat(it.kcal_est) || 0),
+      p: a.p + (parseFloat(it.protein_g_est) || 0),
+      c: a.c + (parseFloat(it.carbs_g_est) || 0),
+      f: a.f + (parseFloat(it.fat_g_est) || 0),
+    }), { kcal: 0, p: 0, c: 0, f: 0 });
+
+    // items_text: resumen legible para mostrar en otros dashboards
+    const itemsText = selectedItems.map(it => {
+      const qty = it.quantity_text ? `${it.quantity_text} ` : '';
+      return `${qty}${it.name}`;
+    }).join(' · ');
+
+    const slotLabel = SLOT_LABELS[meal.slot] || meal.custom_label || meal.slot;
+    // Map slot del plan a categoría que usa el resto del módulo nutrición
+    const slotToCategory = {
+      desayuno: 'breakfast',
+      snack_am: 'snack_am',
+      merienda: 'snack_am',
+      almuerzo: 'lunch',
+      pre_entreno: 'lunch',
+      snack_pm: 'snack_pm',
+      post_entreno: 'snack_pm',
+      cena: 'dinner',
+      otro: 'snack_pm',
+    };
+    const mealCategory = slotToCategory[meal.slot] || 'snack_pm';
+
+    const insertResp = await fetch(`${SUPABASE_URL}/rest/v1/meal_logs`, {
+      method: 'POST',
+      headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', Prefer: 'return=minimal' },
+      body: JSON.stringify({
+        user_id: session.user.id,
+        ts: new Date().toISOString(),
+        meal_category: mealCategory,
+        source: 'plan',
+        items_text: itemsText,
+        total_kcal: Math.round(totals.kcal),
+        total_protein_g: Math.round(totals.p * 10) / 10,
+        total_carbs_g: Math.round(totals.c * 10) / 10,
+        total_fat_g: Math.round(totals.f * 10) / 10,
+        notes: slotLabel,
+        plan_id: planTodayState.plan?.id || null,
+        plan_meal_id: meal.id,
+        plan_meal_item_ids: selectedItems.map(it => it.id),
+        from_plan: true,
+      }),
+    });
+
+    if (!insertResp.ok) {
+      const detail = await insertResp.text();
+      throw new Error('insert_failed: ' + detail.slice(0, 200));
+    }
+
+    _planToast(`✓ ${slotLabel} logueado`);
+
+    // Refresh state y volver a Plan Today
+    await planTodayOpen();
+  } catch (e) {
+    console.error('[PLAN MEAL LOG] save failed:', e);
+    alert('No se pudo guardar: ' + (e.message || 'error'));
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origText;
   }
 }
 
@@ -13678,6 +14705,20 @@ async function logout() {
     planState.uploadBase64 = null;
     planState.uploadMime = null;
     planState.parsed = null;
+  }
+  if (typeof planTodayState !== 'undefined') {
+    planTodayState.plan = null;
+    planTodayState.meals = [];
+    planTodayState.items = [];
+    planTodayState.supplements = [];
+    planTodayState.todayLogs = [];
+  }
+  if (typeof planMealLogState !== 'undefined') {
+    planMealLogState.mealIds = [];
+    planMealLogState.activeMealId = null;
+    planMealLogState.meal = null;
+    planMealLogState.items = [];
+    planMealLogState.selectedItemIds = new Set();
   }
   if (typeof _planScheduledDate !== 'undefined') _planScheduledDate = null;
   if (typeof _aiInsightCache !== 'undefined') {
