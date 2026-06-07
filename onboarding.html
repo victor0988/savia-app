@@ -18792,23 +18792,34 @@ async function coachSend() {
   if (btn) btn.disabled = true;
   coachState.sending = true;
 
-  // Show typing
+  // Add placeholder assistant message that we'll stream into
+  const assistantIdx = coachState.messages.length;
+  coachState.messages.push({ role: 'assistant', content: '', streaming: true });
   coachShowTyping();
 
   try {
-    // TODO Sprint 1.2: llamar Edge Function ai-chat-stream
-    // Por ahora: mock response
-    const reply = await coachMockReply(text);
+    await coachStreamReply(text, (delta) => {
+      // First delta: hide typing, render empty assistant bubble
+      if (coachState.messages[assistantIdx].content === '') {
+        coachHideTyping();
+      }
+      coachState.messages[assistantIdx].content += delta;
+      coachRenderMessages();
+    });
+
+    // Mark streaming done
+    if (coachState.messages[assistantIdx]) {
+      coachState.messages[assistantIdx].streaming = false;
+    }
     coachHideTyping();
-    coachState.messages.push({ role: 'assistant', content: reply });
     coachRenderMessages();
   } catch (e) {
     console.error('[coach] send failed:', e);
     coachHideTyping();
-    coachState.messages.push({
+    coachState.messages[assistantIdx] = {
       role: 'assistant',
       content: 'Disculpá, algo falló. Intentá de nuevo en unos segundos.'
-    });
+    };
     coachRenderMessages();
   } finally {
     coachState.sending = false;
@@ -18816,23 +18827,86 @@ async function coachSend() {
   }
 }
 
-async function coachMockReply(userText) {
-  // Mock responses para testing UI sin Edge Function
-  await new Promise(r => setTimeout(r, 900 + Math.random() * 800));
-  const t = userText.toLowerCase();
-  if (t.includes('cómo voy') || t.includes('como voy')) {
-    return 'Hoy llevás 1,450 kcal de tu meta de 2,495. Vas bien en proteína (140g de 200g) pero te faltan ~50g de carbs y 1 vaso de agua. Si entrenás hoy, sumá ~400 kcal post-workout.';
+/**
+ * Llama al Edge Function ai-chat-stream y parsea SSE event stream.
+ * onDelta(text) se llama por cada chunk de texto recibido.
+ */
+async function coachStreamReply(userText, onDelta) {
+  const sessRes = await sb.auth.getSession();
+  const token = sessRes?.data?.session?.access_token;
+  if (!token) throw new Error('No session token');
+
+  // Edge Function URL: usa supabase URL del cliente
+  const url = `${SUPABASE_URL}/functions/v1/ai-chat-stream`;
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY
+    },
+    body: JSON.stringify({
+      thread_id: coachState.threadId,
+      message: userText
+    })
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => 'unknown error');
+    throw new Error(`HTTP ${resp.status}: ${errText}`);
   }
-  if (t.includes('pollo') || t.includes('arroz')) {
-    return 'Listo, registré 200g de pollo (~470 kcal, 60g P) + 100g de arroz cocido (~130 kcal, 28g C). Tu Balance actualizado: +600 kcal hoy.\n\n(Estoy en modo mock — el log real arranca con Sprint 1.3.)';
+  if (!resp.body) throw new Error('No response body');
+
+  const reader = resp.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    // Parse SSE: events separated by \n\n, each event has lines like "event: X\ndata: Y"
+    let sepIdx;
+    while ((sepIdx = buffer.indexOf('\n\n')) !== -1) {
+      const rawEvent = buffer.slice(0, sepIdx);
+      buffer = buffer.slice(sepIdx + 2);
+      const parsed = coachParseSSE(rawEvent);
+      if (!parsed) continue;
+
+      if (parsed.event === 'meta' && parsed.data?.thread_id) {
+        // Save thread_id for follow-up messages
+        coachState.threadId = parsed.data.thread_id;
+      } else if (parsed.event === 'delta' && parsed.data?.text) {
+        onDelta(parsed.data.text);
+      } else if (parsed.event === 'error') {
+        throw new Error(parsed.data?.error || 'stream error');
+      } else if (parsed.event === 'done') {
+        // Finished cleanly
+      }
+    }
   }
-  if (t.includes('comer') && t.includes('noche')) {
-    return 'Te faltan ~1,050 kcal y 60g de proteína para cerrar tu meta. Sugerencia: 200g salmón al horno + ensalada + ½ camote. ~520 kcal, 45g P. Quedan ~530 kcal libres para postre o snack.';
+}
+
+function coachParseSSE(raw) {
+  // Parse a single SSE event block ("event: X\ndata: Y")
+  if (!raw || !raw.trim()) return null;
+  const lines = raw.split('\n');
+  let event = 'message';
+  let data = null;
+  for (const line of lines) {
+    if (line.startsWith('event: ')) {
+      event = line.slice(7).trim();
+    } else if (line.startsWith('data: ')) {
+      const txt = line.slice(6);
+      try {
+        data = JSON.parse(txt);
+      } catch {
+        data = txt;
+      }
+    }
   }
-  if (t.includes('hola')) {
-    return 'Hola Victor 👋 ¿En qué te ayudo hoy? Puedo registrar comidas, decirte cómo vas con tu plan de Sofía López, o sugerirte qué entrenar según tu recovery.';
-  }
-  return 'Recibido. Soy una versión preliminar — en los próximos sprints voy a poder registrar comidas, agua, workouts, ver tu balance energético y tu ciclo. Esta versión solo conversa con respuestas de prueba.';
+  return { event, data };
 }
 
 function coachShowTyping() {
