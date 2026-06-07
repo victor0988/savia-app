@@ -18816,9 +18816,11 @@ async function coachSend() {
   } catch (e) {
     console.error('[coach] send failed:', e);
     coachHideTyping();
+    // Mostrar el error específico para diagnóstico (Sprint 1.2 debug)
+    const detail = (e && e.message) ? e.message : String(e);
     coachState.messages[assistantIdx] = {
       role: 'assistant',
-      content: 'Disculpá, algo falló. Intentá de nuevo en unos segundos.'
+      content: `⚠️ No pude conectar con el servidor.\n\nDetalle: ${detail}\n\nProbá: (1) cerrar y reabrir el chat, (2) verificá que deployé el Edge Function ai-chat-stream y corriste coach-schema.sql.`
     };
     coachRenderMessages();
   } finally {
