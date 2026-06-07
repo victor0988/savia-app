@@ -4403,6 +4403,57 @@
     font-family: inherit;
   }
 
+  /* ── Quick Log pills ─────────────────────────────────────────── */
+  .wh-log-group { margin-bottom: 22px; }
+  .wh-log-label {
+    font-size: 12.5px;
+    color: #94A3B8;
+    margin-bottom: 10px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+  .wh-log-sub {
+    font-size: 10.5px;
+    color: #64748B;
+    margin-left: 6px;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .wh-log-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .wh-log-pills-sleep { gap: 6px; }
+  .wh-log-pills-sleep .wh-log-pill { flex: 1; min-width: 0; padding: 12px 0; text-align: center; }
+  .wh-log-pill {
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 22px;
+    font-size: 13px;
+    color: #CBD5E1;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-weight: 500;
+  }
+  .wh-log-pill:hover { background: rgba(255,255,255,0.06); }
+  .wh-log-pill.selected {
+    background: rgba(190, 242, 100, 0.10);
+    border-color: rgba(190, 242, 100, 0.35);
+    color: #BEF264;
+    font-weight: 600;
+  }
+  .wh-log-sleep-legend {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: #64748B;
+    margin-top: 6px;
+    padding: 0 4px;
+  }
+
 </style>
 </head>
 <body>
@@ -7823,10 +7874,111 @@
 
     <!-- FAB -->
     <div class="wh-fab-wrap">
-      <button class="wh-fab" onclick="alert('Quick log próximo sprint')">
+      <button class="wh-fab" onclick="whOpenQuickLog()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Registrar hoy
       </button>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- WOMEN'S HEALTH — Quick Log 1-tap                              -->
+  <!-- ============================================================ -->
+  <div class="screen wh-dash" data-step="wh-quicklog">
+    <div class="wh-dash-topbar">
+      <button class="wh-dash-back" onclick="whOpenDashboard()">‹ Cancelar</button>
+      <div class="wh-dash-title">Hoy</div>
+      <button class="wh-dash-menu" id="wh-log-save-top" onclick="whLogSave()" style="font-size:13px; color:#BEF264; font-weight:700;">Guardar</button>
+    </div>
+
+    <div style="padding:16px 22px 100px;">
+      <div class="wh-section-label" id="wh-log-eyebrow">REGISTRO DEL DÍA</div>
+      <div class="wh-section-title" style="margin-bottom:24px;">¿Cómo te sentís hoy?</div>
+
+      <!-- 1. ¿Período? -->
+      <div class="wh-log-group">
+        <div class="wh-log-label">¿Estás en tu período?</div>
+        <div class="wh-log-pills">
+          <button class="wh-log-pill" data-wh-period="no" onclick="whLogSetPeriod(false, this)">No</button>
+          <button class="wh-log-pill" data-wh-period="yes" onclick="whLogSetPeriod(true, this)">Sí</button>
+        </div>
+      </div>
+
+      <!-- 2. Flujo (oculto si período = no) -->
+      <div class="wh-log-group" id="wh-log-flow-group" style="display:none;">
+        <div class="wh-log-label">Intensidad del flujo</div>
+        <div class="wh-log-pills">
+          <button class="wh-log-pill" data-wh-flow="spotting" onclick="whLogSelectFlow('spotting', this)">Manchas</button>
+          <button class="wh-log-pill" data-wh-flow="light" onclick="whLogSelectFlow('light', this)">Ligero</button>
+          <button class="wh-log-pill" data-wh-flow="medium" onclick="whLogSelectFlow('medium', this)">Medio</button>
+          <button class="wh-log-pill" data-wh-flow="heavy" onclick="whLogSelectFlow('heavy', this)">Abundante</button>
+        </div>
+      </div>
+
+      <!-- 3. Cólicos -->
+      <div class="wh-log-group">
+        <div class="wh-log-label">Cólicos</div>
+        <div class="wh-log-pills">
+          <button class="wh-log-pill" data-wh-cramp="0" onclick="whLogSelectCramp(0, this)">Sin</button>
+          <button class="wh-log-pill" data-wh-cramp="1" onclick="whLogSelectCramp(1, this)">Leve</button>
+          <button class="wh-log-pill" data-wh-cramp="2" onclick="whLogSelectCramp(2, this)">Medio</button>
+          <button class="wh-log-pill" data-wh-cramp="3" onclick="whLogSelectCramp(3, this)">Fuerte</button>
+        </div>
+      </div>
+
+      <!-- 4. Energía -->
+      <div class="wh-log-group">
+        <div class="wh-log-label">Energía</div>
+        <div class="wh-log-pills">
+          <button class="wh-log-pill" data-wh-energy="low" onclick="whLogSelectEnergy('low', this)">Baja</button>
+          <button class="wh-log-pill" data-wh-energy="medium" onclick="whLogSelectEnergy('medium', this)">Media</button>
+          <button class="wh-log-pill" data-wh-energy="high" onclick="whLogSelectEnergy('high', this)">Alta</button>
+        </div>
+      </div>
+
+      <!-- 5. Antojos (multi-select) -->
+      <div class="wh-log-group">
+        <div class="wh-log-label">Antojos <span class="wh-log-sub">tap los que apliquen</span></div>
+        <div class="wh-log-pills">
+          <button class="wh-log-pill" data-wh-craving="sweet" onclick="whLogToggleCraving('sweet', this)">Dulce</button>
+          <button class="wh-log-pill" data-wh-craving="salty" onclick="whLogToggleCraving('salty', this)">Salado</button>
+          <button class="wh-log-pill" data-wh-craving="carbs" onclick="whLogToggleCraving('carbs', this)">Carbs</button>
+          <button class="wh-log-pill" data-wh-craving="chocolate" onclick="whLogToggleCraving('chocolate', this)">Chocolate</button>
+          <button class="wh-log-pill" data-wh-craving="none" onclick="whLogToggleCraving('none', this)">Ninguno</button>
+        </div>
+      </div>
+
+      <!-- 6. Mood -->
+      <div class="wh-log-group">
+        <div class="wh-log-label">Mood</div>
+        <div class="wh-log-pills">
+          <button class="wh-log-pill" data-wh-mood="off" onclick="whLogSelectMood('off', this)">Off</button>
+          <button class="wh-log-pill" data-wh-mood="neutral" onclick="whLogSelectMood('neutral', this)">Neutro</button>
+          <button class="wh-log-pill" data-wh-mood="good" onclick="whLogSelectMood('good', this)">Bien</button>
+        </div>
+      </div>
+
+      <!-- 7. Sleep quality -->
+      <div class="wh-log-group">
+        <div class="wh-log-label">Cómo dormiste anoche</div>
+        <div class="wh-log-pills wh-log-pills-sleep">
+          <button class="wh-log-pill" data-wh-sleep="1" onclick="whLogSelectSleep(1, this)">1</button>
+          <button class="wh-log-pill" data-wh-sleep="2" onclick="whLogSelectSleep(2, this)">2</button>
+          <button class="wh-log-pill" data-wh-sleep="3" onclick="whLogSelectSleep(3, this)">3</button>
+          <button class="wh-log-pill" data-wh-sleep="4" onclick="whLogSelectSleep(4, this)">4</button>
+          <button class="wh-log-pill" data-wh-sleep="5" onclick="whLogSelectSleep(5, this)">5</button>
+        </div>
+        <div class="wh-log-sleep-legend"><span>mal</span><span>excelente</span></div>
+      </div>
+
+      <div style="margin-top:24px; padding:12px 14px; background:rgba(132,204,22,0.06); border:1px solid rgba(132,204,22,0.16); border-radius:12px; font-size:11.5px; color:#CBD5E1; line-height:1.55;">
+        <strong style="color:#BEF264;">Tip:</strong> con 2 ciclos de tracking diario, la IA empieza a descubrir tus patrones personales (sueño pre-período, antojos, energía picos).
+      </div>
+    </div>
+
+    <!-- FAB -->
+    <div class="wh-fab-wrap">
+      <button class="wh-fab" onclick="whLogSave()">Guardar registro</button>
     </div>
   </div>
 
@@ -8025,7 +8177,7 @@ function goStep(n) {
     'nut-edit-macros', 'plan-upload-method', 'plan-analyzing', 'plan-confirm',
     'plan-when', 'plan-when-date', 'plan-view', 'plan-today', 'plan-meal-log',
     'strava-callback',
-    'wh-onb-1', 'wh-onb-2', 'wh-onb-3', 'wh-onb-4', 'wh-onb-5', 'wh-onb-6', 'wh-dashboard',
+    'wh-onb-1', 'wh-onb-2', 'wh-onb-3', 'wh-onb-4', 'wh-onb-5', 'wh-onb-6', 'wh-dashboard', 'wh-quicklog',
     'workout', 'wk-log', 'daily-log', 0];
   if (!skipPersist.includes(n)) saveOnboardingState();
   // Re-check Face ID button visibility cada vez que llegamos a login
@@ -17899,6 +18051,300 @@ function whRenderForecast(cycleDay, cycleLen, periodLen) {
     cells.push(`<div class="wh-day-cell ${phase} ${isToday}">${dayInCycle}</div>`);
   }
   grid.innerHTML = cells.join('');
+}
+
+// ====================================================================
+// WOMEN'S HEALTH — Quick Log 1-tap
+// ====================================================================
+
+let whLogState = {
+  log_date: null,
+  is_period: null,        // true/false
+  flow_intensity: null,   // spotting/light/medium/heavy
+  cramp_level: null,      // 0-3
+  energy_level: null,     // low/medium/high
+  cravings: [],           // multi-select array
+  mood: null,             // off/neutral/good
+  sleep_quality_self: null // 1-5
+};
+
+function whLogReset() {
+  whLogState = {
+    log_date: null,
+    is_period: null,
+    flow_intensity: null,
+    cramp_level: null,
+    energy_level: null,
+    cravings: [],
+    mood: null,
+    sleep_quality_self: null
+  };
+}
+
+function whLogClearAllPills() {
+  document.querySelectorAll('.wh-log-pill.selected').forEach(e => e.classList.remove('selected'));
+  const flowGroup = document.getElementById('wh-log-flow-group');
+  if (flowGroup) flowGroup.style.display = 'none';
+}
+
+function whTodayISO() {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+}
+
+async function whOpenQuickLog() {
+  // Reset state + UI
+  whLogReset();
+  whLogClearAllPills();
+
+  const profile = state.women_health;
+  whLogState.log_date = whTodayISO();
+
+  // Try to load existing log for today
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id;
+    if (userId) {
+      const { data } = await sb
+        .from('cycle_day_logs')
+        .select('*')
+        .eq('user_id', userId)
+        .eq('log_date', whLogState.log_date)
+        .maybeSingle();
+      if (data) whHydrateLogState(data);
+    }
+  } catch (e) {
+    console.warn('[WH log] load today failed:', e);
+  }
+
+  // Update eyebrow with cycle day + phase
+  const eyebrowEl = document.getElementById('wh-log-eyebrow');
+  if (eyebrowEl && profile) {
+    const cycleLen = profile.avg_cycle_length_days || 28;
+    const periodLen = profile.avg_period_length_days || 5;
+    const cycleDay = whCalcCycleDay(profile.last_period_start_date, cycleLen);
+    if (cycleDay !== null) {
+      const phase = whCalcPhase(cycleDay, cycleLen, periodLen);
+      eyebrowEl.textContent = `HOY · DÍA ${cycleDay} · ${WH_PHASE_LABELS[phase].toUpperCase()}`;
+    } else {
+      eyebrowEl.textContent = 'REGISTRO DEL DÍA';
+    }
+  }
+
+  goStep('wh-quicklog');
+  // Apply pre-selection AFTER screen is visible
+  setTimeout(() => whApplyLogStateToUI(), 30);
+}
+
+function whHydrateLogState(data) {
+  whLogState.is_period = !!data.flow_intensity;
+  whLogState.flow_intensity = data.flow_intensity || null;
+  whLogState.cramp_level = data.cramp_level;
+  whLogState.energy_level = data.energy_level || null;
+  whLogState.cravings = Array.isArray(data.cravings) ? [...data.cravings] : [];
+  whLogState.mood = data.mood || null;
+  whLogState.sleep_quality_self = data.sleep_quality_self;
+}
+
+function whApplyLogStateToUI() {
+  // Period
+  if (whLogState.is_period === true) {
+    const el = document.querySelector('[data-wh-period="yes"]');
+    if (el) el.classList.add('selected');
+    const flowGroup = document.getElementById('wh-log-flow-group');
+    if (flowGroup) flowGroup.style.display = '';
+  } else if (whLogState.is_period === false) {
+    const el = document.querySelector('[data-wh-period="no"]');
+    if (el) el.classList.add('selected');
+  }
+  // Flow
+  if (whLogState.flow_intensity) {
+    const el = document.querySelector(`[data-wh-flow="${whLogState.flow_intensity}"]`);
+    if (el) el.classList.add('selected');
+  }
+  // Cramp
+  if (whLogState.cramp_level !== null && whLogState.cramp_level !== undefined) {
+    const el = document.querySelector(`[data-wh-cramp="${whLogState.cramp_level}"]`);
+    if (el) el.classList.add('selected');
+  }
+  // Energy
+  if (whLogState.energy_level) {
+    const el = document.querySelector(`[data-wh-energy="${whLogState.energy_level}"]`);
+    if (el) el.classList.add('selected');
+  }
+  // Cravings (multi)
+  (whLogState.cravings || []).forEach(c => {
+    const el = document.querySelector(`[data-wh-craving="${c}"]`);
+    if (el) el.classList.add('selected');
+  });
+  // Mood
+  if (whLogState.mood) {
+    const el = document.querySelector(`[data-wh-mood="${whLogState.mood}"]`);
+    if (el) el.classList.add('selected');
+  }
+  // Sleep
+  if (whLogState.sleep_quality_self) {
+    const el = document.querySelector(`[data-wh-sleep="${whLogState.sleep_quality_self}"]`);
+    if (el) el.classList.add('selected');
+  }
+}
+
+function whLogSetPeriod(isYes, el) {
+  whLogState.is_period = isYes;
+  document.querySelectorAll('[data-wh-period]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+  const flowGroup = document.getElementById('wh-log-flow-group');
+  if (flowGroup) flowGroup.style.display = isYes ? '' : 'none';
+  if (!isYes) {
+    // Clear flow selection if period = no
+    whLogState.flow_intensity = null;
+    document.querySelectorAll('[data-wh-flow]').forEach(e => e.classList.remove('selected'));
+  }
+}
+
+function whLogSelectFlow(val, el) {
+  whLogState.flow_intensity = val;
+  document.querySelectorAll('[data-wh-flow]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+function whLogSelectCramp(val, el) {
+  whLogState.cramp_level = val;
+  document.querySelectorAll('[data-wh-cramp]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+function whLogSelectEnergy(val, el) {
+  whLogState.energy_level = val;
+  document.querySelectorAll('[data-wh-energy]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+function whLogToggleCraving(val, el) {
+  // If user taps 'none', clear all others
+  if (val === 'none') {
+    whLogState.cravings = ['none'];
+    document.querySelectorAll('[data-wh-craving]').forEach(e => e.classList.remove('selected'));
+    if (el) el.classList.add('selected');
+    return;
+  }
+  // Otherwise multi-select toggle, and remove 'none' if it was set
+  const noneIdx = whLogState.cravings.indexOf('none');
+  if (noneIdx >= 0) {
+    whLogState.cravings.splice(noneIdx, 1);
+    const noneEl = document.querySelector('[data-wh-craving="none"]');
+    if (noneEl) noneEl.classList.remove('selected');
+  }
+  const i = whLogState.cravings.indexOf(val);
+  if (i >= 0) {
+    whLogState.cravings.splice(i, 1);
+    if (el) el.classList.remove('selected');
+  } else {
+    whLogState.cravings.push(val);
+    if (el) el.classList.add('selected');
+  }
+}
+
+function whLogSelectMood(val, el) {
+  whLogState.mood = val;
+  document.querySelectorAll('[data-wh-mood]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+function whLogSelectSleep(val, el) {
+  whLogState.sleep_quality_self = val;
+  document.querySelectorAll('[data-wh-sleep]').forEach(e => e.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+async function whLogSave() {
+  const profile = state.women_health;
+  if (!profile) {
+    alert('Activá Women\'s Health primero.');
+    return;
+  }
+
+  // Calculate cycle_day and phase for context (only if cycle status)
+  let cycleDay = null;
+  let predictedPhase = null;
+  if (WH_CYCLE_STATUSES.includes(profile.status)) {
+    const cycleLen = profile.avg_cycle_length_days || 28;
+    const periodLen = profile.avg_period_length_days || 5;
+    cycleDay = whCalcCycleDay(profile.last_period_start_date, cycleLen);
+    if (cycleDay !== null) predictedPhase = whCalcPhase(cycleDay, cycleLen, periodLen);
+  }
+
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id;
+    if (!userId) {
+      alert('Sesión expirada. Iniciá de nuevo.');
+      return;
+    }
+
+    const saveBtn = document.getElementById('wh-log-save-top');
+    if (saveBtn) saveBtn.textContent = '...';
+
+    const payload = {
+      user_id: userId,
+      log_date: whLogState.log_date || whTodayISO(),
+      cycle_day: cycleDay,
+      predicted_phase: predictedPhase,
+      flow_intensity: whLogState.flow_intensity,
+      cramp_level: whLogState.cramp_level,
+      energy_level: whLogState.energy_level,
+      mood: whLogState.mood,
+      cravings: whLogState.cravings || [],
+      sleep_quality_self: whLogState.sleep_quality_self
+    };
+
+    const { error } = await sb
+      .from('cycle_day_logs')
+      .upsert(payload, { onConflict: 'user_id,log_date' });
+
+    if (error) {
+      console.error('[WH log] save error:', error);
+      alert('No se pudo guardar: ' + (error.message || 'error'));
+      if (saveBtn) saveBtn.textContent = 'Guardar';
+      return;
+    }
+
+    // Si registraron período hoy y no hay last_period_start_date o es muy viejo,
+    // actualizar el women_health_profile para que el predictor se calibre
+    if (whLogState.is_period === true && profile.status === 'cycle_natural') {
+      const todayISO = whLogState.log_date || whTodayISO();
+      const lastPeriod = profile.last_period_start_date;
+      const cycleLen = profile.avg_cycle_length_days || 28;
+      // Si no hay last_period o ya pasaron > cycleLen días → este es un nuevo período
+      let shouldUpdate = false;
+      if (!lastPeriod) {
+        shouldUpdate = true;
+      } else {
+        const last = new Date(lastPeriod + 'T00:00:00');
+        const today = new Date(todayISO + 'T00:00:00');
+        const diffDays = Math.floor((today - last) / 86400000);
+        if (diffDays >= cycleLen - 4) shouldUpdate = true;  // 4d window to avoid mid-period false positives
+      }
+      if (shouldUpdate) {
+        await whUpsertProfile({
+          last_period_start_date: todayISO
+        });
+      }
+    }
+
+    if (saveBtn) saveBtn.textContent = 'Guardar';
+
+    // Vuelve al dashboard
+    await whOpenDashboard();
+  } catch (e) {
+    console.error('[WH log] save exception:', e);
+    alert('Error: ' + (e.message || 'desconocido'));
+    const saveBtn = document.getElementById('wh-log-save-top');
+    if (saveBtn) saveBtn.textContent = 'Guardar';
+  }
 }
 
 </script>
