@@ -4200,7 +4200,7 @@
   </div>
 
   <!-- ============== SPLASH ============== -->
-  <div class="screen splash active" data-step="0">
+  <div class="screen splash" data-step="0">
     <div class="splash-content">
       <div class="savia-mark">S</div>
       <div class="splash-title">SAVIA</div>
@@ -8519,16 +8519,15 @@ function stravaCallbackDetect() {
   const code = params.get('code');
   const err = params.get('error');
   if (err) {
-    setTimeout(() => {
-      goStep('strava-callback');
-      document.getElementById('strava-cb-loading').style.display = 'none';
-      document.getElementById('strava-cb-error').style.display = '';
-      document.getElementById('strava-cb-error-detail').textContent = err === 'access_denied' ? 'No autorizaste el acceso.' : err;
-    }, 300);
+    // Sin setTimeout — screen ya activo desde init()
+    document.getElementById('strava-cb-loading').style.display = 'none';
+    document.getElementById('strava-cb-error').style.display = '';
+    document.getElementById('strava-cb-error-detail').textContent = err === 'access_denied' ? 'No autorizaste el acceso.' : err;
     return true;
   }
   if (code) {
-    setTimeout(() => stravaCallbackProcess(code), 300);
+    // Sin setTimeout — el screen ya está activo desde init(), evita gap visual de 300ms
+    stravaCallbackProcess(code);
     return true;
   }
   return false;
@@ -15582,14 +15581,21 @@ async function _doRouteAuthenticatedUser(sessionHint) {
 function showDebugBanner() { /* no-op */ }
 
 (async function init() {
-  // Detectar callback de Strava OAuth ANTES de cualquier routing — si es callback, NO seguir con init normal
-  if (window.location.pathname === '/strava-callback' && typeof stravaCallbackDetect === 'function') {
-    try {
-      if (stravaCallbackDetect()) {
-        document.documentElement.classList.remove('oauth-loading');
-        return;
-      }
-    } catch (e) { console.warn('strava cb detect:', e); }
+  // Detectar callback de Strava OAuth ANTES de cualquier routing
+  if (window.location.pathname === '/strava-callback') {
+    // Activar el screen strava-callback INMEDIATAMENTE para evitar flash del splash
+    const cbScreen = document.querySelector('[data-step="strava-callback"]');
+    if (cbScreen) cbScreen.classList.add('active');
+    document.documentElement.classList.remove('oauth-loading');
+    if (typeof stravaCallbackDetect === 'function') {
+      try {
+        if (stravaCallbackDetect()) return;
+      } catch (e) { console.warn('strava cb detect:', e); }
+    }
+  } else {
+    // Flow normal: mostrar splash mientras init resuelve a dónde ir
+    const splash = document.querySelector('[data-step="0"]');
+    if (splash) splash.classList.add('active');
   }
 
   // Manejo del link de password reset (Supabase pone el access_token en el hash)
