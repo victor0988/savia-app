@@ -8503,12 +8503,13 @@ async function stravaCallbackProcess(code) {
 }
 
 function stravaCallbackContinue() {
-  // Limpiar el query string del URL (sin reload)
+  // Navegar PRIMERO al perfil (sin gaps de screens vacíos)
+  if (typeof openProfile === 'function') openProfile();
+  else goStep('profile');
+  // Limpiar el query string DESPUÉS de la navegación (no afecta routing porque init() ya corrió)
   if (window.history && window.history.replaceState) {
     window.history.replaceState({}, '', '/');
   }
-  if (typeof openProfile === 'function') openProfile();
-  else goStep('profile');
 }
 
 // Detector de callback al inicio (corre en boot)
@@ -14595,12 +14596,14 @@ function formatBirthdate(birthdate) {
 }
 
 function openProfile() {
+  // 1) Activar el screen profile primero — sin esto, render fuerza reflow y se ven frames intermedios
+  goStep('profile');
+  // 2) Render dentro del screen ya activo
   renderProfile();
-  // Cargar y renderizar la sección de composición corporal (async, no bloquea)
+  // 3) Cargar y renderizar la sección de composición corporal (async, no bloquea)
   if (typeof nutInBodyLoadLatest === 'function') {
     nutInBodyLoadLatest().catch(e => console.warn('inbody load:', e));
   }
-  goStep('profile');
 }
 
 function closeProfile() {
