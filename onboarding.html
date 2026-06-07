@@ -11318,6 +11318,17 @@ async function planDoSave(opts) {
     const [savedPlan] = await planInsert.json();
     const planId = savedPlan.id;
 
+    // Helper para rollback: si algo después del meal_plans INSERT falla, borramos el header huérfano
+    const _planRollback = async (reason) => {
+      try {
+        await fetch(`${SUPABASE_URL}/rest/v1/meal_plans?id=eq.${planId}`, {
+          method: 'DELETE',
+          headers: { apikey: SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}`, Prefer: 'return=minimal' },
+        });
+      } catch (e) { console.warn('[PLAN] rollback failed:', e); }
+      throw new Error(reason);
+    };
+
     // 4) INSERT plan_meals
     const mealRows = (p.meals || []).map((m, idx) => ({
       plan_id: planId,
@@ -11342,7 +11353,7 @@ async function planDoSave(opts) {
       });
       if (!mealsInsert.ok) {
         const detail = await mealsInsert.text();
-        throw new Error('plan_meals insert failed: ' + detail.slice(0, 200));
+        await _planRollback('plan_meals insert failed: ' + detail.slice(0, 200));
       }
       const savedMeals = await mealsInsert.json();
       savedMeals.forEach((sm, idx) => { mealIdMap[idx] = sm.id; });
