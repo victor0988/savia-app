@@ -18848,12 +18848,18 @@ async function coachSend() {
     coachHideTyping();
     coachRenderMessages();
 
-    // Si el coach ejecutó tools, refresh el Daily Pulse del Hoy (silently)
+    // Si el coach ejecutó tools, refresh el Hoy + Women's Health silently
     if (didActions) {
       try {
         if (typeof nutLoadTodayData === 'function') await nutLoadTodayData();
         if (typeof renderDailyPulse === 'function') {
           renderDailyPulse().catch(e => console.warn('[coach] pulse refresh:', e));
+        }
+        if (typeof wkSyncHoyCard === 'function') {
+          wkSyncHoyCard().catch(e => console.warn('[coach] workout refresh:', e));
+        }
+        if (typeof whLoadProfile === 'function') {
+          whLoadProfile().catch(e => console.warn('[coach] WH refresh:', e));
         }
       } catch (e) {
         console.warn('[coach] post-action refresh failed:', e);
@@ -19047,6 +19053,21 @@ function coachToolLabel(name, input, output) {
       return `<strong>Balance consultado</strong> · ${output.kcal_consumed} kcal${rem}`;
     }
     return `<strong>Balance consultado</strong>`;
+  }
+  if (name === 'log_workout') {
+    const summary = output?.summary || `${input?.type || ''} ${input?.duration_min || ''}min`;
+    return `<strong>Registré workout</strong> · ${_escapeHtml(summary)}`;
+  }
+  if (name === 'log_cycle_symptom') {
+    const summary = output?.summary || 'síntomas del ciclo';
+    return `<strong>Registré en tu ciclo</strong> · ${_escapeHtml(summary)}`;
+  }
+  if (name === 'get_cycle_phase') {
+    if (output?.phase) {
+      const lbl = output.phase.replace('_', ' ');
+      return `<strong>Fase consultada</strong> · día ${output.cycle_day || '?'} · ${_escapeHtml(lbl)}`;
+    }
+    return `<strong>Fase consultada</strong>`;
   }
   return `<strong>${_escapeHtml(name || '?')}</strong> · ejecutado`;
 }
