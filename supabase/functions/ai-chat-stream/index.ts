@@ -20,6 +20,78 @@ const CORS_HEADERS = {
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 1024;
 const MAX_HISTORY = 20; // últimos N mensajes que enviamos al modelo
+const MAX_TOOL_ITERATIONS = 4; // máximo de rondas de tool calling por turno
+
+// ─────────────────────────────────────────────────────────────────────
+// Tool definitions (Anthropic schema)
+// ─────────────────────────────────────────────────────────────────────
+const TOOLS = [
+  {
+    name: "log_meal",
+    description:
+      "Registra una comida en el diario de nutrición del usuario. Usá esto cuando el usuario explícitamente pide registrar/logear/anotar una comida. Si NO tenés certeza sobre kcal o macros, NO llames esta tool — primero pedí los detalles al usuario.",
+    input_schema: {
+      type: "object",
+      properties: {
+        name: {
+          type: "string",
+          description:
+            "Descripción de la comida (ej '200g pechuga de pollo + 150g arroz blanco')",
+        },
+        meal_category: {
+          type: "string",
+          enum: [
+            "breakfast",
+            "snack_am",
+            "lunch",
+            "snack_pm",
+            "dinner",
+            "post_workout",
+          ],
+          description: "Categoría temporal de la comida",
+        },
+        kcal: {
+          type: "number",
+          description: "Calorías totales estimadas",
+        },
+        protein_g: {
+          type: "number",
+          description: "Proteína en gramos (opcional pero recomendado)",
+        },
+        carbs_g: {
+          type: "number",
+          description: "Carbohidratos en gramos (opcional)",
+        },
+        fat_g: { type: "number", description: "Grasa en gramos (opcional)" },
+      },
+      required: ["name", "meal_category", "kcal"],
+    },
+  },
+  {
+    name: "log_water",
+    description:
+      "Registra hidratación del usuario. Usá esto cuando el usuario pide registrar agua/líquido. Cantidades comunes: 250ml (vaso chico), 500ml (botella chica), 750ml (botella mediana), 1000ml (botella grande).",
+    input_schema: {
+      type: "object",
+      properties: {
+        ml: {
+          type: "number",
+          description: "Mililitros de agua a registrar (1-3000)",
+        },
+      },
+      required: ["ml"],
+    },
+  },
+  {
+    name: "get_balance",
+    description:
+      "Consulta el balance energético actualizado del usuario hoy: kcal consumidas, target, macros y hidratación. Usá esto SOLO si ya registraste algo y necesitás data fresca, o si el usuario pregunta explícitamente 'cómo voy'.",
+    input_schema: {
+      type: "object",
+      properties: {},
+    },
+  },
+];
 
 Deno.serve(async (req: Request) => {
   // CORS preflight
@@ -131,7 +203,7 @@ Deno.serve(async (req: Request) => {
     // Init Anthropic
     const anthropic = new Anthropic({ apiKey: anthropicKey });
 
-    // Streaming response
+    // Streaming response con tool-calling loop
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
@@ -142,49 +214,128 @@ Deno.serve(async (req: Request) => {
         };
 
         try {
-          // Meta event: send thread_id
           send("meta", { thread_id: threadId });
 
-          let fullText = "";
-          let inputTokens = 0;
-          let outputTokens = 0;
+          // Convertir history (plain user/assistant texts) al formato Anthropic
+          // necesario para tool calling: cada message es { role, content } donde
+          // content puede ser string O array de blocks.
+          const apiMessages: any[] = messages.map((m) => ({
+            role: m.role,
+            content: m.content,
+          }));
 
-          const anthropicStream = await anthropic.messages.stream({
-            model: MODEL,
-            max_tokens: MAX_TOKENS,
-            system: systemPrompt,
-            messages,
-          });
+          let totalInputTokens = 0;
+          let totalOutputTokens = 0;
+          let didActions = false; // si llamamos alguna tool, refresh UI
+          let iterations = 0;
 
-          for await (const event of anthropicStream) {
-            if (
-              event.type === "content_block_delta" &&
-              event.delta.type === "text_delta"
-            ) {
-              const delta = event.delta.text;
-              fullText += delta;
-              send("delta", { text: delta });
-            } else if (event.type === "message_delta") {
-              outputTokens = event.usage?.output_tokens || outputTokens;
-            } else if (event.type === "message_start") {
-              inputTokens = event.message.usage?.input_tokens || 0;
+          while (iterations < MAX_TOOL_ITERATIONS) {
+            iterations++;
+
+            let textBuffer = "";
+            const anthropicStream = await anthropic.messages.stream({
+              model: MODEL,
+              max_tokens: MAX_TOKENS,
+              system: systemPrompt,
+              tools: TOOLS as any,
+              messages: apiMessages,
+            });
+
+            for await (const event of anthropicStream) {
+              if (
+                event.type === "content_block_delta" &&
+                event.delta.type === "text_delta"
+              ) {
+                const delta = event.delta.text;
+                textBuffer += delta;
+                send("delta", { text: delta });
+              } else if (event.type === "message_start") {
+                totalInputTokens += event.message.usage?.input_tokens || 0;
+              } else if (event.type === "message_delta") {
+                totalOutputTokens += event.usage?.output_tokens || 0;
+              }
             }
-          }
 
-          // Save assistant message
-          await supabaseAdmin.from("coach_messages").insert({
-            thread_id: threadId,
-            user_id: user.id,
-            role: "assistant",
-            content: fullText,
-            input_tokens: inputTokens,
-            output_tokens: outputTokens,
-          });
+            const finalMessage = await anthropicStream.finalMessage();
+
+            // Persistir el texto del assistant si hubo
+            if (textBuffer.trim()) {
+              await supabaseAdmin.from("coach_messages").insert({
+                thread_id: threadId,
+                user_id: user.id,
+                role: "assistant",
+                content: textBuffer,
+                input_tokens: 0,
+                output_tokens: 0,
+              });
+            }
+
+            // Si no hay tool calls, terminamos el loop
+            if (finalMessage.stop_reason !== "tool_use") {
+              break;
+            }
+
+            // Hay tool calls. Ejecutarlos.
+            const toolUseBlocks = finalMessage.content.filter(
+              (b: any) => b.type === "tool_use",
+            );
+            const toolResultsForApi: any[] = [];
+
+            for (const block of toolUseBlocks) {
+              const tu = block as any;
+              didActions = true;
+              send("tool_start", {
+                id: tu.id,
+                name: tu.name,
+                input: tu.input,
+              });
+
+              const result = await executeToolByName(
+                tu.name,
+                tu.input,
+                user.id,
+                supabaseAdmin,
+              );
+
+              // Persistir el tool call + result en coach_messages
+              await supabaseAdmin.from("coach_messages").insert({
+                thread_id: threadId,
+                user_id: user.id,
+                role: "tool",
+                tool_call_id: tu.id,
+                tool_name: tu.name,
+                tool_input: tu.input,
+                tool_output: result,
+                tool_error: result?.error || null,
+              });
+
+              send("tool_end", {
+                id: tu.id,
+                name: tu.name,
+                output: result,
+              });
+
+              toolResultsForApi.push({
+                type: "tool_result",
+                tool_use_id: tu.id,
+                content: JSON.stringify(result),
+                is_error: !!result?.error,
+              });
+            }
+
+            // Append a apiMessages para que Claude continúe la conversación
+            apiMessages.push({
+              role: "assistant",
+              content: finalMessage.content,
+            });
+            apiMessages.push({ role: "user", content: toolResultsForApi });
+          }
 
           send("done", {
             ok: true,
-            input_tokens: inputTokens,
-            output_tokens: outputTokens,
+            input_tokens: totalInputTokens,
+            output_tokens: totalOutputTokens,
+            did_actions: didActions,
           });
           controller.close();
         } catch (err) {
@@ -217,6 +368,165 @@ function jsonError(message: string, status: number): Response {
 }
 
 // ─────────────────────────────────────────────────────────────────────
+// Tool executors
+// ─────────────────────────────────────────────────────────────────────
+
+async function executeToolByName(
+  name: string,
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  try {
+    if (name === "log_meal") return await executeLogMeal(input, userId, supabase);
+    if (name === "log_water") return await executeLogWater(input, userId, supabase);
+    if (name === "get_balance") return await executeGetBalance(userId, supabase);
+    return { error: `Unknown tool: ${name}` };
+  } catch (err) {
+    console.error(`[tool ${name}] error:`, err);
+    return { error: String((err as Error)?.message || err) };
+  }
+}
+
+async function executeLogMeal(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  if (!input?.name || !input?.meal_category || input?.kcal === undefined) {
+    return { error: "Missing required: name, meal_category, kcal" };
+  }
+  const validCats = [
+    "breakfast",
+    "snack_am",
+    "lunch",
+    "snack_pm",
+    "dinner",
+    "post_workout",
+  ];
+  if (!validCats.includes(input.meal_category)) {
+    return { error: `Invalid meal_category. Use: ${validCats.join(", ")}` };
+  }
+  const kcal = Number(input.kcal);
+  if (isNaN(kcal) || kcal < 0 || kcal > 5000) {
+    return { error: "kcal must be between 0 and 5000" };
+  }
+  const payload = {
+    user_id: userId,
+    items_text: String(input.name).slice(0, 500),
+    meal_category: input.meal_category,
+    total_kcal: Math.round(kcal),
+    total_protein_g: input.protein_g ? Math.round(input.protein_g * 10) / 10 : 0,
+    total_carbs_g: input.carbs_g ? Math.round(input.carbs_g * 10) / 10 : 0,
+    total_fat_g: input.fat_g ? Math.round(input.fat_g * 10) / 10 : 0,
+    source: "coach",
+  };
+  const { data, error } = await supabase
+    .from("meal_logs")
+    .insert(payload)
+    .select("id")
+    .single();
+  if (error) {
+    console.error("[log_meal] insert error:", error);
+    return { error: error.message };
+  }
+  return {
+    ok: true,
+    id: data.id,
+    summary: `${input.name} · ${Math.round(kcal)} kcal${
+      input.protein_g ? ` · ${input.protein_g}g P` : ""
+    }`,
+  };
+}
+
+async function executeLogWater(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  const ml = Number(input?.ml);
+  if (isNaN(ml) || ml <= 0 || ml > 3000) {
+    return { error: "ml must be between 1 and 3000" };
+  }
+  const { data, error } = await supabase
+    .from("hydration_logs")
+    .insert({ user_id: userId, ml: Math.round(ml) })
+    .select("id")
+    .single();
+  if (error) {
+    console.error("[log_water] insert error:", error);
+    return { error: error.message };
+  }
+  return { ok: true, id: data.id, summary: `+${Math.round(ml)}ml de agua` };
+}
+
+async function executeGetBalance(
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  const today = new Date().toISOString().split("T")[0];
+  const [mealsRes, hydRes, dailyRes] = await Promise.all([
+    supabase
+      .from("meal_logs")
+      .select("total_kcal, total_protein_g, total_carbs_g, total_fat_g")
+      .eq("user_id", userId)
+      .gte("created_at", `${today}T00:00:00`),
+    supabase
+      .from("hydration_logs")
+      .select("ml")
+      .eq("user_id", userId)
+      .gte("created_at", `${today}T00:00:00`),
+    supabase
+      .from("daily_logs")
+      .select(
+        "kcal_target, protein_target_g, carbs_target_g, fat_target_g, water_target_ml",
+      )
+      .eq("user_id", userId)
+      .eq("log_date", today)
+      .maybeSingle(),
+  ]);
+
+  const meals = mealsRes.data || [];
+  const kcal_consumed = meals.reduce(
+    (s: number, m: any) => s + (m.total_kcal || 0),
+    0,
+  );
+  const protein_g = meals.reduce(
+    (s: number, m: any) => s + (m.total_protein_g || 0),
+    0,
+  );
+  const carbs_g = meals.reduce(
+    (s: number, m: any) => s + (m.total_carbs_g || 0),
+    0,
+  );
+  const fat_g = meals.reduce(
+    (s: number, m: any) => s + (m.total_fat_g || 0),
+    0,
+  );
+  const water_ml = (hydRes.data || []).reduce(
+    (s: number, h: any) => s + (h.ml || 0),
+    0,
+  );
+  const t = dailyRes.data || {};
+
+  return {
+    kcal_consumed: Math.round(kcal_consumed),
+    kcal_target: t.kcal_target ?? null,
+    kcal_remaining: t.kcal_target
+      ? Math.max(0, Math.round(t.kcal_target - kcal_consumed))
+      : null,
+    protein_g: Math.round(protein_g),
+    protein_target_g: t.protein_target_g ?? null,
+    carbs_g: Math.round(carbs_g),
+    carbs_target_g: t.carbs_target_g ?? null,
+    fat_g: Math.round(fat_g),
+    fat_target_g: t.fat_target_g ?? null,
+    water_ml,
+    water_target_ml: t.water_target_ml ?? 2500,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────
 // Context Builder — corre N queries en paralelo y compila state del user
 // ─────────────────────────────────────────────────────────────────────
 
@@ -224,7 +534,8 @@ interface UserContext {
   todayISO: string;
   hour: number;
   profile: any;
-  todayMacros: any;
+  todayTargets: any;
+  todayHydrationMl: number;
   todayMeals: any[];
   todayWorkouts: any[];
   activePlan: any;
@@ -244,13 +555,14 @@ async function buildUserContext(
   // Run in parallel
   const [
     profileRes,
-    todayMacrosRes,
+    todayTargetsRes,
     todayMealsRes,
     todayWorkoutsRes,
     planRes,
     whProfileRes,
     whTodayLogRes,
     inBodyRes,
+    todayHydRes,
   ] = await Promise.all([
     supabase
       .from("user_profiles")
@@ -260,17 +572,19 @@ async function buildUserContext(
     supabase
       .from("daily_logs")
       .select(
-        "kcal_consumed, protein_g, carbs_g, fat_g, water_ml, kcal_target, protein_target_g, carbs_target_g, fat_target_g, water_target_ml",
+        "kcal_target, protein_target_g, carbs_target_g, fat_target_g, water_target_ml",
       )
       .eq("user_id", userId)
       .eq("log_date", todayISO)
       .maybeSingle(),
     supabase
       .from("meal_logs")
-      .select("items_text, kcal, protein_g, meal_category, logged_at")
+      .select(
+        "items_text, total_kcal, total_protein_g, total_carbs_g, total_fat_g, meal_category, created_at",
+      )
       .eq("user_id", userId)
-      .gte("logged_at", `${todayISO}T00:00:00`)
-      .order("logged_at", { ascending: true }),
+      .gte("created_at", `${todayISO}T00:00:00`)
+      .order("created_at", { ascending: true }),
     supabase
       .from("workout_logs")
       .select("activity_name, duration_min, kcal_burned, source")
@@ -303,13 +617,24 @@ async function buildUserContext(
       .order("recorded_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
+    supabase
+      .from("hydration_logs")
+      .select("ml")
+      .eq("user_id", userId)
+      .gte("created_at", `${todayISO}T00:00:00`),
   ]);
+
+  const todayHydrationMl = (todayHydRes.data || []).reduce(
+    (s: number, h: any) => s + (h.ml || 0),
+    0,
+  );
 
   return {
     todayISO,
     hour,
     profile: profileRes.data,
-    todayMacros: todayMacrosRes.data,
+    todayTargets: todayTargetsRes.data,
+    todayHydrationMl,
     todayMeals: todayMealsRes.data || [],
     todayWorkouts: todayWorkoutsRes.data || [],
     activePlan: planRes.data,
@@ -351,10 +676,19 @@ Un copiloto holístico que cubre nutrición, entrenamiento, sueño, recuperació
 - Si la respuesta no requiere data del ciclo, no la traigas.
 
 # REGLAS DE DATA
-- NUNCA inventés números. Si no sabés kcal/gramos, pedí más info o decí honestamente "no tengo data de eso".
-- Si el usuario pide registrar comida/agua/workout, decí: "Aún no puedo registrar — la próxima versión (Sprint 1.3) lo habilita. Por ahora puedo solo conversar y dar recomendaciones."
+- NUNCA inventés números. Si no sabés kcal/gramos exactos, estimá con prudencia y avisá que es estimación. Si el usuario te corrige, ajustá.
 - Si la pregunta no tiene sentido o no tenés data, decílo honestamente.
 - No dés consejo médico. Para condiciones, sugerí consultar profesional.
+
+# TOOLS DISPONIBLES (sabés usarlas, no las menciones por nombre técnico)
+- log_meal: registrá una comida cuando el usuario te lo pide explícitamente. Si tenés dudas sobre kcal o macros, PREGUNTÁ antes de registrar (NO inventés). Confirmá brevemente después con datos.
+- log_water: registrá hidratación cuando el usuario te lo pide. Cantidades comunes: 250ml vaso, 500ml botella chica, 1000ml botella grande.
+- get_balance: consultá el balance actual SOLO si ya registraste algo y necesitás data fresca, o si el usuario pregunta "cómo voy" después de cambios. Para preguntas iniciales, usá la data ya en contexto.
+
+Cuando registres algo:
+- Ejecutá la tool primero, después escribí 1 frase breve de confirmación con números.
+- NO escribas "voy a registrar" antes — solo registralo directo.
+- Si falla, decí qué pasó y ofrecé reintentar.
 
 # CONTEXTO DE HOY
 Fecha: ${ctx.todayISO} · ${ctx.hour}h (${hourLabel})
@@ -377,26 +711,41 @@ Fecha: ${ctx.todayISO} · ${ctx.hour}h (${hourLabel})
       `Última InBody: ${ctx.recentInBody.weight_kg}kg · ${ctx.recentInBody.muscle_mass_kg}kg músculo · ${ctx.recentInBody.body_fat_pct}% grasa\n`;
   }
 
-  if (ctx.todayMacros) {
-    const m = ctx.todayMacros;
-    p += `\n## Balance hoy
-- Consumido: ${m.kcal_consumed || 0} kcal (P: ${m.protein_g ||
-      0}g, C: ${m.carbs_g || 0}g, G: ${m.fat_g || 0}g)
-- Meta: ${m.kcal_target || "—"} kcal (P: ${m.protein_target_g ||
-      "—"}g, C: ${m.carbs_target_g || "—"}g, G: ${m.fat_target_g || "—"}g)
-- Agua: ${m.water_ml || 0}ml de ${m.water_target_ml || "—"}ml
+  // Derivar consumido HOY de meal_logs (no de daily_logs)
+  const sumKcal = ctx.todayMeals.reduce(
+    (s: number, m: any) => s + (m.total_kcal || 0),
+    0,
+  );
+  const sumP = ctx.todayMeals.reduce(
+    (s: number, m: any) => s + (m.total_protein_g || 0),
+    0,
+  );
+  const sumC = ctx.todayMeals.reduce(
+    (s: number, m: any) => s + (m.total_carbs_g || 0),
+    0,
+  );
+  const sumF = ctx.todayMeals.reduce(
+    (s: number, m: any) => s + (m.total_fat_g || 0),
+    0,
+  );
+  const t = ctx.todayTargets || {};
+  p += `\n## Balance hoy
+- Consumido: ${Math.round(sumKcal)} kcal (P: ${Math.round(sumP)}g, C: ${
+    Math.round(sumC)
+  }g, G: ${Math.round(sumF)}g)
+- Meta: ${t.kcal_target || "—"} kcal (P: ${t.protein_target_g || "—"}g, C: ${
+    t.carbs_target_g || "—"
+  }g, G: ${t.fat_target_g || "—"}g)
+- Agua: ${ctx.todayHydrationMl}ml de ${t.water_target_ml || 2500}ml
 `;
-  }
 
   if (ctx.todayMeals.length > 0) {
     p += `\n## Comidas registradas hoy\n`;
     ctx.todayMeals.forEach((m: any) => {
-      p += `- ${m.meal_category || "?"}: ${m.items_text} (${m.kcal ||
-        0}kcal, ${m.protein_g || 0}g P)\n`;
+      p += `- ${m.meal_category || "?"}: ${m.items_text} (${
+        Math.round(m.total_kcal || 0)
+      }kcal, ${Math.round(m.total_protein_g || 0)}g P)\n`;
     });
-  } else if (ctx.todayMacros && ctx.todayMacros.kcal_consumed > 0) {
-    p +=
-      `\nNota: el balance de hoy refleja registros pero no veo lista detallada de comidas.\n`;
   }
 
   if (ctx.todayWorkouts.length > 0) {

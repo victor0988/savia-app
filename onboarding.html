@@ -18791,37 +18791,82 @@ async function coachSend() {
   const btn = document.getElementById('coach-send-btn');
   if (btn) btn.disabled = true;
   coachState.sending = true;
-
-  // Add placeholder assistant message that we'll stream into
-  const assistantIdx = coachState.messages.length;
-  coachState.messages.push({ role: 'assistant', content: '', streaming: true });
   coachShowTyping();
 
+  // Cursor: índice del último mensaje "assistant" abierto al que se appendean deltas.
+  // Cuando llega un tool_start/end, el siguiente delta abre un NUEVO assistant message.
+  let currentAssistantIdx = null;
+  let needsNewAssistant = true;
+  let didActions = false;
+
   try {
-    await coachStreamReply(text, (delta) => {
-      // First delta: hide typing, render empty assistant bubble
-      if (coachState.messages[assistantIdx].content === '') {
+    await coachStreamReply(text, {
+      onDelta(delta) {
+        if (needsNewAssistant) {
+          coachState.messages.push({ role: 'assistant', content: '', streaming: true });
+          currentAssistantIdx = coachState.messages.length - 1;
+          needsNewAssistant = false;
+          coachHideTyping();
+        }
+        coachState.messages[currentAssistantIdx].content += delta;
+        coachRenderMessages();
+      },
+      onToolStart(tool) {
         coachHideTyping();
+        // Si había un assistant en streaming, cerrarlo
+        if (currentAssistantIdx !== null && coachState.messages[currentAssistantIdx]) {
+          coachState.messages[currentAssistantIdx].streaming = false;
+        }
+        coachState.messages.push({
+          role: 'tool',
+          tool_call_id: tool.id,
+          tool_name: tool.name,
+          tool_input: tool.input,
+          status: 'running'
+        });
+        coachRenderMessages();
+        needsNewAssistant = true;
+      },
+      onToolEnd(tool) {
+        didActions = true;
+        // Update el tool message correspondiente
+        const idx = coachState.messages.findLastIndex
+          ? coachState.messages.findLastIndex(m => m.role === 'tool' && m.tool_call_id === tool.id)
+          : (() => { for (let i = coachState.messages.length - 1; i >= 0; i--) if (coachState.messages[i].role === 'tool' && coachState.messages[i].tool_call_id === tool.id) return i; return -1; })();
+        if (idx >= 0) {
+          coachState.messages[idx].tool_output = tool.output;
+          coachState.messages[idx].status = tool.output?.error ? 'error' : 'done';
+        }
+        coachRenderMessages();
       }
-      coachState.messages[assistantIdx].content += delta;
-      coachRenderMessages();
     });
 
-    // Mark streaming done
-    if (coachState.messages[assistantIdx]) {
-      coachState.messages[assistantIdx].streaming = false;
+    // Finalizar streaming del último assistant
+    if (currentAssistantIdx !== null && coachState.messages[currentAssistantIdx]) {
+      coachState.messages[currentAssistantIdx].streaming = false;
     }
     coachHideTyping();
     coachRenderMessages();
+
+    // Si el coach ejecutó tools, refresh el Daily Pulse del Hoy (silently)
+    if (didActions) {
+      try {
+        if (typeof nutLoadTodayData === 'function') await nutLoadTodayData();
+        if (typeof renderDailyPulse === 'function') {
+          renderDailyPulse().catch(e => console.warn('[coach] pulse refresh:', e));
+        }
+      } catch (e) {
+        console.warn('[coach] post-action refresh failed:', e);
+      }
+    }
   } catch (e) {
     console.error('[coach] send failed:', e);
     coachHideTyping();
-    // Mostrar el error específico para diagnóstico (Sprint 1.2 debug)
     const detail = (e && e.message) ? e.message : String(e);
-    coachState.messages[assistantIdx] = {
+    coachState.messages.push({
       role: 'assistant',
-      content: `⚠️ No pude conectar con el servidor.\n\nDetalle: ${detail}\n\nProbá: (1) cerrar y reabrir el chat, (2) verificá que deployé el Edge Function ai-chat-stream y corriste coach-schema.sql.`
-    };
+      content: `⚠️ No pude conectar.\n\nDetalle: ${detail}`
+    });
     coachRenderMessages();
   } finally {
     coachState.sending = false;
@@ -18831,9 +18876,9 @@ async function coachSend() {
 
 /**
  * Llama al Edge Function ai-chat-stream y parsea SSE event stream.
- * onDelta(text) se llama por cada chunk de texto recibido.
+ * handlers: { onDelta(text), onToolStart({id,name,input}), onToolEnd({id,name,output}) }
  */
-async function coachStreamReply(userText, onDelta) {
+async function coachStreamReply(userText, handlers) {
   const sessRes = await sb.auth.getSession();
   const token = sessRes?.data?.session?.access_token;
   if (!token) throw new Error('No session token');
@@ -18877,10 +18922,13 @@ async function coachStreamReply(userText, onDelta) {
       if (!parsed) continue;
 
       if (parsed.event === 'meta' && parsed.data?.thread_id) {
-        // Save thread_id for follow-up messages
         coachState.threadId = parsed.data.thread_id;
       } else if (parsed.event === 'delta' && parsed.data?.text) {
-        onDelta(parsed.data.text);
+        handlers.onDelta?.(parsed.data.text);
+      } else if (parsed.event === 'tool_start') {
+        handlers.onToolStart?.(parsed.data);
+      } else if (parsed.event === 'tool_end') {
+        handlers.onToolEnd?.(parsed.data);
       } else if (parsed.event === 'error') {
         throw new Error(parsed.data?.error || 'stream error');
       } else if (parsed.event === 'done') {
@@ -18948,7 +18996,12 @@ function coachRenderMessages() {
     if (m.role === 'tool') {
       const el = document.createElement('div');
       el.className = 'coach-tool-card';
-      el.innerHTML = `<span class="coach-tool-icon">⚡</span><div class="coach-tool-body"><strong>${_escapeHtml(m.tool_name || '')}</strong> · ${_escapeHtml(m.summary || 'ejecutado')}</div>`;
+      const isRunning = m.status === 'running';
+      const isError = m.status === 'error';
+      const label = coachToolLabel(m.tool_name, m.tool_input, m.tool_output);
+      const icon = isRunning ? '⋯' : (isError ? '⚠️' : '✓');
+      el.innerHTML = `<span class="coach-tool-icon">${icon}</span>` +
+        `<div class="coach-tool-body">${label}</div>`;
       container.appendChild(el);
     } else {
       const el = document.createElement('div');
@@ -18973,6 +19026,29 @@ function coachScrollToBottom() {
 
 function _escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+function coachToolLabel(name, input, output) {
+  // Render del cuerpo de la tool card según tool y estado
+  if (output?.error) {
+    return `<strong>${_escapeHtml(name || '?')}</strong> · ${_escapeHtml(output.error)}`;
+  }
+  if (name === 'log_meal') {
+    const summary = output?.summary || `${input?.name || ''} · ${input?.kcal || 0} kcal`;
+    return `<strong>Registré comida</strong> · ${_escapeHtml(summary)}`;
+  }
+  if (name === 'log_water') {
+    const summary = output?.summary || `+${input?.ml || 0}ml de agua`;
+    return `<strong>Registré hidratación</strong> · ${_escapeHtml(summary)}`;
+  }
+  if (name === 'get_balance') {
+    if (output?.kcal_consumed !== undefined) {
+      const rem = output.kcal_remaining != null ? ` · ${output.kcal_remaining} restantes` : '';
+      return `<strong>Balance consultado</strong> · ${output.kcal_consumed} kcal${rem}`;
+    }
+    return `<strong>Balance consultado</strong>`;
+  }
+  return `<strong>${_escapeHtml(name || '?')}</strong> · ejecutado`;
 }
 
 async function whLogSave() {
