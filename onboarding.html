@@ -2386,9 +2386,20 @@
   }
   .wk-row-icon svg { width: 18px; height: 18px; }
   .wk-row-body { flex: 1; min-width: 0; }
-  .wk-row-title { font-size: 13px; font-weight: 600; color: #F8FAFC; }
+  .wk-row-title { font-size: 13px; font-weight: 600; color: #F8FAFC; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .wk-row-meta { font-size: 11px; color: #94A3B8; margin-top: 2px; }
   .wk-row-kcal { font-size: 13px; font-weight: 600; color: #FBBF24; flex-shrink: 0; }
+  .wk-row-source-badge {
+    display: inline-block;
+    background: rgba(252,76,2,0.15);
+    color: #FC4C02;
+    font-size: 9px; font-weight: 700;
+    letter-spacing: 0.6px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    line-height: 1;
+  }
 
   /* Compare targets table */
   .nut-cmp-table {
@@ -8247,6 +8258,11 @@ async function renderDailyPulse() {
   // 3) AI Insight (placeholder hardcoded por ahora — Edge Function en próximo sprint)
   renderHoyAIInsight().catch(e => console.warn('ai render:', e));
 
+  // 4) Auto-sync de Strava si la última sincronización fue hace >1h (fire-and-forget, silencioso)
+  if (typeof stravaAutoSyncIfStale === 'function') {
+    stravaAutoSyncIfStale().catch(e => console.warn('strava auto-sync:', e));
+  }
+
   // 4) Next Action contextual
   try { renderHoyNextAction(); } catch (e) { console.warn('next render:', e); }
 }
@@ -8399,6 +8415,52 @@ async function stravaDisconnect() {
   } catch (e) {
     alert('No se pudo desconectar: ' + e.message);
   }
+}
+
+// Auto-sync silencioso: si hay conexión Strava activa y el último sync fue hace >1h, dispara sync background.
+// Llamado al entrar a Hoy. No bloquea ningún render.
+let _stravaAutoSyncInFlight = false;
+let _stravaAutoSyncLastTry = 0;
+async function stravaAutoSyncIfStale() {
+  if (_stravaAutoSyncInFlight) return;
+  // Throttle: no más de 1 intento cada 5 min (independiente de last_sync)
+  const now = Date.now();
+  if (now - _stravaAutoSyncLastTry < 5 * 60 * 1000) return;
+  _stravaAutoSyncLastTry = now;
+  try {
+    if (!wearableState.connections || wearableState.connections.length === 0) {
+      try { await wearableLoadConnections(); } catch (e) {}
+    }
+    const strava = (wearableState.connections || []).find(c => c.provider === 'strava' && c.status === 'active');
+    if (!strava) return;
+    if (strava.last_sync_at) {
+      const lastSync = new Date(strava.last_sync_at).getTime();
+      if (now - lastSync < 60 * 60 * 1000) return; // <1h, skip
+    }
+    _stravaAutoSyncInFlight = true;
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return;
+    const r = await fetch(`${SUPABASE_URL}/functions/v1/strava-sync-activities`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}`, apikey: SUPABASE_ANON_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ since_days: 7, trigger: 'auto' }),
+    });
+    if (r.ok) {
+      const result = await r.json();
+      if (result.inserted > 0) {
+        // Refresh data de workouts para que se vean los nuevos en Hoy
+        if (typeof wkLoadData === 'function') {
+          await wkLoadData();
+          // Re-render Hoy si está visible
+          if (typeof renderHoyBalance === 'function' && state.step === 'app') {
+            renderHoyBalance().catch(e => console.warn('hoy refresh:', e));
+          }
+        }
+        console.log(`[STRAVA] auto-sync: ${result.inserted} nuevas actividades`);
+      }
+    }
+  } catch (e) { console.warn('[STRAVA] auto-sync failed:', e); }
+  finally { _stravaAutoSyncInFlight = false; }
 }
 
 async function stravaSyncNow(btn) {
@@ -10257,15 +10319,27 @@ function wkRenderDashboard() {
     const dateLabel = isToday
       ? t.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: false })
       : t.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
-    const typeLabel = WK_TYPE_LABEL[w.type] || w.type;
+    const typeLabel = w.name ? escapeHtml(w.name.slice(0, 36)) : (WK_TYPE_LABEL[w.type] || w.type);
     const svg = WK_TYPE_SVG[w.type] || WK_TYPE_SVG.other;
-    const notes = w.notes ? ' · ' + escapeHtml(w.notes.slice(0, 40)) : '';
+    const isStrava = w.source === 'strava';
+    // Meta extra: km, HR
+    const metaParts = [`${w.duration_min || 0} min`];
+    if (w.distance_km) metaParts.push(`${Number(w.distance_km).toFixed(1)} km`);
+    if (w.avg_hr) metaParts.push(`${w.avg_hr} bpm`);
+    metaParts.push(dateLabel);
+    const stravaBadge = isStrava
+      ? `<span class="wk-row-source-badge">strava</span>`
+      : '';
+    // Delegated handler: data-url se escapa solo para HTML attribute, JS lee el valor decodificado
+    const clickAttrs = isStrava && w.external_url
+      ? `data-url="${escapeHtml(w.external_url)}" onclick="if(this.dataset.url) window.open(this.dataset.url,'_blank','noopener')" style="cursor:pointer;"`
+      : '';
     return `
-      <div class="wk-row">
+      <div class="wk-row" ${clickAttrs}>
         <div class="wk-row-icon">${svg}</div>
         <div class="wk-row-body">
-          <div class="wk-row-title">${typeLabel}${notes}</div>
-          <div class="wk-row-meta">${w.duration_min} min · ${dateLabel}</div>
+          <div class="wk-row-title">${typeLabel} ${stravaBadge}</div>
+          <div class="wk-row-meta">${metaParts.join(' · ')}</div>
         </div>
         <div class="wk-row-kcal">${w.kcal_burned || 0} kcal</div>
       </div>
