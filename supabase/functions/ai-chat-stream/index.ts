@@ -568,12 +568,12 @@ async function executeGetBalance(
       .from("meal_logs")
       .select("total_kcal, total_protein_g, total_carbs_g, total_fat_g")
       .eq("user_id", userId)
-      .gte("created_at", `${today}T00:00:00`),
+      .gte("ts", `${today}T00:00:00`),
     supabase
       .from("hydration_logs")
       .select("ml")
       .eq("user_id", userId)
-      .gte("created_at", `${today}T00:00:00`),
+      .gte("ts", `${today}T00:00:00`),
     supabase
       .from("daily_logs")
       .select(
@@ -924,22 +924,22 @@ async function buildUserContext(
     supabase
       .from("meal_logs")
       .select(
-        "items_text, total_kcal, total_protein_g, total_carbs_g, total_fat_g, meal_category, created_at",
+        "items_text, total_kcal, total_protein_g, total_carbs_g, total_fat_g, meal_category, ts",
       )
       .eq("user_id", userId)
-      .gte("created_at", `${todayISO}T00:00:00`)
-      .order("created_at", { ascending: true }),
+      .gte("ts", `${todayISO}T00:00:00`)
+      .order("ts", { ascending: true }),
     supabase
       .from("workout_logs")
-      .select("activity_name, duration_min, kcal_burned, source")
+      .select("type, duration_min, intensity, kcal_burned, source")
       .eq("user_id", userId)
-      .gte("performed_at", `${todayISO}T00:00:00`)
-      .order("performed_at", { ascending: false }),
+      .gte("ts", `${todayISO}T00:00:00`)
+      .order("ts", { ascending: false }),
     supabase
-      .from("nutrition_plans")
-      .select("name, kcal_target, protein_target_g, status")
-      .eq("user_id", userId)
-      .eq("status", "active")
+      .from("meal_plans")
+      .select("*")
+      .eq("patient_user_id", userId)
+      .eq("active", true)
       .maybeSingle(),
     supabase
       .from("women_health_profile")
@@ -965,7 +965,7 @@ async function buildUserContext(
       .from("hydration_logs")
       .select("ml")
       .eq("user_id", userId)
-      .gte("created_at", `${todayISO}T00:00:00`),
+      .gte("ts", `${todayISO}T00:00:00`),
   ]);
 
   const todayHydrationMl = (todayHydRes.data || []).reduce(
@@ -1102,16 +1102,21 @@ Fecha: ${ctx.todayISO} · ${ctx.hour}h (${hourLabel})
   if (ctx.todayWorkouts.length > 0) {
     p += `\n## Workouts hoy\n`;
     ctx.todayWorkouts.forEach((w: any) => {
-      p += `- ${w.activity_name} · ${w.duration_min}min · ${w.kcal_burned ||
-        "?"} kcal (${w.source || "manual"})\n`;
+      p += `- ${w.type || "ejercicio"} · ${w.duration_min || "?"}min${
+        w.intensity ? ` · ${w.intensity}` : ""
+      } · ${w.kcal_burned || "?"} kcal (${w.source || "manual"})\n`;
     });
   }
 
   if (ctx.activePlan) {
+    const ap = ctx.activePlan;
+    // Targets pueden venir en distintos field names — leemos defensivamente
+    const planKcal = ap.kcal_target_per_day ?? ap.kcal_target ?? ap.target_kcal ?? null;
+    const planP = ap.protein_target_g ?? ap.target_protein_g ?? null;
     p += `\n## Plan activo
-- ${ctx.activePlan.name || "Plan personalizado"}
-- Target: ${ctx.activePlan.kcal_target} kcal, ${ctx.activePlan
-      .protein_target_g}g proteína
+- ${ap.name || ap.title || "Plan personalizado"}${
+      planKcal ? ` · ${planKcal} kcal target` : ""
+    }${planP ? ` · ${planP}g proteína` : ""}
 `;
   }
 
