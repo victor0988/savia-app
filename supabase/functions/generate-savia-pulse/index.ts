@@ -179,8 +179,11 @@ Deno.serve(async (req: Request) => {
     const cleanContext = stripMarkdown(parsed.context_for_chat || "");
 
     // ─── Insert en savia_pulses ───
+    // expires_hours vive en CATEGORY_CONFIG, no en el retorno de selectCategory.
+    // Fallback 4h si la categoría no tiene config (no debería pasar por el CHECK del schema).
+    const expiresHours = CATEGORY_CONFIG[selected.category]?.expires_hours ?? 4;
     const expiresAt = new Date(
-      Date.now() + selected.expires_hours * 3600 * 1000,
+      Date.now() + expiresHours * 3600 * 1000,
     ).toISOString();
 
     const { data: inserted, error: insErr } = await supabaseAdmin
