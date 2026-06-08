@@ -282,14 +282,40 @@ Deno.serve(async (req: Request) => {
       .order("created_at", { ascending: true })
       .limit(MAX_HISTORY);
 
-    const messages = (historyRows || [])
+    // Reconstruir history válido para Anthropic API.
+    // Anthropic requiere ALTERNANCIA estricta user/assistant/user/assistant…
+    // Si hay tool messages en el historial (de llamadas previas), los filtramos
+    // pero también colapsamos consecutivos del mismo role (que quedarían al
+    // excluir tool messages) para no romper alternancia.
+    const rawMessages = (historyRows || [])
       .filter((m) =>
         m.content && (m.role === "user" || m.role === "assistant")
-      )
-      .map((m) => ({
-        role: m.role as "user" | "assistant",
-        content: m.content as string,
-      }));
+      );
+    const messages: Array<{ role: "user" | "assistant"; content: string }> = [];
+    for (const m of rawMessages) {
+      const lastRole = messages.length ? messages[messages.length - 1].role : null;
+      if (lastRole === m.role) {
+        // Consecutivo del mismo role: reemplazar con el más nuevo (más relevante)
+        messages[messages.length - 1] = {
+          role: m.role as "user" | "assistant",
+          content: m.content as string,
+        };
+      } else {
+        messages.push({
+          role: m.role as "user" | "assistant",
+          content: m.content as string,
+        });
+      }
+    }
+    // Anthropic requiere que el primer mensaje sea 'user'
+    while (messages.length && messages[0].role !== "user") {
+      messages.shift();
+    }
+    // Y el último también (el msg actual del user)
+    if (messages.length && messages[messages.length - 1].role !== "user") {
+      messages.pop();
+    }
+    console.log("[ai-chat] sanitized messages count:", messages.length);
 
     // Build user context (parallel queries)
     const ctx = await buildUserContext(supabaseAdmin, user.id);
