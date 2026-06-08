@@ -186,6 +186,37 @@ const TOOLS = [
       properties: {},
     },
   },
+  {
+    name: "update_health_twin",
+    description:
+      "Actualiza un campo del Health Twin del usuario cuando aprendés algo NUEVO sobre él/ella. Ejemplos: 'no me gusta el cilantro' → append a preferences.foods_disliked; 'mi objetivo es bajar 5kg en septiembre' → update a goals; 'me preocupa perder masa muscular' → append a context_personal.concerns; 'tomo creatina 5g al día' → append a preferences.supplements_active. USÁ esto cuando el usuario dice algo que define quién es / qué le gusta / qué le preocupa / qué le motiva / qué supplements toma / qué objetivos tiene. NO uses esto para eventos del día (eso es log_meal/log_water). NO uses para cosas que ya sabés del contexto.",
+    input_schema: {
+      type: "object",
+      properties: {
+        field_path: {
+          type: "string",
+          description:
+            "Dot-path al campo. Debe arrancar con uno de: identity, goals, lifestyle, preferences, biomarkers, nutrition, integrations, womens_health, context_personal. Ejemplos: 'preferences.foods_disliked', 'identity.weight_kg_current', 'context_personal.concerns', 'lifestyle.training_days'. Para reemplazar un goal entero usar 'goals'.",
+        },
+        operation: {
+          type: "string",
+          enum: ["set", "append"],
+          description:
+            "'set' reemplaza el valor en ese path. 'append' agrega al array (asume que el path apunta a un array — falla si no).",
+        },
+        value: {
+          description:
+            "El valor nuevo. Tipo libre: string, número, array, object. Para append, es el item a agregar. Para set, es el valor completo.",
+        },
+        reason: {
+          type: "string",
+          description:
+            "Una frase BREVE en español explicando qué dijo el usuario que te llevó a actualizar esto. Ej: 'Usuario dijo: no me gusta el cilantro'.",
+        },
+      },
+      required: ["field_path", "operation", "value", "reason"],
+    },
+  },
 ];
 
 Deno.serve(async (req: Request) => {
@@ -536,6 +567,7 @@ async function executeToolByName(
     if (name === "log_workout") return await executeLogWorkout(input, userId, supabase);
     if (name === "log_cycle_symptom") return await executeLogCycleSymptom(input, userId, supabase);
     if (name === "get_cycle_phase") return await executeGetCyclePhase(userId, supabase);
+    if (name === "update_health_twin") return await executeUpdateHealthTwin(input, userId, supabase);
     return { error: `Unknown tool: ${name}` };
   } catch (err) {
     console.error(`[tool ${name}] error:`, err);
@@ -934,6 +966,688 @@ async function executeGetCyclePhase(
   };
 }
 
+// ─── Health Twin: helpers + executor + bootstrap + compactador ───────
+
+const HT_BUCKETS = [
+  "identity",
+  "goals",
+  "lifestyle",
+  "preferences",
+  "biomarkers",
+  "nutrition",
+  "integrations",
+  "womens_health",
+  "context_personal",
+];
+
+function getValueAtPath(obj: any, segments: string[]): any {
+  let cur = obj;
+  for (const s of segments) {
+    if (cur == null) return null;
+    cur = cur[s];
+  }
+  return cur ?? null;
+}
+
+function setNested(obj: any, segments: string[], value: any): any {
+  if (segments.length === 0) return value;
+  const [head, ...rest] = segments;
+  const isArrayIndex = /^\d+$/.test(head);
+  const base = obj == null ? (isArrayIndex ? [] : {}) : (Array.isArray(obj) ? [...obj] : { ...obj });
+  if (isArrayIndex) {
+    const idx = parseInt(head);
+    base[idx] = setNested(base[idx], rest, value);
+  } else {
+    base[head] = setNested(base[head], rest, value);
+  }
+  return base;
+}
+
+async function executeUpdateHealthTwin(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  const field_path = String(input?.field_path || "");
+  const operation = String(input?.operation || "");
+  const value = input?.value;
+  const reason = String(input?.reason || "").slice(0, 500);
+
+  const segments = field_path.split(".").filter((s) => s.length > 0);
+  if (segments.length === 0) return { error: "field_path required" };
+  const bucket = segments[0];
+  if (!HT_BUCKETS.includes(bucket)) {
+    return { error: `field_path debe empezar con: ${HT_BUCKETS.join(", ")}` };
+  }
+  if (!["set", "append"].includes(operation)) {
+    return { error: "operation debe ser 'set' o 'append'" };
+  }
+  if (value === undefined) return { error: "value es requerido" };
+
+  // Asegurar que existe el HT row con defaults VÁLIDOS (CHECK constraints
+  // requieren cada bucket NOT NULL + jsonb_typeof correcto). Si no existe,
+  // upsert con buckets vacíos válidos. Si ya existe, ignoreDuplicates evita
+  // sobreescribir.
+  await supabase
+    .from("user_health_twin")
+    .upsert(
+      {
+        user_id: userId,
+        identity: {},
+        goals: [],
+        lifestyle: {},
+        preferences: {},
+        biomarkers: {},
+        nutrition: {},
+        integrations: {},
+        womens_health: {},
+        context_personal: {},
+      },
+      { onConflict: "user_id", ignoreDuplicates: true },
+    );
+
+  // Leer estado actual
+  const { data: currentHT, error: readErr } = await supabase
+    .from("user_health_twin")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (readErr || !currentHT) {
+    return { error: `HT read failed: ${readErr?.message || "not found"}` };
+  }
+
+  const old_value = getValueAtPath(currentHT, segments);
+  let new_value: any;
+  if (operation === "set") {
+    new_value = value;
+  } else {
+    // append
+    const existing = Array.isArray(old_value) ? old_value : [];
+    new_value = [...existing, value];
+  }
+
+  // Construir el bucket actualizado
+  const bucketRest = segments.slice(1);
+  const goalsDefault = bucket === "goals" ? [] : {};
+  const currentBucketValue = currentHT[bucket] ?? goalsDefault;
+  const updatedBucket = setNested(currentBucketValue, bucketRest, new_value);
+
+  // Update + audit log (no transaccional pero acepta riesgo MVP)
+  const { error: updErr } = await supabase
+    .from("user_health_twin")
+    .update({
+      [bucket]: updatedBucket,
+      last_significant_update: new Date().toISOString(),
+    })
+    .eq("user_id", userId);
+  if (updErr) return { error: `update failed: ${updErr.message}` };
+
+  // Audit log (service_role bypassa RLS WITH CHECK false)
+  await supabase.from("health_twin_updates").insert({
+    user_id: userId,
+    field_path,
+    old_value: old_value ?? null,
+    new_value: new_value ?? null,
+    source: "coach",
+    reason: reason || null,
+  });
+
+  return {
+    ok: true,
+    field_path,
+    operation,
+    summary: `${field_path} actualizado (${operation})`,
+  };
+}
+
+/**
+ * Bootstrap: si el HT no existe, crear uno con data de las tablas existentes.
+ * No-op si el HT ya existe.
+ */
+async function bootstrapHealthTwin(
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  // Verificar si ya existe
+  const { data: existing } = await supabase
+    .from("user_health_twin")
+    .select("user_id")
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (existing) return null; // ya existe, no bootstrap
+
+  // Leer fuentes en paralelo
+  const [profileRes, inBodyRes, planRes, whRes, stravaRes] = await Promise.all([
+    supabase
+      .from("user_profiles")
+      .select("name, sex, age, level, height_cm, weight_kg, goals")
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("inbody_records")
+      .select("*")
+      .eq("user_id", userId)
+      .order("recorded_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("meal_plans")
+      .select("*")
+      .eq("patient_user_id", userId)
+      .eq("active", true)
+      .maybeSingle(),
+    supabase
+      .from("women_health_profile")
+      .select(
+        "enabled, status, avg_cycle_length_days, avg_period_length_days, last_period_start_date, goals, conditions",
+      )
+      .eq("user_id", userId)
+      .maybeSingle(),
+    supabase
+      .from("strava_athletes")
+      .select("athlete_id, connected_at")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+
+  const profile = profileRes.data || {};
+  const inbody = inBodyRes.data || null;
+  const plan = planRes.data || null;
+  const wh = whRes.data || null;
+  const strava = stravaRes.data || null;
+
+  // Componer buckets
+  const identity: any = {};
+  if (profile.name) identity.name = profile.name;
+  if (profile.sex) identity.sex = profile.sex;
+  if (profile.age) identity.age = profile.age;
+  if (profile.height_cm) identity.height_cm = profile.height_cm;
+  if (profile.weight_kg) identity.weight_kg_current = profile.weight_kg;
+  if (profile.level) identity.level = profile.level;
+  if (inbody) {
+    if (inbody.weight_kg) identity.weight_kg_current = inbody.weight_kg;
+    if (inbody.body_fat_pct) identity.body_fat_pct = inbody.body_fat_pct;
+    if (inbody.muscle_mass_kg) identity.lean_mass_kg = inbody.muscle_mass_kg;
+    if (inbody.visceral_fat_level) identity.visceral_fat_level = inbody.visceral_fat_level;
+    if (inbody.basal_metabolic_rate) identity.bmr_kcal = inbody.basal_metabolic_rate;
+  }
+
+  // Goals: conviértelos de strings simples a objetos (filtrando vacíos)
+  const goals: any[] = [];
+  if (Array.isArray(profile.goals)) {
+    profile.goals
+      .filter((g: string) => g && typeof g === "string" && g.trim().length > 0)
+      .forEach((g: string, i: number) => {
+        goals.push({
+          name: g,
+          priority: i === 0 ? "primary" : "secondary",
+          status: "active",
+          since: new Date().toISOString().split("T")[0],
+        });
+      });
+  }
+
+  const lifestyle: any = { country: "Costa Rica" };
+
+  const preferences: any = {};
+
+  const biomarkers: any = {};
+  if (inbody?.id) biomarkers.last_inbody_id = inbody.id;
+
+  const nutrition: any = {};
+  if (plan) {
+    nutrition.active_plan_id = plan.id;
+    nutrition.plan_name = plan.name || plan.title || null;
+    nutrition.plan_provider = plan.provider_name || plan.provider || null;
+    nutrition.kcal_target = plan.kcal_target_per_day ?? plan.kcal_target ?? plan.target_kcal ?? null;
+    nutrition.protein_target_g = plan.protein_target_g ?? plan.target_protein_g ?? null;
+    nutrition.carbs_target_g = plan.carbs_target_g ?? plan.target_carbs_g ?? null;
+    nutrition.fat_target_g = plan.fat_target_g ?? plan.target_fat_g ?? null;
+    nutrition.water_target_ml = plan.water_target_ml ?? null;
+    nutrition.plan_active_since = plan.active_since ?? plan.created_at ?? null;
+    nutrition.macros_source = "plan";
+  }
+
+  const integrations: any = {};
+  if (strava) {
+    integrations.strava = {
+      connected: true,
+      athlete_id: strava.athlete_id,
+      since: strava.connected_at,
+    };
+  }
+
+  const womens_health: any = {};
+  if (wh?.enabled) {
+    womens_health.enabled = true;
+    womens_health.status = wh.status;
+    womens_health.avg_cycle_length_days = wh.avg_cycle_length_days;
+    womens_health.avg_period_length_days = wh.avg_period_length_days;
+    womens_health.last_period_start_date = wh.last_period_start_date;
+    womens_health.conditions = wh.conditions || [];
+    womens_health.goals = wh.goals || [];
+  }
+
+  const context_personal: any = {};
+
+  // Score: cuántos de los 9 buckets tienen data (objects con keys, arrays con items)
+  const allBuckets: any[] = [
+    identity, goals, lifestyle, preferences,
+    biomarkers, nutrition, integrations, womens_health, context_personal,
+  ];
+  const filled = allBuckets.filter((b) => {
+    if (Array.isArray(b)) return b.length > 0;
+    return b && Object.keys(b).length > 0;
+  }).length;
+  const completeness = filled / allBuckets.length;
+
+  // Insert
+  const { error: insErr } = await supabase
+    .from("user_health_twin")
+    .upsert(
+      {
+        user_id: userId,
+        identity,
+        goals,
+        lifestyle,
+        preferences,
+        biomarkers,
+        nutrition,
+        integrations,
+        womens_health,
+        context_personal,
+        confidence_score: Math.min(0.5, completeness),
+        completeness_score: completeness,
+        last_significant_update: new Date().toISOString(),
+      },
+      { onConflict: "user_id" },
+    );
+
+  if (insErr) {
+    console.error("[HT bootstrap] insert failed:", insErr);
+    return null;
+  }
+
+  // Audit: registrar bootstrap
+  await supabase.from("health_twin_updates").insert({
+    user_id: userId,
+    field_path: "*",
+    old_value: null,
+    new_value: { bootstrapped: true, completeness },
+    source: "bootstrap",
+    reason: "Primera carga: sync desde user_profiles, inbody, plan, WH, integrations",
+  });
+
+  console.log(`[HT bootstrap] user=${userId} completeness=${completeness.toFixed(2)}`);
+  return null;
+}
+
+/**
+ * Compactador: convierte HT row a un string narrativo para el system prompt.
+ * Solo incluye buckets con data (no muestra "name: null").
+ */
+function compactHealthTwin(ht: any): string {
+  if (!ht) return "";
+  const lines: string[] = ["\n# HEALTH TWIN (lo que ya sabés del usuario — usalo, no preguntes lo obvio)"];
+
+  // Identity
+  const id = ht.identity || {};
+  if (Object.keys(id).length > 0) {
+    const bits: string[] = [];
+    if (id.name) bits.push(id.name);
+    if (id.sex) bits.push(id.sex === "m" ? "hombre" : id.sex === "f" ? "mujer" : id.sex);
+    if (id.age) bits.push(`${id.age}a`);
+    if (id.height_cm) bits.push(`${id.height_cm}cm`);
+    if (id.weight_kg_current) bits.push(`${id.weight_kg_current}kg`);
+    if (id.body_fat_pct) bits.push(`${id.body_fat_pct}% grasa`);
+    if (id.lean_mass_kg) bits.push(`${id.lean_mass_kg}kg masa magra`);
+    if (id.bmr_kcal) bits.push(`BMR ${id.bmr_kcal}`);
+    if (id.level) bits.push(`nivel ${id.level}`);
+    if (bits.length) lines.push(`Identidad: ${bits.join(" · ")}`);
+  }
+
+  // Goals activos
+  if (Array.isArray(ht.goals)) {
+    const activeGoals = ht.goals.filter((g: any) => !g.status || g.status === "active");
+    if (activeGoals.length > 0) {
+      lines.push("Objetivos:");
+      activeGoals.forEach((g: any) => {
+        let line = `- ${g.name || "?"}`;
+        if (g.priority === "primary") line += " (primary)";
+        if (g.target) line += ` · ${g.target}`;
+        if (g.horizon) line += ` · horizonte ${g.horizon}`;
+        lines.push(line);
+      });
+    }
+  }
+
+  // Lifestyle
+  const ls = ht.lifestyle || {};
+  if (Object.keys(ls).length > 0) {
+    const bits: string[] = [];
+    if (ls.country) bits.push(ls.country);
+    if (ls.typical_wake) bits.push(`wake ${ls.typical_wake}`);
+    if (ls.typical_sleep_target) bits.push(`sleep target ${ls.typical_sleep_target}`);
+    if (Array.isArray(ls.training_days) && ls.training_days.length) {
+      bits.push(`entrena ${ls.training_days.join(",")}`);
+    }
+    if (ls.training_time) bits.push(`${ls.training_time}`);
+    if (ls.work_style) bits.push(ls.work_style);
+    if (bits.length) lines.push(`Lifestyle: ${bits.join(" · ")}`);
+  }
+
+  // Preferences
+  const pr = ht.preferences || {};
+  if (Array.isArray(pr.foods_loved) && pr.foods_loved.length) {
+    lines.push(`Le gusta: ${pr.foods_loved.join(", ")}`);
+  }
+  if (Array.isArray(pr.foods_disliked) && pr.foods_disliked.length) {
+    lines.push(`No le gusta: ${pr.foods_disliked.join(", ")}`);
+  }
+  if (Array.isArray(pr.allergies) && pr.allergies.length) {
+    lines.push(`⚠ Alergias: ${pr.allergies.join(", ")}`);
+  }
+  if (Array.isArray(pr.intolerances) && pr.intolerances.length) {
+    lines.push(`Intolerancias: ${pr.intolerances.join(", ")}`);
+  }
+  if (Array.isArray(pr.supplements_active) && pr.supplements_active.length) {
+    const supps = pr.supplements_active.map((s: any) =>
+      `${s.name || "?"}${s.dose ? ` ${s.dose}` : ""}${s.timing ? ` (${s.timing})` : ""}`
+    );
+    lines.push(`Supplements: ${supps.join(", ")}`);
+  }
+  if (pr.diet_style) lines.push(`Estilo dietético: ${pr.diet_style}`);
+
+  // Biomarkers
+  const bm = ht.biomarkers || {};
+  const bmBits: string[] = [];
+  if (bm.hrv_baseline_ms) bmBits.push(`HRV baseline ${bm.hrv_baseline_ms}ms`);
+  if (bm.rhr_baseline_bpm) bmBits.push(`RHR baseline ${bm.rhr_baseline_bpm}bpm`);
+  if (bmBits.length) lines.push(`Biomarcadores: ${bmBits.join(" · ")}`);
+
+  // Nutrition
+  const nu = ht.nutrition || {};
+  if (nu.plan_name || nu.kcal_target) {
+    let nl = `Plan: ${nu.plan_name || "personalizado"}`;
+    if (nu.plan_provider) nl += ` (${nu.plan_provider})`;
+    if (nu.kcal_target) nl += ` · ${nu.kcal_target} kcal`;
+    if (nu.protein_target_g) nl += ` · ${nu.protein_target_g}g P`;
+    lines.push(nl);
+  }
+
+  // Integrations
+  const ig = ht.integrations || {};
+  const igBits: string[] = [];
+  if (ig.strava?.connected) igBits.push("Strava");
+  if (ig.apple_watch?.connected) igBits.push("Apple Watch");
+  if (ig.oura?.connected) igBits.push("Oura");
+  if (ig.whoop?.connected) igBits.push("Whoop");
+  if (igBits.length) lines.push(`Wearables: ${igBits.join(", ")}`);
+
+  // Women's Health
+  const wh = ht.womens_health || {};
+  if (wh.enabled) {
+    lines.push(`Women's Health: activado · ${wh.status || "?"}`);
+  }
+
+  // Context personal
+  const cp = ht.context_personal || {};
+  if (Array.isArray(cp.motivations) && cp.motivations.length) {
+    lines.push(`Motivaciones: ${cp.motivations.join("; ")}`);
+  }
+  if (Array.isArray(cp.concerns) && cp.concerns.length) {
+    lines.push(`Preocupaciones: ${cp.concerns.join("; ")}`);
+  }
+  if (Array.isArray(cp.constraints) && cp.constraints.length) {
+    lines.push(`Constraints: ${cp.constraints.join("; ")}`);
+  }
+  if (Array.isArray(cp.relationships) && cp.relationships.length) {
+    const rels = cp.relationships
+      .map((r: any) => r.name ? `${r.name} (${r.role || "?"})` : null)
+      .filter(Boolean);
+    if (rels.length) lines.push(`Relaciones: ${rels.join(", ")}`);
+  }
+
+  if (lines.length === 1) return ""; // solo el header, sin data
+  return lines.join("\n") + "\n";
+}
+
+// ─── Behavioral Intelligence: patterns calculados on-the-fly ─────────
+
+interface BehavioralPatterns {
+  frequent_meals: Array<{
+    name: string;
+    count: number;
+    avg_kcal: number;
+    avg_protein_g: number;
+    avg_carbs_g: number;
+    avg_fat_g: number;
+    last_seen_days_ago: number;
+  }>;
+  adherence_7d: {
+    kcal_avg: number | null;
+    kcal_target: number | null;
+    kcal_adherence_pct: number | null;
+    protein_avg: number | null;
+    protein_target: number | null;
+    protein_adherence_pct: number | null;
+    days_with_data: number;
+  };
+  training: {
+    workouts_last_14d: number;
+    workouts_per_week_avg: number;
+    most_frequent_type: string | null;
+  };
+}
+
+function normalizeKey(s: string): string {
+  return String(s || "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, " ")
+    .replace(/[.,;:!?¡¿"'()]/g, "");
+}
+
+async function buildBehavioralPatterns(
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+  todayStartISO: string,
+  htTargets: { kcal_target?: number | null; protein_target_g?: number | null } | null,
+): Promise<BehavioralPatterns> {
+  const now = new Date(todayStartISO);
+  const start14d = new Date(now.getTime() - 14 * 86400000).toISOString();
+  const start7d = new Date(now.getTime() - 7 * 86400000).toISOString();
+
+  const [mealsRes, workoutsRes] = await Promise.all([
+    supabase
+      .from("meal_logs")
+      .select("items_text, total_kcal, total_protein_g, total_carbs_g, total_fat_g, ts")
+      .eq("user_id", userId)
+      .gte("ts", start14d)
+      .lt("ts", todayStartISO)  // excluye HOY (eso ya está en todayMeals)
+      .order("ts", { ascending: false }),
+    supabase
+      .from("workout_logs")
+      .select("type, ts")
+      .eq("user_id", userId)
+      .gte("ts", start14d)
+      .lt("ts", todayStartISO),
+  ]);
+
+  // ─── Frequent meals: agrupar por nombre normalizado ───
+  const mealsRaw = mealsRes.data || [];
+  const meals7d = mealsRaw.filter((m: any) => m.ts >= start7d);
+
+  type MealGroup = {
+    display: string;
+    count: number;
+    sum_kcal: number;
+    sum_p: number;
+    sum_c: number;
+    sum_f: number;
+    last_ts: string;
+  };
+  const groups = new Map<string, MealGroup>();
+  for (const m of mealsRaw) {
+    const key = normalizeKey(m.items_text);
+    if (!key) continue;
+    const existing = groups.get(key);
+    if (existing) {
+      existing.count++;
+      existing.sum_kcal += m.total_kcal || 0;
+      existing.sum_p += m.total_protein_g || 0;
+      existing.sum_c += m.total_carbs_g || 0;
+      existing.sum_f += m.total_fat_g || 0;
+      if (m.ts > existing.last_ts) existing.last_ts = m.ts;
+    } else {
+      groups.set(key, {
+        display: m.items_text,
+        count: 1,
+        sum_kcal: m.total_kcal || 0,
+        sum_p: m.total_protein_g || 0,
+        sum_c: m.total_carbs_g || 0,
+        sum_f: m.total_fat_g || 0,
+        last_ts: m.ts,
+      });
+    }
+  }
+
+  const frequent_meals = Array.from(groups.values())
+    .filter((g) => g.count >= 2) // umbral: al menos 2 veces
+    .sort((a, b) => b.count - a.count || b.last_ts.localeCompare(a.last_ts))
+    .slice(0, 6)
+    .map((g) => ({
+      name: g.display,
+      count: g.count,
+      avg_kcal: Math.round(g.sum_kcal / g.count),
+      avg_protein_g: Math.round(g.sum_p / g.count),
+      avg_carbs_g: Math.round(g.sum_c / g.count),
+      avg_fat_g: Math.round(g.sum_f / g.count),
+      last_seen_days_ago: Math.floor(
+        (now.getTime() - new Date(g.last_ts).getTime()) / 86400000,
+      ),
+    }));
+
+  // ─── Adherence últimos 7 días ───
+  // Aggregate por día y promediar contra target del HT
+  const byDay = new Map<string, { kcal: number; protein: number }>();
+  for (const m of meals7d) {
+    const day = String(m.ts).slice(0, 10);
+    const e = byDay.get(day) || { kcal: 0, protein: 0 };
+    e.kcal += m.total_kcal || 0;
+    e.protein += m.total_protein_g || 0;
+    byDay.set(day, e);
+  }
+  const days_with_data = byDay.size;
+  let kcal_avg: number | null = null;
+  let protein_avg: number | null = null;
+  if (days_with_data > 0) {
+    let sumK = 0, sumP = 0;
+    for (const v of byDay.values()) {
+      sumK += v.kcal;
+      sumP += v.protein;
+    }
+    kcal_avg = Math.round(sumK / days_with_data);
+    protein_avg = Math.round(sumP / days_with_data);
+  }
+  const kcal_target = htTargets?.kcal_target ?? null;
+  const protein_target = htTargets?.protein_target_g ?? null;
+  const kcal_adherence_pct =
+    kcal_target && kcal_avg != null
+      ? Math.round((kcal_avg / kcal_target) * 100)
+      : null;
+  const protein_adherence_pct =
+    protein_target && protein_avg != null
+      ? Math.round((protein_avg / protein_target) * 100)
+      : null;
+
+  // ─── Training (últimos 14d) ───
+  const workouts = workoutsRes.data || [];
+  const workouts_last_14d = workouts.length;
+  const workouts_per_week_avg = workouts_last_14d / 2;
+  const typeCounts = new Map<string, number>();
+  for (const w of workouts) {
+    if (!w.type) continue;
+    typeCounts.set(w.type, (typeCounts.get(w.type) || 0) + 1);
+  }
+  let most_frequent_type: string | null = null;
+  let maxCount = 0;
+  for (const [t, c] of typeCounts.entries()) {
+    if (c > maxCount) {
+      maxCount = c;
+      most_frequent_type = t;
+    }
+  }
+
+  return {
+    frequent_meals,
+    adherence_7d: {
+      kcal_avg,
+      kcal_target,
+      kcal_adherence_pct,
+      protein_avg,
+      protein_target,
+      protein_adherence_pct,
+      days_with_data,
+    },
+    training: {
+      workouts_last_14d,
+      workouts_per_week_avg,
+      most_frequent_type,
+    },
+  };
+}
+
+function compactBehavioralPatterns(p: BehavioralPatterns | null): string {
+  if (!p) return "";
+  const lines: string[] = [];
+
+  // Frequent meals
+  if (p.frequent_meals.length > 0) {
+    lines.push("\n# COMIDAS FRECUENTES (últimos 14 días — si menciona alguna de estas, usá los macros promedio, NO preguntes lo obvio)");
+    p.frequent_meals.forEach((m) => {
+      const tail = m.last_seen_days_ago <= 0 ? "hoy" :
+        m.last_seen_days_ago === 1 ? "ayer" :
+        `hace ${m.last_seen_days_ago}d`;
+      lines.push(
+        `- "${m.name}" · ${m.count}x · ~${m.avg_kcal} kcal, ${m.avg_protein_g}g P, ${m.avg_carbs_g}g C, ${m.avg_fat_g}g G · última ${tail}`,
+      );
+    });
+  }
+
+  // Adherence
+  const a = p.adherence_7d;
+  if (a.days_with_data >= 3) {
+    const bits: string[] = [];
+    if (a.kcal_avg != null) {
+      let kBit = `kcal promedio ${a.kcal_avg}`;
+      if (a.kcal_adherence_pct != null) kBit += ` (${a.kcal_adherence_pct}% del target)`;
+      bits.push(kBit);
+    }
+    if (a.protein_avg != null) {
+      let pBit = `proteína promedio ${a.protein_avg}g`;
+      if (a.protein_adherence_pct != null) pBit += ` (${a.protein_adherence_pct}%)`;
+      bits.push(pBit);
+    }
+    if (bits.length > 0) {
+      lines.push(`\n# ADHERENCIA ÚLTIMOS 7 DÍAS`);
+      lines.push(`- ${bits.join(" · ")} · data de ${a.days_with_data} días`);
+    }
+  }
+
+  // Training
+  if (p.training.workouts_last_14d >= 2) {
+    let tLine = `${p.training.workouts_last_14d} entrenos en 14 días (~${p.training.workouts_per_week_avg.toFixed(1)}/semana)`;
+    if (p.training.most_frequent_type) {
+      tLine += ` · más frecuente: ${p.training.most_frequent_type}`;
+    }
+    lines.push(`\n# TRAINING ÚLTIMOS 14 DÍAS`);
+    lines.push(`- ${tLine}`);
+  }
+
+  return lines.length > 0 ? lines.join("\n") + "\n" : "";
+}
+
 // ─────────────────────────────────────────────────────────────────────
 // Context Builder — corre N queries en paralelo y compila state del user
 // ─────────────────────────────────────────────────────────────────────
@@ -951,6 +1665,8 @@ interface UserContext {
   whProfile: any;
   whTodayLog: any;
   recentInBody: any;
+  healthTwin: any;
+  behavioralPatterns: BehavioralPatterns | null;
 }
 
 async function buildUserContext(
@@ -1058,7 +1774,46 @@ async function buildUserContext(
     (s: number, h: any) => s + (h.ml || 0),
     0,
   );
-  console.log("[ai-chat] context loaded: meals=", (todayMealsRes.data || []).length, "workouts=", (todayWorkoutsRes.data || []).length, "hydration=", todayHydrationMl, "ml");
+
+  // Bootstrap HT si no existe (no-op si ya existe), después cargarlo
+  await bootstrapHealthTwin(userId, supabase);
+  const { data: healthTwin } = await supabase
+    .from("user_health_twin")
+    .select("*")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  // Behavioral patterns (frecuentes + adherencia + training) — last 14d
+  // Targets para % adherencia: prefiero HT.nutrition, fallback a todayTargets
+  const htNutrition = healthTwin?.nutrition || {};
+  const targetsForAdherence = {
+    kcal_target: htNutrition.kcal_target ?? todayTargetsRes.data?.kcal_target ?? null,
+    protein_target_g: htNutrition.protein_target_g ?? todayTargetsRes.data?.protein_target_g ?? null,
+  };
+  let behavioralPatterns: BehavioralPatterns | null = null;
+  try {
+    behavioralPatterns = await buildBehavioralPatterns(
+      userId,
+      supabase,
+      todayStartISO,
+      targetsForAdherence,
+    );
+  } catch (e) {
+    console.warn("[ai-chat] behavioral patterns failed:", e);
+  }
+
+  console.log(
+    "[ai-chat] context loaded: meals=",
+    (todayMealsRes.data || []).length,
+    "workouts=",
+    (todayWorkoutsRes.data || []).length,
+    "hydration=",
+    todayHydrationMl,
+    "ml · ht_completeness=",
+    healthTwin?.completeness_score ?? "n/a",
+    "· frequent_meals=",
+    behavioralPatterns?.frequent_meals.length ?? 0,
+  );
 
   return {
     todayISO,
@@ -1073,6 +1828,8 @@ async function buildUserContext(
     whProfile: whProfileRes.data,
     whTodayLog: whTodayLogRes.data,
     recentInBody: inBodyRes.data,
+    healthTwin,
+    behavioralPatterns,
   };
 }
 
@@ -1088,73 +1845,69 @@ function buildSystemPrompt(ctx: UserContext): string {
     ? "tarde"
     : "noche";
 
-  let p = `Sos SAVIA. NO sos un chatbot.
+  const htBlock = compactHealthTwin(ctx.healthTwin);
+  const behavBlock = compactBehavioralPatterns(ctx.behavioralPatterns);
 
-Sos el copiloto wellness de ${name} — su entrenadora personal de élite, nutricionista, coach de hábitos y compañera de accountability en una sola voz. Tu fuerza es que recordás todo y conectás los puntos que ${name} no conectaría sola.
+  let p = `Sos SAVIA, la coach de ${name}. No sos un chatbot — sos una entrenadora real que recordás todo y conectás los puntos.${htBlock ? "\n" + htBlock : ""}${behavBlock ? "\n" + behavBlock : ""}
+# CÓMO USÁS LOS PATRONES (comidas frecuentes, adherencia, training)
+Cuando ${name} mencione una comida que YA está en COMIDAS FRECUENTES, usá los macros promedio del bloque y registrá DIRECTO con log_meal — NO preguntés cantidad ni tipo. Confirmá breve con un toque de reconocimiento natural ("como casi siempre", "tu desayuno de los lunes"). Si la mención es ambigua (ej. dice "yogurt" y hay dos versiones en frecuentes), usá la más reciente. Si los macros del bloque no aplican (porque ahora menciona una variación específica, ej. "yogurt CON GRANOLA"), preguntá UNA cosa antes de registrar.
 
-# DOS OBJETIVOS EN CADA INTERACCIÓN
-1. Ayudarla AHORA con lo que está preguntando.
-2. Aprender algo nuevo sobre ella que enriquezca tus futuras recomendaciones.
+Si ves baja adherencia (>20% bajo target) o un patrón fuerte (entrena 5x/semana, etc.), sentís libre de mencionarlo cuando sea pertinente — pero NO al inicio de cada conversación.
 
-Ninguna interacción se desperdicia.
+# CÓMO USÁS EL HEALTH TWIN
+El bloque de arriba (si está) es lo que YA SABÉS del usuario. Usalo activamente. NO le preguntes lo que ya sabés (peso, edad, plan activo, qué le gusta, qué no le gusta, supplements, ciclo). Si menciona algo NUEVO que define quién es —preferencias, supplements, restricciones, motivaciones, preocupaciones, objetivos, condiciones, intolerancias—, llamá update_health_twin para guardarlo. Eso te hace más inteligente para futuras conversaciones.
+
+Ejemplos de cuándo llamar update_health_twin:
+- "no me gusta el cilantro" → append a preferences.foods_disliked
+- "tomo creatina 5g al día" → append a preferences.supplements_active { name:'creatina', dose:'5g', timing:'diario' }
+- "quiero correr una 10K en septiembre" → append a goals { name:'correr 10K', target:'sub 50min', horizon:'2026-09', priority:'secondary', status:'active' }
+- "me preocupa perder músculo cortando" → append a context_personal.concerns
+- "soy de Costa Rica" → set lifestyle.country
+- "mi peso ahora es 81.5" → set identity.weight_kg_current
+
 
 # CÓMO HABLÁS
-- Español tico/centroamericano. Vos, no tú.
-- Cálida pero no performativa. Curiosa pero no invasiva. Experta pero no clínica.
-- BREVE — usualmente 2-4 frases. Permitite UNA observación contextual o UNA pregunta natural cuando enriquezca el modelo. Pero cortá cuando ya dijiste lo importante.
-- Sin postambles vacíos ("espero que sirva", "¿algo más?"). Sin asteriscos. Sin emoji salvo que ella los use primero. Sin markdown headers.
-- Nunca robótica. Nunca sonás a calculadora de kcal.
-- Sin "voy a registrar" antes de ejecutar tools — actuá directo y confirmá después en 1 frase con dato clave.
+Hablás como una entrenadora humana: notás algo, lo decís. Tenés curiosidad genuina por ${name}, escuchás entre líneas y devolvés UNA observación o UNA pregunta corta que conecta lo de hoy con lo que ya sabés de ella. Voz cálida, directa, tica (vos). Densa, no larga: 2–4 frases que carguen señal — el dato + lo que significa + (cuando haya algo que valga la pena) una observación curiosa o una pregunta natural. **Si solo das el número, fallaste.**
 
-# CÓMO RAZONÁS
-Nunca analizás eventos en aislado. Conectás:
-- Nutrición ↔ Entrenamiento
-- Sueño ↔ Recovery
-- Hidratación ↔ Energía
-- Hábitos ↔ Outcomes (peso, composición, performance)
-- Ciclo hormonal (si aplica) ↔ todo lo anterior
+# CADA RESPUESTA TIENE DOS CAPAS
+1. Ayudás AHORA con lo que está preguntando.
+2. Sembrás algo para aprender más — una observación que invita, una pregunta natural, o un loop que cerrás después.
 
-Pensás longitudinalmente: si durmió mal Y le toca pierna fuerte hoy, lo notás. Si está corta de proteína Y entrenó duro, lo notás. Si lleva 3 días con hidratación baja, lo señalás sin invasivo.
+# LO QUE UNA COACH REAL HACE
+- **Recordás promesas.** Si dijo "mañana entreno" o "esta noche duermo temprano", la próxima vez preguntás cómo le fue.
+- **Conectás patrones.** A veces le sorprendés con algo que sola no notaría ("tus mejores días de energía suelen ser los que arrancás con proteína >25g"). Una vez cada varios mensajes, no en cada uno.
+- **Cerrás loops abiertos.** Si ayer dijo que tenía cólicos o estaba cansada, hoy preguntás cómo amaneció.
+- **Razonás longitudinalmente.** Nunca analizás un evento aislado. Conectás: nutrición ↔ entrenamiento ↔ sueño ↔ recovery ↔ hidratación ↔ hábitos ↔ (si aplica) ciclo hormonal.
 
-# CONVERSATION-FIRST: EXTRAÉ EVENTOS NATURALMENTE
-El usuario no debería usar formularios. Cuando menciona algo registrable, ejecutá la tool directo:
-- "comí 200g pollo con arroz" → log_meal (estimás macros) → confirmás breve con números
-- "tomé un vaso de agua" → log_water 250ml → "+250ml, vas en X total"
-- "corrí 30 min" → log_workout run/30min → confirmás
-- "me duele bastante el cólico" → log_cycle_symptom cramp_level=3 → breve empatía + contexto fase
+# CONVERSATION-FIRST
+Cuando menciona algo registrable, ejecutás la tool directo (sin anunciar "voy a registrar") y después confirmás breve con el dato clave + lo que significa. Si falta detalle para registrar bien, hacés UNA pregunta natural.
 
-Si falta detalle clave para registrar bien, hacé UNA pregunta natural antes (no formulario):
-- "¿Pan, huevos y aguacate solos, o con algo más?" — para estimar mejor las kcal
-- "¿Fue antes o después del entreno?" — para conectar timing
+# EJEMPLOS DEL TONO
 
-# COACHING PROACTIVO (CUANDO HAY SEÑAL CLARA)
-Si en el contexto ves un patrón que importa, lo señalás 1 vez:
-- "Hidratación en 0 todavía — arrancá con 500ml"
-- "Te quedan 380 kcal para cerrar — alcanza para una buena cena"
-- "Falta proteína para llegar al target; sumá 30g en el snack PM"
-NO repitas la misma observación cada vez. Si ya la dijiste, no insistas.
+Usuaria: "comí pan con huevo y aguacate"
+Vos: "Anotado — ~420 kcal, 18g proteína. Buen arranque. ¿Fue antes del entreno o ya desayunaste post?"
 
-# DOMINIOS QUE CUBRÍS
-- Nutrición (kcal, macros, hidratación, plan de Sofía López si está activo, alimentos)
-- Entrenamiento (volumen, intensidad, recovery, plan según día)
-- Sueño y recuperación (HRV, RHR, calidad subjetiva)
-- Composición corporal y biomarcadores (InBody, peso, evolución)
-- Hábitos y adherencia
-- Salud hormonal / ciclo (SOLO si Women's Health está activado Y la pregunta lo amerita)
+Usuaria: "dormí mal"
+Vos: "Qué mae. ¿Te costó dormirte o te despertaste a media noche? Lo pregunto porque hoy tenés pierna y quiero ver si bajamos intensidad."
+
+Usuaria: "tomé un vaso de agua"
+Vos: "+250ml, vas en 800 de 2500. Te quedan como 7 vasos — si los repartís cada 90 min llegás sin pensarlo."
+
+Usuaria: "peso 82"
+Vos: "Anotado: 82.0kg. Llevás tres semanas oscilando entre 81.8 y 82.4 — la tendencia está plana, no subiendo. ¿Querés que veamos si ajustamos kcal o lo dejamos correr otra semana?"
+
+Usuaria: "¿cómo voy?"
+Vos: "735 kcal y 31g proteína hasta ahora. Vas bien arriba para el almuerzo, pero la hidratación está en 0 — arrancá con un vaso. Si vas al gym hoy, sumá ~30g proteína post."
 
 # REGLAS DE DATA — NO NEGOCIABLES
-- NUNCA inventés números. Si dudás de kcal/macros exactos, estimá conservador y avisá que es estimación. Si te corrigen, ajustá sin defenderte.
-- Si no tenés data en contexto, decílo honestamente: "no tengo registro de eso todavía".
-- No dés consejo médico clínico. Para condiciones, sugerí consultar profesional.
+NUNCA inventés números. Si dudás de kcal/macros, estimás conservador y avisás "estimación". Si te corrigen, ajustás sin defenderte. Si no tenés data en contexto, decilo honesto: "no tengo registro de eso todavía". No dés consejo médico clínico — para condiciones, sugerí consultar profesional.
 
-# TOOLS DISPONIBLES (usalas, no las menciones por nombre técnico)
-- log_meal · log_water · log_workout · log_cycle_symptom · get_balance · get_cycle_phase
-- get_balance solo si necesitás data fresca después de registrar algo o si te lo piden explícito.
-- get_cycle_phase solo si la pregunta lo amerita Y necesitás data fresca — la fase ya está en el contexto.
+# TOOLS
+log_meal · log_water · log_workout · log_cycle_symptom · get_balance · get_cycle_phase · update_health_twin
+Usá get_balance solo después de registrar algo nuevo. Usá get_cycle_phase solo si la pregunta lo amerita y la fase actual no está en el contexto inicial. El ciclo es UN input, no EL input — solo lo mencionás si la pregunta es relevante (energía, antojos, mood, fuerza en mujeres).
 
-# QUÉ AÚN NO PODÉS
-- Marcar comidas del plan como "ya las comí" (próximo sprint) — por ahora usá log_meal con los datos del plan.
-- Registrar pasos (requiere Apple Health nativo — próximo sprint).
+# AÚN NO PODÉS
+Marcar comidas del plan como "comí" (próximo sprint, por ahora usá log_meal) · Registrar pasos (requiere Apple Health nativo).
 
 # CONTEXTO DE HOY
 Fecha: ${ctx.todayISO} · ${ctx.hour}h (${hourLabel})
