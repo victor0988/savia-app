@@ -326,6 +326,7 @@ Deno.serve(async (req: Request) => {
 
           while (iterations < MAX_TOOL_ITERATIONS) {
             iterations++;
+            console.log(`[ai-chat] iteration ${iterations} start. messages count:`, apiMessages.length);
 
             let textBuffer = "";
             const anthropicStream = await anthropic.messages.stream({
@@ -336,7 +337,9 @@ Deno.serve(async (req: Request) => {
               messages: apiMessages,
             });
 
+            const eventTypes: string[] = [];
             for await (const event of anthropicStream) {
+              eventTypes.push(event.type);
               if (
                 event.type === "content_block_delta" &&
                 event.delta.type === "text_delta"
@@ -350,8 +353,29 @@ Deno.serve(async (req: Request) => {
                 totalOutputTokens += event.usage?.output_tokens || 0;
               }
             }
+            console.log(`[ai-chat] iteration ${iterations} events:`, eventTypes.join(","));
 
             const finalMessage = await anthropicStream.finalMessage();
+            console.log(`[ai-chat] iteration ${iterations} stop_reason:`, finalMessage.stop_reason);
+            console.log(`[ai-chat] iteration ${iterations} content blocks:`, JSON.stringify(finalMessage.content.map((b: any) => ({ type: b.type, name: b.name, text: b.text?.slice(0, 60) }))));
+            console.log(`[ai-chat] iteration ${iterations} textBuffer length:`, textBuffer.length);
+
+            // FALLBACK: si el for-await NO capturó deltas pero finalMessage tiene
+            // texto, emitirlos manualmente (defensivo contra SDK que no emite
+            // text_delta events en Deno).
+            if (textBuffer.length === 0) {
+              const textBlocks = finalMessage.content.filter((b: any) => b.type === "text");
+              for (const block of textBlocks) {
+                const txt = (block as any).text || "";
+                if (txt) {
+                  textBuffer += txt;
+                  send("delta", { text: txt });
+                }
+              }
+              if (textBuffer.length > 0) {
+                console.log(`[ai-chat] iteration ${iterations} fallback: emitted ${textBuffer.length} chars from finalMessage`);
+              }
+            }
 
             // Persistir el texto del assistant si hubo
             if (textBuffer.trim()) {
