@@ -203,6 +203,25 @@ const TOOLS = [
     },
   },
   {
+    name: "get_period_summary",
+    description:
+      "Análisis agregado de un rango de días para alimentación + entreno + hidratación. USÁ esto cuando el usuario pida análisis cross-días (\"últimos 7 días\", \"esta semana\", \"del lunes al viernes\", \"la semana pasada\", \"el último mes\"). Devuelve totales, promedios diarios, % adherencia vs targets, y breakdown día por día con kcal y workouts. Si pide solo UN día, usá get_day_summary en su lugar.",
+    input_schema: {
+      type: "object",
+      properties: {
+        start_date: {
+          type: "string",
+          description: "Fecha inicio YYYY-MM-DD inclusive",
+        },
+        end_date: {
+          type: "string",
+          description: "Fecha fin YYYY-MM-DD inclusive",
+        },
+      },
+      required: ["start_date", "end_date"],
+    },
+  },
+  {
     name: "delete_recent_meal",
     description:
       "Borra una comida del usuario. Pasale una descripción de lo que quiere borrar. La tool busca la comida más reciente que coincida (últimos 14 días). Si hay ambigüedad (varias coincidencias), devuelve la lista para que pidas confirmación al usuario. Usá esto cuando el usuario diga 'borrá X', 'eliminá Y', 'me equivoqué con Z'.",
@@ -608,6 +627,7 @@ async function executeToolByName(
     if (name === "get_cycle_phase") return await executeGetCyclePhase(userId, supabase);
     if (name === "update_health_twin") return await executeUpdateHealthTwin(input, userId, supabase);
     if (name === "get_day_summary") return await executeGetDaySummary(input, userId, supabase, tzOffsetMin);
+    if (name === "get_period_summary") return await executeGetPeriodSummary(input, userId, supabase, tzOffsetMin);
     if (name === "delete_recent_meal") return await executeDeleteRecentMeal(input, userId, supabase, tzOffsetMin);
     return { error: `Unknown tool: ${name}` };
   } catch (err) {
@@ -1146,6 +1166,188 @@ async function executeGetDaySummary(
       kcal_burned: w.kcal_burned,
       source: w.source,
     })),
+  };
+}
+
+// ─── get_period_summary: análisis agregado de un rango de días ───────
+
+async function executeGetPeriodSummary(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+  tzOffsetMin?: number,
+): Promise<any> {
+  const start_date = String(input?.start_date || "").trim();
+  const end_date = String(input?.end_date || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start_date) || !/^\d{4}-\d{2}-\d{2}$/.test(end_date)) {
+    return { error: "start_date y end_date deben ser YYYY-MM-DD" };
+  }
+  if (start_date > end_date) {
+    return { error: "start_date debe ser <= end_date" };
+  }
+
+  // Convertir cada fecha a medianoche LOCAL del cliente expresada como UTC
+  const offsetMs = (tzOffsetMin ?? 0) * 60 * 1000;
+  const startUTC = new Date(`${start_date}T00:00:00.000Z`).getTime() + offsetMs;
+  const endUTC = new Date(`${end_date}T00:00:00.000Z`).getTime() + offsetMs + 86400000;
+  if (endUTC - startUTC > 92 * 86400000) {
+    return { error: "Rango máximo 92 días" };
+  }
+  const startISO = new Date(startUTC).toISOString();
+  const endISO = new Date(endUTC).toISOString();
+  const daysInRange = Math.round((endUTC - startUTC) / 86400000);
+
+  // Queries en paralelo
+  const [mealsRes, workoutsRes, hydRes, targetsRes] = await Promise.all([
+    supabase
+      .from("meal_logs")
+      .select("total_kcal, total_protein_g, total_carbs_g, total_fat_g, meal_category, items_text, ts")
+      .eq("user_id", userId)
+      .gte("ts", startISO)
+      .lt("ts", endISO)
+      .order("ts", { ascending: true }),
+    supabase
+      .from("workout_logs")
+      .select("type, duration_min, intensity, kcal_burned, source, ts")
+      .eq("user_id", userId)
+      .gte("ts", startISO)
+      .lt("ts", endISO)
+      .order("ts", { ascending: true }),
+    supabase
+      .from("hydration_logs")
+      .select("ml, ts")
+      .eq("user_id", userId)
+      .gte("ts", startISO)
+      .lt("ts", endISO),
+    // Tomar targets del HT (más actual) si existen
+    supabase
+      .from("user_health_twin")
+      .select("nutrition")
+      .eq("user_id", userId)
+      .maybeSingle(),
+  ]);
+
+  const meals = mealsRes.data || [];
+  const workouts = workoutsRes.data || [];
+  const hydrations = hydRes.data || [];
+
+  // ─── Agregados totales ───
+  const totals = meals.reduce(
+    (acc: any, m: any) => {
+      acc.kcal += m.total_kcal || 0;
+      acc.protein_g += m.total_protein_g || 0;
+      acc.carbs_g += m.total_carbs_g || 0;
+      acc.fat_g += m.total_fat_g || 0;
+      return acc;
+    },
+    { kcal: 0, protein_g: 0, carbs_g: 0, fat_g: 0 },
+  );
+  const total_hydration_ml = hydrations.reduce(
+    (s: number, h: any) => s + (h.ml || 0),
+    0,
+  );
+  const total_kcal_burned = workouts.reduce(
+    (s: number, w: any) => s + (w.kcal_burned || 0),
+    0,
+  );
+
+  // ─── Aggregate by day (para per-day breakdown + days con datos) ───
+  type DayAgg = { kcal: number; protein: number; meals: number; workouts: number; hydration_ml: number };
+  const byDay = new Map<string, DayAgg>();
+  // Helper: convertir un ts (UTC) a fecha LOCAL del cliente YYYY-MM-DD
+  const tsToLocalDate = (ts: string): string => {
+    const localMs = new Date(ts).getTime() - offsetMs;
+    return new Date(localMs).toISOString().split("T")[0];
+  };
+  for (const m of meals) {
+    const day = tsToLocalDate(m.ts);
+    const e = byDay.get(day) || { kcal: 0, protein: 0, meals: 0, workouts: 0, hydration_ml: 0 };
+    e.kcal += m.total_kcal || 0;
+    e.protein += m.total_protein_g || 0;
+    e.meals++;
+    byDay.set(day, e);
+  }
+  for (const w of workouts) {
+    const day = tsToLocalDate(w.ts);
+    const e = byDay.get(day) || { kcal: 0, protein: 0, meals: 0, workouts: 0, hydration_ml: 0 };
+    e.workouts++;
+    byDay.set(day, e);
+  }
+  for (const h of hydrations) {
+    const day = tsToLocalDate(h.ts);
+    const e = byDay.get(day) || { kcal: 0, protein: 0, meals: 0, workouts: 0, hydration_ml: 0 };
+    e.hydration_ml += h.ml || 0;
+    byDay.set(day, e);
+  }
+
+  const days_with_data = byDay.size;
+  // Días específicamente con COMIDAS registradas (para promedios kcal/protein
+  // que no se vean diluidos por workout-only days)
+  const days_with_meals = Array.from(byDay.values()).filter((d) => d.meals > 0).length;
+  const kcal_avg_per_active_day = days_with_meals > 0 ? Math.round(totals.kcal / days_with_meals) : 0;
+  const protein_avg_per_active_day = days_with_meals > 0 ? Math.round(totals.protein_g / days_with_meals) : 0;
+
+  // ─── Targets para % adherencia ───
+  const htNutrition = targetsRes.data?.nutrition || {};
+  const kcal_target = htNutrition.kcal_target ?? null;
+  const protein_target_g = htNutrition.protein_target_g ?? null;
+  // Si hay target pero 0 días con meals, adherencia es 0% (más honesto que null)
+  const kcal_adherence_pct = kcal_target != null
+    ? Math.round((kcal_avg_per_active_day / kcal_target) * 100)
+    : null;
+  const protein_adherence_pct = protein_target_g != null
+    ? Math.round((protein_avg_per_active_day / protein_target_g) * 100)
+    : null;
+
+  // ─── Workout breakdown ───
+  const typeCounts = new Map<string, number>();
+  for (const w of workouts) {
+    if (!w.type) continue;
+    typeCounts.set(w.type, (typeCounts.get(w.type) || 0) + 1);
+  }
+  const workoutTypeBreakdown = Array.from(typeCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, count]) => ({ type, count }));
+
+  // ─── Per-day breakdown (ordenado por fecha) ───
+  const per_day = Array.from(byDay.entries())
+    .map(([date, d]) => ({
+      date,
+      kcal: Math.round(d.kcal),
+      protein_g: Math.round(d.protein),
+      meals_count: d.meals,
+      workouts_count: d.workouts,
+      hydration_ml: d.hydration_ml,
+    }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  return {
+    ok: true,
+    period: { start_date, end_date, days_in_range: daysInRange, days_with_data, days_with_meals },
+    totals: {
+      kcal: Math.round(totals.kcal),
+      protein_g: Math.round(totals.protein_g),
+      carbs_g: Math.round(totals.carbs_g),
+      fat_g: Math.round(totals.fat_g),
+      hydration_ml: total_hydration_ml,
+      kcal_burned_workouts: Math.round(total_kcal_burned),
+      meals: meals.length,
+      workouts: workouts.length,
+    },
+    averages_per_active_day: {
+      kcal: kcal_avg_per_active_day,
+      protein_g: protein_avg_per_active_day,
+    },
+    targets_daily: {
+      kcal: kcal_target,
+      protein_g: protein_target_g,
+    },
+    adherence: {
+      kcal_pct: kcal_adherence_pct,
+      protein_pct: protein_adherence_pct,
+    },
+    workouts_by_type: workoutTypeBreakdown,
+    per_day,
   };
 }
 
@@ -2207,16 +2409,21 @@ Vos: "Mae, te entiendo. Tu plan dice pierna pero llevás 3 días con sueño de 5
 Usuario: "registrá una hamburguesa con papas y soda"
 Vos: [log_meal con estimación: ~1200 kcal, 35g P] "Listo. Te empuja al límite del target diario pero la proteína es decente. Tu meta es recomposition así que para mañana foco en proteína temprana y movete un poco más. No pasa, vos sabés lo que hacés."
 
+Usuario: "analizá mis últimos 7 días, entreno y alimentación"
+Vos: [get_period_summary últimos 7 días] "Vamos. Esta semana llevás 5 entrenos (mostly strength) y promedio 2,140 kcal/día con 165g proteína — adherencia kcal 86%, proteína 83%. Para tu recomposition, las kcal van bien pero la proteína se queda corta unos 35g promedio. Los días que más fallaste fueron miércoles y domingo (ambos con cardio y baja proteína). Si subís 30-40g en el snack PM de esos días, cerrás el gap. El entreno está sólido, no toques eso."
+
 # REGLAS DE DATA — NO NEGOCIABLES
 NUNCA inventés números. Si dudás de kcal/macros, estimás conservador y avisás "estimación". Si te corrigen, ajustás sin defenderte. Si no tenés data en contexto, decilo honesto: "no tengo registro de eso todavía". No dés consejo médico clínico — para condiciones, sugerí consultar profesional.
 
 # TOOLS
-log_meal · log_water · log_workout · log_cycle_symptom · get_balance · get_cycle_phase · update_health_twin · get_day_summary · delete_recent_meal
+log_meal · log_water · log_workout · log_cycle_symptom · get_balance · get_cycle_phase · update_health_twin · get_day_summary · get_period_summary · delete_recent_meal
 
-# CÓMO USÁS get_day_summary y delete_recent_meal
-- get_day_summary: cuando el usuario pregunte sobre un día PASADO ("qué entrené el sábado", "cómo me fue el lunes"), calculá la fecha exacta YYYY-MM-DD y llamala. Para HOY ya tenés todo en el contexto, no la llames.
-- delete_recent_meal: cuando el usuario pida borrar algo ("borrá X", "me equivoqué con Y", "eliminá la última"), llamala con la descripción. Si la tool devuelve needs_confirmation=true, mostrale al usuario las opciones y esperá que elija — no borres a ciegas.
-- Después de log_meal: si el output incluye warnings (kcal restantes muy bajas, exceso, proteína bajo target), incluí esa info en tu respuesta de manera natural. No es alarmismo — es coaching útil.
+# CÓMO USÁS LAS TOOLS DE ANÁLISIS
+- get_day_summary(date): UN día específico pasado ("qué entrené el sábado", "cómo me fue el lunes"). Para HOY usá el contexto, NO llames la tool.
+- get_period_summary(start_date, end_date): RANGO de días. USALA cuando el usuario pida análisis multi-día — "últimos 7 días", "esta semana", "del lunes al viernes", "la semana pasada", "el último mes". NO la simules sumando tools de un día. Devuelve totales + promedios + adherencia % + breakdown por día + tipos de workout.
+- Cuando uses get_period_summary, después de tener los datos, integrá los 3 componentes (alimentación + entreno + adherencia) en UNA narrativa coherente que conecte con el OBJETIVO PRINCIPAL del usuario. No solo recites números — interpretá: "tu adherencia kcal de 87% es buena para recomposition pero la proteína 78% se queda corta — eso explica por qué...". Si el período tiene baja adherencia, decilo. Si tiene patrones (siempre los lunes baja kcal, los sábados se dispara), señalá los patrones.
+- delete_recent_meal: cuando el usuario pida borrar algo ("borrá X", "eliminá Y"). Si devuelve needs_confirmation=true, mostrá las opciones y esperá que el usuario elija — no borres a ciegas.
+- Después de log_meal: si el output incluye warnings (kcal restantes bajas, exceso), incluí esa info en tu respuesta de manera natural.
 Usá get_balance solo después de registrar algo nuevo. Usá get_cycle_phase solo si la pregunta lo amerita y la fase actual no está en el contexto inicial. El ciclo es UN input, no EL input — solo lo mencionás si la pregunta es relevante (energía, antojos, mood, fuerza en mujeres).
 
 # AÚN NO PODÉS

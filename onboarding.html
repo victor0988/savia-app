@@ -19092,6 +19092,12 @@ function coachToolLabel(name, input, output) {
     }
     return `<strong>Analizando día</strong>`;
   }
+  if (name === 'get_period_summary') {
+    if (output?.period && output?.totals) {
+      return `<strong>Analizando período</strong> · ${_escapeHtml(output.period.start_date)} a ${_escapeHtml(output.period.end_date)} · ${output.totals.meals || 0} comidas · ${output.totals.workouts || 0} workouts`;
+    }
+    return `<strong>Analizando período</strong>`;
+  }
   if (name === 'delete_recent_meal') {
     if (output?.deleted) {
       return `<strong>Borrado</strong> · ${_escapeHtml(output.deleted.items_text || '?')}`;
