@@ -19017,6 +19017,10 @@ function coachOpenMenu() {
 function coachStartNewThread() {
   coachState.threadId = null;
   coachState.messages = [];
+  // Marcar que el próximo streamReply debe pedir thread nuevo al server.
+  // Sin esto, el server reusa el default activo del user y el history viejo
+  // contamina al modelo nuevo (in-context learning poisoning).
+  coachState._forceNew = true;
   // Limpiar también pulse context para que no leakee a la nueva conversación
   state._pendingPulseContext = null;
   coachRenderMessages();
@@ -19190,12 +19194,19 @@ async function coachStreamReply(userText, handlers) {
       tz_offset_min: tzOffsetMin,
       // Si el user entró al chat desde un Pulse, mandamos el contexto solo
       // la primera vez. Se limpia después de mandarse.
-      pulse_context: state._pendingPulseContext || null
+      pulse_context: state._pendingPulseContext || null,
+      // Si el usuario apretó "Nueva conversación", forzar thread nuevo en server.
+      // Previene contaminación del modelo con history viejo (in-context poisoning).
+      force_new: !!coachState._forceNew
     })
   });
   // Limpiar el pending context después de mandarlo (solo aplica al primer mensaje)
   if (state._pendingPulseContext) {
     state._pendingPulseContext = null;
+  }
+  // Limpiar el force_new después de mandarlo (solo aplica al primer mensaje del thread nuevo)
+  if (coachState._forceNew) {
+    coachState._forceNew = false;
   }
   console.log('[coach] response status:', resp.status, resp.statusText);
 
