@@ -2212,6 +2212,105 @@
   }
 
   /* AI Insight Card */
+  /* ── SAVIA Pulse Card (hero insight) ───────────────────────────── */
+  .hoy-pulse-card {
+    --accent: #BEF264;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-left: 3px solid var(--accent);
+    border-radius: 18px;
+    padding: 16px 18px 14px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+    font-family: inherit;
+    text-align: left;  /* override del .hoy-pulse-card legacy (Daily Pulse hero) */
+  }
+  .hoy-pulse-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 60%; height: 60%;
+    background: radial-gradient(ellipse at top left, var(--accent), transparent 60%);
+    opacity: 0.06;
+    pointer-events: none;
+  }
+  .hoy-pulse-card:active { transform: scale(0.985); }
+  .hoy-pulse-card[data-cat="recovery"]     { --accent: #7DD3C0; }
+  .hoy-pulse-card[data-cat="nutrition"]    { --accent: #E9C77B; }
+  .hoy-pulse-card[data-cat="training_prep"]{ --accent: #F4A89C; }
+  .hoy-pulse-card[data-cat="post_workout"] { --accent: #BEF264; }
+  .hoy-pulse-card[data-cat="behavioral"]   { --accent: #9DC3A8; }
+  .hoy-pulse-card[data-cat="body_comp"]    { --accent: #C49FCF; }
+  .hoy-pulse-card[data-cat="hormonal"]     { --accent: #E9A8B8; }
+  .hoy-pulse-card[data-cat="loading"]      { --accent: rgba(255,255,255,0.2); }
+
+  .hoy-pulse-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    position: relative;
+    z-index: 1;
+  }
+  .hoy-pulse-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+  }
+  .hoy-pulse-tag-text {
+    font-size: 9.5px;
+    color: var(--accent);
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .hoy-pulse-fresh {
+    margin-left: auto;
+    font-size: 9.5px;
+    color: #64748B;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 600;
+  }
+
+  .hoy-pulse-headline {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    font-size: 16px;
+    color: #F1EDE4;
+    line-height: 1.45;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .hoy-pulse-headline.loading {
+    color: #94A3B8;
+    font-style: normal;
+    font-family: inherit;
+    font-size: 13px;
+  }
+
+  .hoy-pulse-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 13px;
+    background: rgba(190, 242, 100, 0.10);
+    border: 1px solid rgba(190, 242, 100, 0.22);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #BEF264;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Legacy AI card (oculta por display:none en HTML) */
   .hoy-ai-card {
     background: linear-gradient(135deg, rgba(168,85,247,0.10), rgba(96,165,250,0.06));
     border: 1px solid rgba(168,85,247,0.3);
@@ -5804,8 +5903,22 @@
         <div class="hoy-wh-pill-chev">›</div>
       </div>
 
-      <!-- AI Insight Card -->
-      <div class="hoy-ai-card" id="hoy-ai-card">
+      <!-- SAVIA Pulse Card (hero insight, reemplaza el AI Insight viejo) -->
+      <div class="hoy-pulse-card" id="hoy-pulse-card" data-cat="" onclick="hoyPulseTap()" role="button" tabindex="0">
+        <div class="hoy-pulse-tag">
+          <span class="hoy-pulse-dot"></span>
+          <span class="hoy-pulse-tag-text" id="hoy-pulse-tag-text">SAVIA PULSE</span>
+          <span class="hoy-pulse-fresh" id="hoy-pulse-fresh"></span>
+        </div>
+        <div class="hoy-pulse-headline" id="hoy-pulse-headline">Generando tu insight...</div>
+        <div class="hoy-pulse-cta">
+          Hablar de esto con SAVIA
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:14px; height:14px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </div>
+      </div>
+
+      <!-- AI Insight Card LEGACY — mantenida oculta por compatibility, se quita en limpieza futura -->
+      <div class="hoy-ai-card" id="hoy-ai-card" style="display:none;">
         <div class="hoy-ai-icon">
           <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         </div>
@@ -9674,8 +9787,8 @@ async function renderDailyPulse() {
   try { await renderHoyPillars(); } catch (e) { console.warn('pillars render:', e); }
   planRefreshHoyBanner().catch(e => console.warn('plan banner:', e));
 
-  // 3) AI Insight (placeholder hardcoded por ahora — Edge Function en próximo sprint)
-  renderHoyAIInsight().catch(e => console.warn('ai render:', e));
+  // 3) SAVIA Pulse (hero insight personalizado, reemplaza el AI Insight viejo)
+  renderHoyPulse().catch(e => console.warn('pulse render:', e));
 
   // 4) Auto-sync de Strava si la última sincronización fue hace >1h (fire-and-forget, silencioso)
   if (typeof stravaAutoSyncIfStale === 'function') {
@@ -10196,8 +10309,168 @@ async function renderHoyPillars() {
   }
 }
 
-// AI Insight — usa Edge Function con Claude Haiku 4.5 + fallback hardcoded si falla
-// Cache 30 min en memoria para no spamear API
+// ─── SAVIA Pulse (hero insight, reemplaza el viejo AI Insight) ───────
+
+const _pulseState = { current: null, loading: false, lastFetchTs: 0 };
+const PULSE_FETCH_THROTTLE_MS = 60 * 1000; // no re-pegarle al server <1 min
+
+const PULSE_CATEGORY_LABELS = {
+  recovery: 'RECOVERY',
+  nutrition: 'NUTRICIÓN',
+  training_prep: 'PRE-ENTRENO',
+  post_workout: 'POST-ENTRENO',
+  behavioral: 'PATRÓN',
+  body_comp: 'COMPOSICIÓN',
+  hormonal: 'FASE HORMONAL',
+};
+
+function _pulseFreshLabel(createdAtIso) {
+  if (!createdAtIso) return '';
+  const ageMs = Date.now() - new Date(createdAtIso).getTime();
+  const minutes = Math.floor(ageMs / 60000);
+  if (minutes < 5) return 'AHORA';
+  if (minutes < 60) return `HACE ${minutes} MIN`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `HACE ${hours}H`;
+  const days = Math.floor(hours / 24);
+  return `HACE ${days}D`;
+}
+
+async function renderHoyPulse() {
+  const card = document.getElementById('hoy-pulse-card');
+  if (!card) return;
+  const tagEl = document.getElementById('hoy-pulse-tag-text');
+  const headlineEl = document.getElementById('hoy-pulse-headline');
+  const freshEl = document.getElementById('hoy-pulse-fresh');
+
+  // Throttle: si recién fetcheamos, mostramos lo cacheado
+  const now = Date.now();
+  const sinceLastFetch = now - _pulseState.lastFetchTs;
+  if (_pulseState.current && sinceLastFetch < PULSE_FETCH_THROTTLE_MS) {
+    _renderPulseFromCache();
+    return;
+  }
+
+  // Mostrar loading state si no hay nada todavía
+  if (!_pulseState.current) {
+    card.setAttribute('data-cat', 'loading');
+    tagEl.textContent = 'SAVIA PULSE';
+    freshEl.textContent = '';
+    headlineEl.textContent = 'Generando tu insight...';
+    headlineEl.classList.add('loading');
+  }
+
+  try {
+    const sessRes = await sb.auth.getSession();
+    const token = sessRes?.data?.session?.access_token;
+    if (!token) return;
+
+    const todayStartISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+    const tzOffsetMin = new Date().getTimezoneOffset();
+
+    const url = `${SUPABASE_URL}/functions/v1/generate-savia-pulse`;
+    const resp = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY
+      },
+      body: JSON.stringify({
+        today_start_iso: todayStartISO,
+        tz_offset_min: tzOffsetMin,
+        force: false
+      })
+    });
+    _pulseState.lastFetchTs = Date.now();
+    if (!resp.ok) {
+      console.warn('[pulse] fetch failed:', resp.status);
+      // Si no hay current, mostrar fallback
+      if (!_pulseState.current) _renderPulseFallback();
+      return;
+    }
+    const data = await resp.json();
+    if (data?.pulse) {
+      _pulseState.current = data.pulse;
+      _renderPulseFromCache();
+    } else if (!_pulseState.current) {
+      // 200 OK pero no devolvió pulse — fallback amigable
+      _renderPulseFallback();
+    }
+  } catch (e) {
+    console.warn('[pulse] error:', e);
+    if (!_pulseState.current) _renderPulseFallback();
+  }
+}
+
+function _renderPulseFromCache() {
+  const card = document.getElementById('hoy-pulse-card');
+  const tagEl = document.getElementById('hoy-pulse-tag-text');
+  const headlineEl = document.getElementById('hoy-pulse-headline');
+  const freshEl = document.getElementById('hoy-pulse-fresh');
+  if (!card || !_pulseState.current) return;
+  const p = _pulseState.current;
+  card.setAttribute('data-cat', p.category || '');
+  tagEl.textContent = PULSE_CATEGORY_LABELS[p.category] || 'INSIGHT';
+  freshEl.textContent = _pulseFreshLabel(p.created_at);
+  headlineEl.classList.remove('loading');
+  headlineEl.textContent = _coachStripMarkdown(p.headline || '');
+}
+
+function _renderPulseFallback() {
+  const card = document.getElementById('hoy-pulse-card');
+  const tagEl = document.getElementById('hoy-pulse-tag-text');
+  const headlineEl = document.getElementById('hoy-pulse-headline');
+  const freshEl = document.getElementById('hoy-pulse-fresh');
+  if (!card) return;
+  card.setAttribute('data-cat', '');
+  tagEl.textContent = 'SAVIA';
+  freshEl.textContent = '';
+  headlineEl.classList.remove('loading');
+  headlineEl.textContent = 'Tu día tiene data nueva. Tap acá para profundizar con SAVIA.';
+}
+
+async function hoyPulseTap() {
+  const pulse = _pulseState.current;
+  if (!pulse) {
+    // Sin pulse: abre chat normal
+    coachOpen();
+    return;
+  }
+  // Inyectar el headline + context como mensaje inicial del coach en el chat
+  // (no via server — el bubble queda en state.coachState.messages como bootstrap)
+  try {
+    coachState.messages.push({
+      role: 'assistant',
+      content: `${pulse.headline}\n\n¿Qué te gustaría profundizar?`
+    });
+    // Pre-cargar context_for_chat como hint al modelo via primer user message
+    // (cuando el user mande primer mensaje, el server verá el context vía el contexto del thread)
+    state._pendingPulseContext = pulse.context_for_chat || null;
+    // Marcar shown_in_chat=true (fire-and-forget)
+    const sessRes = await sb.auth.getSession();
+    const token = sessRes?.data?.session?.access_token;
+    if (token && pulse.id) {
+      fetch(`${SUPABASE_URL}/rest/v1/savia_pulses?id=eq.${pulse.id}`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'apikey': SUPABASE_ANON_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          shown_in_chat: true,
+          shown_in_chat_at: new Date().toISOString()
+        })
+      }).catch(e => console.warn('[pulse] mark shown failed:', e));
+    }
+  } catch (e) {
+    console.warn('[pulse] tap pre-load failed:', e);
+  }
+  coachOpen();
+}
+
+// AI Insight (LEGACY — mantenida por compatibility, se usa solo en fallback)
 const _aiInsightCache = { data: null, ts: 0, hourBucket: null };
 const AI_INSIGHT_TTL_MS = 30 * 60 * 1000;
 
@@ -18722,6 +18995,9 @@ function coachOpen() {
 }
 
 function coachClose() {
+  // Limpiar pulse context pendiente: si el user abrió desde Pulse pero no
+  // mandó mensaje, el context no debería leakear a una próxima conversación.
+  state._pendingPulseContext = null;
   goStep(state._coachFrom || 'app');
   // Restablecer tab "Hoy" como activo si volvemos al app (el tab "SAVIA"
   // no debería quedar visualmente seleccionado cuando dejamos el chat).
@@ -18741,6 +19017,8 @@ function coachOpenMenu() {
 function coachStartNewThread() {
   coachState.threadId = null;
   coachState.messages = [];
+  // Limpiar también pulse context para que no leakee a la nueva conversación
+  state._pendingPulseContext = null;
   coachRenderMessages();
 }
 
@@ -18909,9 +19187,16 @@ async function coachStreamReply(userText, handlers) {
       thread_id: coachState.threadId,
       message: userText,
       today_start_iso: todayStartISO,
-      tz_offset_min: tzOffsetMin
+      tz_offset_min: tzOffsetMin,
+      // Si el user entró al chat desde un Pulse, mandamos el contexto solo
+      // la primera vez. Se limpia después de mandarse.
+      pulse_context: state._pendingPulseContext || null
     })
   });
+  // Limpiar el pending context después de mandarlo (solo aplica al primer mensaje)
+  if (state._pendingPulseContext) {
+    state._pendingPulseContext = null;
+  }
   console.log('[coach] response status:', resp.status, resp.statusText);
 
   if (!resp.ok) {

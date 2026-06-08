@@ -486,8 +486,23 @@ Deno.serve(async (req: Request) => {
     // Tz info viene del cliente para evitar bugs de "hoy" en UTC vs hora local
     const todayStartISO: string | undefined = body.today_start_iso;
     const tzOffsetMin: number | undefined = body.tz_offset_min;
+    const pulseContext: string | null = body.pulse_context || null;
     const ctx = await buildUserContext(supabaseAdmin, user.id, todayStartISO, tzOffsetMin);
-    const systemPrompt = buildSystemPrompt(ctx);
+    let systemPrompt = buildSystemPrompt(ctx);
+
+    // Si el user entró al chat desde un Pulse, inyectar el context_for_chat
+    // al inicio del system prompt para que el coach profundice en ese insight
+    // específico durante el primer mensaje.
+    if (pulseContext && typeof pulseContext === "string" && pulseContext.length > 0) {
+      systemPrompt = `# CONTEXTO INMEDIATO — el usuario abrió el chat desde un Pulse específico
+${pulseContext}
+
+El primer mensaje del usuario va a estar relacionado a este pulse. Profundizá en eso con conexiones específicas a sus datos. Después seguí la conversación normal.
+
+---
+
+${systemPrompt}`;
+    }
 
     // Init Anthropic
     const anthropic = new Anthropic({ apiKey: anthropicKey });

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SAVIA Pulse · Hero Insight Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg-deep: #0B0F0E;
+    --bg-app: #1a1410;
+    --bg-surface: rgba(255,255,255,0.04);
+    --border-soft: rgba(255,255,255,0.08);
+    --text-linen: #F1EDE4;
+    --text-muted: #94A3B8;
+    --text-faint: #64748B;
+    --lime: #BEF264;
+
+    --recovery: #7DD3C0;
+    --nutrition: #E9C77B;
+    --training: #F4A89C;
+    --post-workout: #BEF264;
+    --behavioral: #9DC3A8;
+    --body: #C49FCF;
+    --hormonal: #E9A8B8;
+  }
+
+  body {
+    background: var(--bg-app);
+    font-family: 'Inter', -apple-system, sans-serif;
+    color: var(--text-linen);
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+    padding: 40px 16px 80px;
+  }
+
+  .stage {
+    max-width: 1280px;
+    margin: 0 auto;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .header h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 32px;
+    font-weight: 400;
+    color: var(--text-linen);
+    letter-spacing: 0.3px;
+    margin-bottom: 8px;
+  }
+  .header p {
+    color: var(--text-muted);
+    font-size: 13px;
+    max-width: 580px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Phone container */
+  .phones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 32px;
+    margin-bottom: 60px;
+  }
+  .phone-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .phone-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 14px;
+    color: #B8AE9C;
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .phone-label strong {
+    font-style: normal;
+    color: var(--text-linen);
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+  .phone {
+    width: 320px;
+    background: var(--bg-deep);
+    border-radius: 36px;
+    box-shadow:
+      0 0 0 8px #0a0a0a,
+      0 0 0 9px #2a2a2a,
+      0 24px 60px rgba(0,0,0,0.6);
+    padding: 16px 16px 30px;
+    position: relative;
+  }
+  .phone::before {
+    content: '';
+    position: absolute;
+    top: 8px; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 24px;
+    background: #000;
+    border-radius: 14px;
+    z-index: 5;
+  }
+  .phone-inner {
+    padding-top: 36px;
+  }
+
+  /* Mock context above pulse card */
+  .mock-balance {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border-soft);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    opacity: 0.5;
+  }
+  .mock-balance-label {
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+  .mock-balance-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--text-linen);
+  }
+  .mock-balance-sub {
+    font-size: 10px;
+    color: var(--text-muted);
+  }
+
+  /* ─── SAVIA PULSE CARD ─── */
+  .pulse-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-soft);
+    border-left: 3px solid var(--accent, var(--lime));
+    border-radius: 18px;
+    padding: 16px 18px 14px;
+    cursor: pointer;
+    transition: transform 0.15s ease, border-color 0.18s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  .pulse-card::before {
+    /* subtle radial glow del color de categoría */
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 60%; height: 60%;
+    background: radial-gradient(ellipse at top left, var(--accent), transparent 60%);
+    opacity: 0.05;
+    pointer-events: none;
+  }
+  .pulse-card:active { transform: scale(0.98); }
+
+  .pulse-tag {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .pulse-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    flex-shrink: 0;
+  }
+  .pulse-tag-text {
+    font-size: 9.5px;
+    color: var(--text-muted);
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .pulse-tag-text strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .pulse-fresh {
+    margin-left: auto;
+    font-size: 9.5px;
+    color: var(--text-faint);
+    letter-spacing: 1px;
+  }
+
+  .pulse-headline {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16.5px;
+    color: var(--text-linen);
+    line-height: 1.45;
+    margin-bottom: 14px;
+    position: relative;
+    z-index: 1;
+  }
+  .pulse-headline em {
+    font-style: normal;
+    color: var(--text-linen);
+    font-weight: 600;
+    background: linear-gradient(120deg, transparent 0%, rgba(190,242,100,0.10) 20%, rgba(190,242,100,0.10) 80%, transparent 100%);
+    padding: 0 2px;
+  }
+
+  .pulse-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: rgba(190, 242, 100, 0.10);
+    border: 1px solid rgba(190, 242, 100, 0.22);
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--lime);
+    cursor: pointer;
+    position: relative;
+    z-index: 1;
+  }
+  .pulse-cta svg { width: 14px; height: 14px; }
+
+  /* Variantes por categoría */
+  .pulse-card[data-cat="recovery"]     { --accent: var(--recovery); }
+  .pulse-card[data-cat="nutrition"]    { --accent: var(--nutrition); }
+  .pulse-card[data-cat="training"]     { --accent: var(--training); }
+  .pulse-card[data-cat="post-workout"] { --accent: var(--post-workout); }
+  .pulse-card[data-cat="behavioral"]   { --accent: var(--behavioral); }
+  .pulse-card[data-cat="body"]         { --accent: var(--body); }
+  .pulse-card[data-cat="hormonal"]     { --accent: var(--hormonal); }
+
+  /* Mock chat opening view (último mockup) */
+  .chat-mock {
+    height: 540px;
+    overflow: hidden;
+    padding-top: 36px;
+  }
+  .chat-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 4px 14px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    margin-bottom: 14px;
+  }
+  .chat-topbar .back { font-size: 13px; color: var(--text-muted); }
+  .chat-topbar .title { font-family: 'Cormorant Garamond', serif; font-size: 17px; color: var(--text-linen); }
+  .chat-topbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--lime); display: inline-block; margin-right: 6px; }
+
+  .chat-msg-assistant {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 18px;
+    border-bottom-left-radius: 6px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    color: var(--text-linen);
+    line-height: 1.5;
+    margin-bottom: 10px;
+    max-width: 85%;
+  }
+  .chat-msg-user {
+    background: var(--lime);
+    color: var(--bg-deep);
+    border-radius: 18px;
+    border-bottom-right-radius: 6px;
+    padding: 11px 14px;
+    font-size: 13.5px;
+    margin-bottom: 10px;
+    margin-left: auto;
+    max-width: 85%;
+    font-weight: 500;
+  }
+  .chat-insight-context {
+    background: rgba(125, 211, 192, 0.06);
+    border-left: 2px solid var(--recovery);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    font-style: italic;
+  }
+  .chat-insight-context strong {
+    color: var(--recovery);
+    font-style: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-size: 9px;
+    display: block;
+    margin-bottom: 4px;
+  }
+
+  /* Footer notes */
+  .notes {
+    max-width: 720px;
+    margin: 60px auto 0;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 24px 28px;
+  }
+  .notes h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    color: var(--text-linen);
+    margin-bottom: 12px;
+  }
+  .notes ul {
+    list-style: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+  .notes ul li::before {
+    content: '— ';
+    color: var(--text-faint);
+  }
+  .notes strong { color: var(--text-linen); font-weight: 600; }
+
+  /* Color reference */
+  .palette {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 16px;
+    flex-wrap: wrap;
+  }
+  .swatch {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 9px;
+    color: var(--text-faint);
+    letter-spacing: 0.5px;
+  }
+  .swatch .dot-big {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <div class="header">
+    <h1>SAVIA Pulse</h1>
+    <p>
+      Hero insight card que cruza 2+ dimensiones (composición, nutrición, entrenamiento, hormonas, sueño, tendencias) en una observación accionable. Cambia 3-5 veces al día. Tap → abre chat con el insight cargado.
+    </p>
+    <div class="palette">
+      <div class="swatch"><div class="dot-big" style="background:#7DD3C0"></div>RECOVERY</div>
+      <div class="swatch"><div class="dot-big" style="background:#E9C77B"></div>NUTRITION</div>
+      <div class="swatch"><div class="dot-big" style="background:#F4A89C"></div>TRAINING</div>
+      <div class="swatch"><div class="dot-big" style="background:#BEF264"></div>POST-WORKOUT</div>
+      <div class="swatch"><div class="dot-big" style="background:#9DC3A8"></div>BEHAVIORAL</div>
+      <div class="swatch"><div class="dot-big" style="background:#C49FCF"></div>BODY COMP</div>
+      <div class="swatch"><div class="dot-big" style="background:#E9A8B8"></div>HORMONAL</div>
+    </div>
+  </div>
+
+  <div class="phones-grid">
+
+    <!-- Variant 1: Recovery -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>1 · RECOVERY</strong><br>mañana, cruza HRV + nutrición</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="mock-balance">
+          <div class="mock-balance-label">BALANCE ENERGÉTICO HOY</div>
+          <div class="mock-balance-num">2,495 <span style="font-size:11px; color:#94A3B8;">kcal</span></div>
+          <div class="mock-balance-sub">restantes para target</div>
+        </div>
+        <div class="pulse-card" data-cat="recovery">
+          <div class="pulse-tag">
+            <span class="pulse-dot"></span>
+            <span class="pulse-tag-text"><strong>RECOVERY</strong></span>
+            <span class="pulse-fresh">HACE 2H</span>
+          </div>
+          <div class="pulse-headline">
+            Tu HRV cayó <em>8% esta semana</em>. Coincide con 3 días bajo target de proteína — el cuerpo no recupera bien sin sustrato.
+          </div>
+          <div class="pulse-cta">
+            Hablar de esto con SAVIA
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Variant 2: Nutrition -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>2 · NUTRITION</strong><br>mediodía, balance + plan + frecuentes</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="mock-balance">
+          <div class="mock-balance-label">BALANCE ENERGÉTICO HOY</div>
+          <div class="mock-balance-num">1,250 <span style="font-size:11px; color:#94A3B8;">kcal</span></div>
+          <div class="mock-balance-sub">restantes para target</div>
+        </div>
+        <div class="pulse-card" data-cat="nutrition">
+          <div class="pulse-tag">
+            <span class="pulse-dot"></span>
+            <span class="pulse-tag-text"><strong>NUTRICIÓN</strong></span>
+            <span class="pulse-fresh">AHORA</span>
+          </div>
+          <div class="pulse-headline">
+            Vas <em>40g cortos en proteína</em> a media tarde. Tu casado típico cubre la mitad — sumá pollo extra o llegás bajo como ayer.
+          </div>
+          <div class="pulse-cta">
+            Hablar de esto con SAVIA
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Variant 3: Training prep -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>3 · TRAINING PREP</strong><br>pre-entreno, recovery + nutrición</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="mock-balance">
+          <div class="mock-balance-label">BALANCE ENERGÉTICO HOY</div>
+          <div class="mock-balance-num">980 <span style="font-size:11px; color:#94A3B8;">kcal</span></div>
+          <div class="mock-balance-sub">restantes para target</div>
+        </div>
+        <div class="pulse-card" data-cat="training">
+          <div class="pulse-tag">
+            <span class="pulse-dot"></span>
+            <span class="pulse-tag-text"><strong>PRE-ENTRENO</strong></span>
+            <span class="pulse-fresh">HACE 30 MIN</span>
+          </div>
+          <div class="pulse-headline">
+            Hoy te toca <em>pierna fuerte</em>. Tu HRV está alta y comiste 85g proteína — buenas condiciones. Sumá 40g carbs en la próxima hora y vas a tener gas para PR.
+          </div>
+          <div class="pulse-cta">
+            Hablar de esto con SAVIA
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Variant 4: Post-workout -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>4 · POST-WORKOUT</strong><br>0-2h después, ventana proteína</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="mock-balance">
+          <div class="mock-balance-label">BALANCE ENERGÉTICO HOY</div>
+          <div class="mock-balance-num">720 <span style="font-size:11px; color:#94A3B8;">kcal</span></div>
+          <div class="mock-balance-sub">restantes (+400 ganadas del entreno)</div>
+        </div>
+        <div class="pulse-card" data-cat="post-workout">
+          <div class="pulse-tag">
+            <span class="pulse-dot"></span>
+            <span class="pulse-tag-text"><strong>POST-WORKOUT</strong></span>
+            <span class="pulse-fresh">HACE 45 MIN</span>
+          </div>
+          <div class="pulse-headline">
+            Entrenaste <em>52 min de strength</em>. Ventana abierta — tomá 30g proteína en la próxima hora para maximizar síntesis. Tu yogurt griego habitual lo cubre.
+          </div>
+          <div class="pulse-cta">
+            Hablar de esto con SAVIA
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Variant 5: Behavioral pattern -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>5 · BEHAVIORAL</strong><br>patrón semanal o racha</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="mock-balance">
+          <div class="mock-balance-label">BALANCE ENERGÉTICO HOY</div>
+          <div class="mock-balance-num">2,100 <span style="font-size:11px; color:#94A3B8;">kcal</span></div>
+          <div class="mock-balance-sub">restantes para target</div>
+        </div>
+        <div class="pulse-card" data-cat="behavioral">
+          <div class="pulse-tag">
+            <span class="pulse-dot"></span>
+            <span class="pulse-tag-text"><strong>PATRÓN</strong></span>
+            <span class="pulse-fresh">HOY</span>
+          </div>
+          <div class="pulse-headline">
+            Llevás <em>6 días seguidos</em> cumpliendo target de proteína. Tu mejor racha del mes. Si seguís así, esta semana cierra con 87% adherencia.
+          </div>
+          <div class="pulse-cta">
+            Hablar de esto con SAVIA
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Variant 6: Body composition -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>6 · BODY COMP</strong><br>InBody nuevo o tendencia peso</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="mock-balance">
+          <div class="mock-balance-label">BALANCE ENERGÉTICO HOY</div>
+          <div class="mock-balance-num">1,800 <span style="font-size:11px; color:#94A3B8;">kcal</span></div>
+          <div class="mock-balance-sub">restantes para target</div>
+        </div>
+        <div class="pulse-card" data-cat="body">
+          <div class="pulse-tag">
+            <span class="pulse-dot"></span>
+            <span class="pulse-tag-text"><strong>COMPOSICIÓN</strong></span>
+            <span class="pulse-fresh">INBODY NUEVO</span>
+          </div>
+          <div class="pulse-headline">
+            Bajaste <em>0.8 kg de grasa</em> en 14 días sin perder masa magra. Estás ejecutando recomposition exactamente como planeamos.
+          </div>
+          <div class="pulse-cta">
+            Hablar de esto con SAVIA
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Variant 7: Hormonal (mujeres) -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>7 · HORMONAL</strong><br>solo Women's Health activado</div>
+      <div class="phone"><div class="phone-inner">
+        <div class="mock-balance">
+          <div class="mock-balance-label">BALANCE ENERGÉTICO HOY</div>
+          <div class="mock-balance-num">1,500 <span style="font-size:11px; color:#94A3B8;">kcal</span></div>
+          <div class="mock-balance-sub">restantes para target</div>
+        </div>
+        <div class="pulse-card" data-cat="hormonal">
+          <div class="pulse-tag">
+            <span class="pulse-dot"></span>
+            <span class="pulse-tag-text"><strong>FASE FOLICULAR</strong></span>
+            <span class="pulse-fresh">DÍA 13</span>
+          </div>
+          <div class="pulse-headline">
+            Estás cerca de tu <em>pico de fuerza</em>. HRV alta + proteína al día. Si entrenás strength en las próximas 48h, vas a sentir el push extra.
+          </div>
+          <div class="pulse-cta">
+            Hablar de esto con SAVIA
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </div>
+        </div>
+      </div></div>
+    </div>
+
+    <!-- Variant 8: Chat opened from insight -->
+    <div class="phone-wrap">
+      <div class="phone-label"><strong>8 · CHAT</strong><br>al tap del pulse, el insight aparece como contexto</div>
+      <div class="phone">
+        <div class="phone-inner chat-mock">
+          <div class="chat-topbar">
+            <span class="back">‹ Hoy</span>
+            <span class="title"><span class="dot"></span>SAVIA</span>
+            <span style="color:var(--text-faint); font-size: 18px;">⋯</span>
+          </div>
+          <div class="chat-insight-context">
+            <strong>● Desde tu Pulse</strong>
+            "Tu HRV cayó 8% esta semana. Coincide con 3 días bajo target de proteína."
+          </div>
+          <div class="chat-msg-assistant">
+            Profundicemos. Tu HRV pasó de 65ms baseline a 60ms promedio esta semana. Los 3 días bajos de proteína fueron lunes, martes y jueves — todos días post-entreno donde necesitabas más recovery sustrato. ¿Querés que veamos cómo ajustar los snacks PM o preferís cambiar el desayuno?
+          </div>
+          <div class="chat-msg-user">El desayuno me funciona, ajustemos los snacks</div>
+          <div class="chat-msg-assistant">
+            Bueno. Mirá tus snacks típicos: yogurt griego + banana (15g P), tostadas con palta (8g P). Si sumás 30g de un shake de whey post-entreno y el yogurt griego al snack PM, cerrás 75g promedio extra por semana. ¿Te parece?
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="notes">
+    <h3>Notas de diseño</h3>
+    <ul>
+      <li><strong>El border-left de 3px</strong> con el color de categoría es el único elemento que carga jerarquía visual fuerte. Discreto pero inmediato.</li>
+      <li><strong>El headline en Cormorant italic</strong> con el dato envuelto en un highlight sutil verde le da peso literario — se siente como una observación, no una notificación.</li>
+      <li><strong>La radial gradient sutil arriba-izquierda</strong> con el color de categoría aporta dimensionalidad sin saturar.</li>
+      <li><strong>El "hace 2h" / "ahora"</strong> es la pieza clave de "esto es vivo". Sin esa señal el insight se siente estático.</li>
+      <li><strong>El CTA es un chip pill</strong> con flecha — visualmente comunica "esto te lleva a algún lugar". El usuario sabe que tap = chat.</li>
+      <li><strong>Toda la card es tappable</strong>, no solo el chip. El chip es la confirmación visual del comportamiento.</li>
+      <li><strong>En el chat</strong> (mockup 8), el insight aparece como un mini-bloque de contexto sutil antes del primer mensaje del coach. El coach NO repite el insight — directamente profundiza. El usuario sabe de qué se está hablando.</li>
+    </ul>
+  </div>
+
+</div>
+
+</body>
+</html>
+</parameter>
