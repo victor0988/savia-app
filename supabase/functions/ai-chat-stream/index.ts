@@ -318,7 +318,10 @@ Deno.serve(async (req: Request) => {
     console.log("[ai-chat] sanitized messages count:", messages.length);
 
     // Build user context (parallel queries)
-    const ctx = await buildUserContext(supabaseAdmin, user.id);
+    // Tz info viene del cliente para evitar bugs de "hoy" en UTC vs hora local
+    const todayStartISO: string | undefined = body.today_start_iso;
+    const tzOffsetMin: number | undefined = body.tz_offset_min;
+    const ctx = await buildUserContext(supabaseAdmin, user.id, todayStartISO, tzOffsetMin);
     const systemPrompt = buildSystemPrompt(ctx);
 
     // Init Anthropic
@@ -440,6 +443,8 @@ Deno.serve(async (req: Request) => {
                 tu.input,
                 user.id,
                 supabaseAdmin,
+                ctx.todayStartISO,
+                ctx.todayISO,
               );
 
               // Persistir el tool call + result en coach_messages
@@ -521,11 +526,13 @@ async function executeToolByName(
   input: any,
   userId: string,
   supabase: ReturnType<typeof createClient>,
+  todayStartISO?: string,
+  todayISO?: string,
 ): Promise<any> {
   try {
     if (name === "log_meal") return await executeLogMeal(input, userId, supabase);
     if (name === "log_water") return await executeLogWater(input, userId, supabase);
-    if (name === "get_balance") return await executeGetBalance(userId, supabase);
+    if (name === "get_balance") return await executeGetBalance(userId, supabase, todayStartISO, todayISO);
     if (name === "log_workout") return await executeLogWorkout(input, userId, supabase);
     if (name === "log_cycle_symptom") return await executeLogCycleSymptom(input, userId, supabase);
     if (name === "get_cycle_phase") return await executeGetCyclePhase(userId, supabase);
@@ -611,26 +618,33 @@ async function executeLogWater(
 async function executeGetBalance(
   userId: string,
   supabase: ReturnType<typeof createClient>,
+  todayStartISO?: string,
+  todayISO?: string,
 ): Promise<any> {
-  const today = new Date().toISOString().split("T")[0];
+  // Si no nos pasaron los ISOs del cliente, fallback a UTC
+  if (!todayStartISO || !todayISO) {
+    const t = new Date();
+    todayISO = t.toISOString().split("T")[0];
+    todayStartISO = `${todayISO}T00:00:00.000Z`;
+  }
   const [mealsRes, hydRes, dailyRes] = await Promise.all([
     supabase
       .from("meal_logs")
       .select("total_kcal, total_protein_g, total_carbs_g, total_fat_g")
       .eq("user_id", userId)
-      .gte("ts", `${today}T00:00:00`),
+      .gte("ts", todayStartISO),
     supabase
       .from("hydration_logs")
       .select("ml")
       .eq("user_id", userId)
-      .gte("ts", `${today}T00:00:00`),
+      .gte("ts", todayStartISO),
     supabase
       .from("daily_logs")
       .select(
         "kcal_target, protein_target_g, carbs_target_g, fat_target_g, water_target_ml",
       )
       .eq("user_id", userId)
-      .eq("log_date", today)
+      .eq("log_date", todayISO)
       .maybeSingle(),
   ]);
 
@@ -926,6 +940,7 @@ async function executeGetCyclePhase(
 
 interface UserContext {
   todayISO: string;
+  todayStartISO: string;
   hour: number;
   profile: any;
   todayTargets: any;
@@ -941,10 +956,31 @@ interface UserContext {
 async function buildUserContext(
   supabase: ReturnType<typeof createClient>,
   userId: string,
+  clientTodayStartISO?: string,
+  clientTzOffsetMin?: number,
 ): Promise<UserContext> {
-  const today = new Date();
-  const todayISO = today.toISOString().split("T")[0];
-  const hour = today.getHours();
+  // Si el cliente mandó "comienzo del día local" lo usamos.
+  // Si no, fallback a UTC midnight (modo legacy).
+  let todayStart: Date;
+  let todayISO: string;
+  let hour: number;
+  if (clientTodayStartISO) {
+    todayStart = new Date(clientTodayStartISO);
+    // Para el ISO del día (YYYY-MM-DD), restamos el tz offset para obtener
+    // la fecha real local del cliente
+    const tzMin = typeof clientTzOffsetMin === "number" ? clientTzOffsetMin : 0;
+    const localDate = new Date(todayStart.getTime() - tzMin * 60000);
+    todayISO = localDate.toISOString().split("T")[0];
+    const nowLocal = new Date(Date.now() - tzMin * 60000);
+    hour = nowLocal.getUTCHours();
+  } else {
+    const today = new Date();
+    todayStart = new Date(today.toISOString().split("T")[0] + "T00:00:00.000Z");
+    todayISO = today.toISOString().split("T")[0];
+    hour = today.getHours();
+  }
+  const todayStartISO = todayStart.toISOString();
+  console.log("[ai-chat] context window: todayISO=", todayISO, "todayStartISO=", todayStartISO);
 
   // Run in parallel
   const [
@@ -977,13 +1013,13 @@ async function buildUserContext(
         "items_text, total_kcal, total_protein_g, total_carbs_g, total_fat_g, meal_category, ts",
       )
       .eq("user_id", userId)
-      .gte("ts", `${todayISO}T00:00:00`)
+      .gte("ts", todayStartISO)
       .order("ts", { ascending: true }),
     supabase
       .from("workout_logs")
       .select("type, duration_min, intensity, kcal_burned, source")
       .eq("user_id", userId)
-      .gte("ts", `${todayISO}T00:00:00`)
+      .gte("ts", todayStartISO)
       .order("ts", { ascending: false }),
     supabase
       .from("meal_plans")
@@ -1015,16 +1051,18 @@ async function buildUserContext(
       .from("hydration_logs")
       .select("ml")
       .eq("user_id", userId)
-      .gte("ts", `${todayISO}T00:00:00`),
+      .gte("ts", todayStartISO),
   ]);
 
   const todayHydrationMl = (todayHydRes.data || []).reduce(
     (s: number, h: any) => s + (h.ml || 0),
     0,
   );
+  console.log("[ai-chat] context loaded: meals=", (todayMealsRes.data || []).length, "workouts=", (todayWorkoutsRes.data || []).length, "hydration=", todayHydrationMl, "ml");
 
   return {
     todayISO,
+    todayStartISO,
     hour,
     profile: profileRes.data,
     todayTargets: todayTargetsRes.data,

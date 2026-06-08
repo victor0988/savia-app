@@ -18893,6 +18893,11 @@ async function coachStreamReply(userText, handlers) {
   const url = `${SUPABASE_URL}/functions/v1/ai-chat-stream`;
   console.log('[coach] fetching:', url);
 
+  // Pasamos el "comienzo de hoy" en hora local del cliente para evitar
+  // bugs de timezone en el server (Edge Function corre en UTC).
+  const todayStartISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
+  const tzOffsetMin = new Date().getTimezoneOffset();
+
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
@@ -18902,7 +18907,9 @@ async function coachStreamReply(userText, handlers) {
     },
     body: JSON.stringify({
       thread_id: coachState.threadId,
-      message: userText
+      message: userText,
+      today_start_iso: todayStartISO,
+      tz_offset_min: tzOffsetMin
     })
   });
   console.log('[coach] response status:', resp.status, resp.statusText);
