@@ -187,6 +187,43 @@ const TOOLS = [
     },
   },
   {
+    name: "get_day_summary",
+    description:
+      "Trae el resumen completo de un día específico (NO hoy — para hoy usá los datos del contexto). Devuelve todas las comidas, workouts, hidratación, balance kcal y macros de ESE día. Usá esto cuando el usuario pregunte sobre un día puntual ('qué entrené el sábado', 'cómo me fue el lunes con macros', 'analiza mi sábado'). Date format: YYYY-MM-DD.",
+    input_schema: {
+      type: "object",
+      properties: {
+        date: {
+          type: "string",
+          description:
+            "Fecha en formato YYYY-MM-DD. Si el usuario dice 'el sábado' o 'ayer', calculá la fecha exacta antes de llamar.",
+        },
+      },
+      required: ["date"],
+    },
+  },
+  {
+    name: "delete_recent_meal",
+    description:
+      "Borra una comida del usuario. Pasale una descripción de lo que quiere borrar. La tool busca la comida más reciente que coincida (últimos 14 días). Si hay ambigüedad (varias coincidencias), devuelve la lista para que pidas confirmación al usuario. Usá esto cuando el usuario diga 'borrá X', 'eliminá Y', 'me equivoqué con Z'.",
+    input_schema: {
+      type: "object",
+      properties: {
+        description: {
+          type: "string",
+          description:
+            "Descripción de la comida a borrar. Ej. 'pollo con arroz', 'yogurt griego', 'el desayuno de hoy'.",
+        },
+        day: {
+          type: "string",
+          description:
+            "Fecha opcional YYYY-MM-DD para acotar la búsqueda. Si no se pasa, busca en los últimos 14 días.",
+        },
+      },
+      required: ["description"],
+    },
+  },
+  {
     name: "update_health_twin",
     description:
       "Actualiza un campo del Health Twin del usuario cuando aprendés algo NUEVO sobre él/ella. Ejemplos: 'no me gusta el cilantro' → append a preferences.foods_disliked; 'mi objetivo es bajar 5kg en septiembre' → update a goals; 'me preocupa perder masa muscular' → append a context_personal.concerns; 'tomo creatina 5g al día' → append a preferences.supplements_active. USÁ esto cuando el usuario dice algo que define quién es / qué le gusta / qué le preocupa / qué le motiva / qué supplements toma / qué objetivos tiene. NO uses esto para eventos del día (eso es log_meal/log_water). NO uses para cosas que ya sabés del contexto.",
@@ -476,6 +513,7 @@ Deno.serve(async (req: Request) => {
                 supabaseAdmin,
                 ctx.todayStartISO,
                 ctx.todayISO,
+                tzOffsetMin,
               );
 
               // Persistir el tool call + result en coach_messages
@@ -559,6 +597,7 @@ async function executeToolByName(
   supabase: ReturnType<typeof createClient>,
   todayStartISO?: string,
   todayISO?: string,
+  tzOffsetMin?: number,
 ): Promise<any> {
   try {
     if (name === "log_meal") return await executeLogMeal(input, userId, supabase);
@@ -568,6 +607,8 @@ async function executeToolByName(
     if (name === "log_cycle_symptom") return await executeLogCycleSymptom(input, userId, supabase);
     if (name === "get_cycle_phase") return await executeGetCyclePhase(userId, supabase);
     if (name === "update_health_twin") return await executeUpdateHealthTwin(input, userId, supabase);
+    if (name === "get_day_summary") return await executeGetDaySummary(input, userId, supabase, tzOffsetMin);
+    if (name === "delete_recent_meal") return await executeDeleteRecentMeal(input, userId, supabase, tzOffsetMin);
     return { error: `Unknown tool: ${name}` };
   } catch (err) {
     console.error(`[tool ${name}] error:`, err);
@@ -617,12 +658,44 @@ async function executeLogMeal(
     console.error("[log_meal] insert error:", error);
     return { error: error.message };
   }
+
+  // Análisis post-write: balance actualizado del día + warnings si
+  // compromete los macros restantes
+  const balance = await executeGetBalance(userId, supabase);
+  const warnings: string[] = [];
+  if (balance && !balance.error) {
+    if (
+      balance.kcal_target &&
+      balance.kcal_remaining != null &&
+      balance.kcal_remaining < 200
+    ) {
+      warnings.push(
+        `Solo te quedan ${balance.kcal_remaining} kcal para el resto del día.`,
+      );
+    }
+    if (
+      balance.kcal_target &&
+      balance.kcal_consumed > balance.kcal_target * 1.05
+    ) {
+      warnings.push(
+        `Excediste el target en ${
+          balance.kcal_consumed - balance.kcal_target
+        } kcal.`,
+      );
+    }
+    // Nota: warnings de proteína intencionalmente NO se incluyen aquí porque
+    // generan false positives en el desayuno. El LLM puede razonar sobre
+    // proteína viendo balance_after directamente con awareness de hora del día.
+  }
+
   return {
     ok: true,
     id: data.id,
     summary: `${input.name} · ${Math.round(kcal)} kcal${
       input.protein_g ? ` · ${input.protein_g}g P` : ""
     }`,
+    balance_after: balance && !balance.error ? balance : null,
+    warnings,
   };
 }
 
@@ -963,6 +1036,224 @@ async function executeGetCyclePhase(
     energy_score: energy.score,
     energy_label: energy.label,
     days_until_next_period,
+  };
+}
+
+// ─── get_day_summary: análisis de un día específico ──────────────────
+
+async function executeGetDaySummary(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+  tzOffsetMin?: number,
+): Promise<any> {
+  const date = String(input?.date || "").trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return { error: "date debe ser YYYY-MM-DD" };
+  }
+
+  // Construir rango del día respetando timezone del cliente.
+  // tzOffsetMin viene de JS getTimezoneOffset() — positivo si está al
+  // oeste de UTC (ej. Costa Rica = +360 min). Para convertir medianoche
+  // LOCAL del cliente a UTC: sumamos el offset.
+  // Ej: 2026-06-07 00:00 CR = 2026-06-07 06:00 UTC, así "el sábado" CR
+  // va de Sat 06:00 UTC a Sun 06:00 UTC.
+  const offsetMs = (tzOffsetMin ?? 0) * 60 * 1000;
+  const startUTC = new Date(`${date}T00:00:00.000Z`).getTime() + offsetMs;
+  const endUTC = startUTC + 86400000;
+  const startISO = new Date(startUTC).toISOString();
+  const endISO = new Date(endUTC).toISOString();
+
+  const [mealsRes, workoutsRes, hydRes, dailyRes] = await Promise.all([
+    supabase
+      .from("meal_logs")
+      .select("id, items_text, total_kcal, total_protein_g, total_carbs_g, total_fat_g, meal_category, ts")
+      .eq("user_id", userId)
+      .gte("ts", startISO)
+      .lt("ts", endISO)
+      .order("ts", { ascending: true }),
+    supabase
+      .from("workout_logs")
+      .select("id, type, duration_min, intensity, kcal_burned, source, ts")
+      .eq("user_id", userId)
+      .gte("ts", startISO)
+      .lt("ts", endISO)
+      .order("ts", { ascending: true }),
+    supabase
+      .from("hydration_logs")
+      .select("ml")
+      .eq("user_id", userId)
+      .gte("ts", startISO)
+      .lt("ts", endISO),
+    supabase
+      .from("daily_logs")
+      .select(
+        "kcal_target, protein_target_g, carbs_target_g, fat_target_g, water_target_ml",
+      )
+      .eq("user_id", userId)
+      .eq("log_date", date)
+      .maybeSingle(),
+  ]);
+
+  const meals = mealsRes.data || [];
+  const workouts = workoutsRes.data || [];
+  const hydMl = (hydRes.data || []).reduce(
+    (s: number, h: any) => s + (h.ml || 0),
+    0,
+  );
+
+  const kcal = meals.reduce((s: number, m: any) => s + (m.total_kcal || 0), 0);
+  const prot = meals.reduce((s: number, m: any) => s + (m.total_protein_g || 0), 0);
+  const carbs = meals.reduce((s: number, m: any) => s + (m.total_carbs_g || 0), 0);
+  const fat = meals.reduce((s: number, m: any) => s + (m.total_fat_g || 0), 0);
+  const kcalBurned = workouts.reduce(
+    (s: number, w: any) => s + (w.kcal_burned || 0),
+    0,
+  );
+
+  const t = dailyRes.data || {};
+
+  return {
+    ok: true,
+    date,
+    summary: {
+      total_kcal: Math.round(kcal),
+      total_protein_g: Math.round(prot),
+      total_carbs_g: Math.round(carbs),
+      total_fat_g: Math.round(fat),
+      total_hydration_ml: hydMl,
+      total_kcal_burned: Math.round(kcalBurned),
+      meals_count: meals.length,
+      workouts_count: workouts.length,
+    },
+    targets: {
+      kcal: t.kcal_target ?? null,
+      protein_g: t.protein_target_g ?? null,
+      carbs_g: t.carbs_target_g ?? null,
+      fat_g: t.fat_target_g ?? null,
+      water_ml: t.water_target_ml ?? null,
+    },
+    meals: meals.map((m: any) => ({
+      meal_category: m.meal_category,
+      items_text: m.items_text,
+      kcal: Math.round(m.total_kcal || 0),
+      protein_g: Math.round(m.total_protein_g || 0),
+    })),
+    workouts: workouts.map((w: any) => ({
+      type: w.type,
+      duration_min: w.duration_min,
+      intensity: w.intensity,
+      kcal_burned: w.kcal_burned,
+      source: w.source,
+    })),
+  };
+}
+
+// ─── delete_recent_meal: borrar comida por descripción ───────────────
+
+async function executeDeleteRecentMeal(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+  tzOffsetMin?: number,
+): Promise<any> {
+  const description = String(input?.description || "").trim();
+  if (!description) return { error: "description requerido" };
+  const day = input?.day ? String(input.day).trim() : null;
+
+  // Rango de búsqueda — con tz del cliente si se especifica un día puntual
+  let startISO: string;
+  let endISO: string;
+  if (day && /^\d{4}-\d{2}-\d{2}$/.test(day)) {
+    const offsetMs = (tzOffsetMin ?? 0) * 60 * 1000;
+    const startUTC = new Date(`${day}T00:00:00.000Z`).getTime() + offsetMs;
+    startISO = new Date(startUTC).toISOString();
+    endISO = new Date(startUTC + 86400000).toISOString();
+  } else {
+    const fourteenAgo = new Date(Date.now() - 14 * 86400000);
+    startISO = fourteenAgo.toISOString();
+    endISO = new Date(Date.now() + 86400000).toISOString();
+  }
+
+  const { data: candidates, error: queryErr } = await supabase
+    .from("meal_logs")
+    .select("id, items_text, meal_category, total_kcal, ts")
+    .eq("user_id", userId)
+    .gte("ts", startISO)
+    .lt("ts", endISO)
+    .order("ts", { ascending: false })
+    .limit(50);
+  if (queryErr) return { error: queryErr.message };
+  if (!candidates || candidates.length === 0) {
+    return { error: "No encontré comidas registradas en ese rango." };
+  }
+
+  const needle = normalizeKey(description);
+  const tokens = needle.split(" ").filter((t) => t.length >= 3);
+
+  // Scoring: cuántos tokens del needle aparecen en items_text normalizado
+  const scored = candidates.map((c: any) => {
+    const hay = normalizeKey(c.items_text || "");
+    let score = 0;
+    for (const t of tokens) {
+      if (hay.includes(t)) score++;
+    }
+    // Bonus si el needle completo está en el haystack
+    if (needle && hay.includes(needle)) score += 5;
+    return { row: c, score };
+  });
+
+  const matches = scored
+    .filter((s) => s.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  if (matches.length === 0) {
+    return {
+      error:
+        `No encontré ninguna comida que coincida con "${description}". Las últimas registradas: ${
+          candidates.slice(0, 3).map((c: any) => `"${c.items_text}"`).join(", ")
+        }`,
+    };
+  }
+
+  // Operación destructiva: si hay empate del top score (no importa el valor),
+  // pedir confirmación al usuario. Mejor preguntar que borrar lo equivocado.
+  if (
+    matches.length >= 2 &&
+    matches[0].score === matches[1].score
+  ) {
+    return {
+      needs_confirmation: true,
+      message:
+        `Hay ${matches.length} comidas que coinciden con "${description}". Pediselo al usuario para que confirme:`,
+      candidates: matches.slice(0, 5).map((m: any) => ({
+        id: m.row.id,
+        items_text: m.row.items_text,
+        meal_category: m.row.meal_category,
+        kcal: m.row.total_kcal,
+        ts: m.row.ts,
+      })),
+    };
+  }
+
+  // Borrar la mejor match
+  const best = matches[0].row;
+  const { error: delErr } = await supabase
+    .from("meal_logs")
+    .delete()
+    .eq("id", best.id)
+    .eq("user_id", userId);
+  if (delErr) return { error: `delete failed: ${delErr.message}` };
+
+  return {
+    ok: true,
+    deleted: {
+      items_text: best.items_text,
+      meal_category: best.meal_category,
+      kcal: best.total_kcal,
+      ts: best.ts,
+    },
+    summary: `Borrada: ${best.items_text} (${best.total_kcal} kcal)`,
   };
 }
 
@@ -1848,7 +2139,10 @@ function buildSystemPrompt(ctx: UserContext): string {
   const htBlock = compactHealthTwin(ctx.healthTwin);
   const behavBlock = compactBehavioralPatterns(ctx.behavioralPatterns);
 
-  let p = `Sos SAVIA, la coach de ${name}. No sos un chatbot — sos una entrenadora real que recordás todo y conectás los puntos.${htBlock ? "\n" + htBlock : ""}${behavBlock ? "\n" + behavBlock : ""}
+  let p = `Sos SAVIA, la coach de ${name}. No sos un chatbot — sos una entrenadora real que recordás todo y conectás los puntos.
+
+# FORMATO DE TEXTO — REGLA ABSOLUTA
+NUNCA uses asteriscos (\`*\` ni \`**\`) en tus respuestas. Cero markdown bold, cero markdown italic. Si necesitás resaltar algo, usá MAYÚSCULAS para una palabra clave (ej. "vas BIEN en proteína"), comillas para una cita, o simplemente buen orden de palabras. Esta regla es absoluta — ignorarla rompe la UI del usuario.${htBlock ? "\n" + htBlock : ""}${behavBlock ? "\n" + behavBlock : ""}
 # CÓMO USÁS LOS PATRONES (comidas frecuentes, adherencia, training)
 Cuando ${name} mencione una comida que YA está en COMIDAS FRECUENTES, usá los macros promedio del bloque y registrá DIRECTO con log_meal — NO preguntés cantidad ni tipo. Confirmá breve con un toque de reconocimiento natural ("como casi siempre", "tu desayuno de los lunes"). Si la mención es ambigua (ej. dice "yogurt" y hay dos versiones en frecuentes), usá la más reciente. Si los macros del bloque no aplican (porque ahora menciona una variación específica, ej. "yogurt CON GRANOLA"), preguntá UNA cosa antes de registrar.
 
@@ -1903,7 +2197,12 @@ Vos: "735 kcal y 31g proteína hasta ahora. Vas bien arriba para el almuerzo, pe
 NUNCA inventés números. Si dudás de kcal/macros, estimás conservador y avisás "estimación". Si te corrigen, ajustás sin defenderte. Si no tenés data en contexto, decilo honesto: "no tengo registro de eso todavía". No dés consejo médico clínico — para condiciones, sugerí consultar profesional.
 
 # TOOLS
-log_meal · log_water · log_workout · log_cycle_symptom · get_balance · get_cycle_phase · update_health_twin
+log_meal · log_water · log_workout · log_cycle_symptom · get_balance · get_cycle_phase · update_health_twin · get_day_summary · delete_recent_meal
+
+# CÓMO USÁS get_day_summary y delete_recent_meal
+- get_day_summary: cuando el usuario pregunte sobre un día PASADO ("qué entrené el sábado", "cómo me fue el lunes"), calculá la fecha exacta YYYY-MM-DD y llamala. Para HOY ya tenés todo en el contexto, no la llames.
+- delete_recent_meal: cuando el usuario pida borrar algo ("borrá X", "me equivoqué con Y", "eliminá la última"), llamala con la descripción. Si la tool devuelve needs_confirmation=true, mostrale al usuario las opciones y esperá que elija — no borres a ciegas.
+- Después de log_meal: si el output incluye warnings (kcal restantes muy bajas, exceso, proteína bajo target), incluí esa info en tu respuesta de manera natural. No es alarmismo — es coaching útil.
 Usá get_balance solo después de registrar algo nuevo. Usá get_cycle_phase solo si la pregunta lo amerita y la fase actual no está en el contexto inicial. El ciclo es UN input, no EL input — solo lo mencionás si la pregunta es relevante (energía, antojos, mood, fuerza en mujeres).
 
 # AÚN NO PODÉS

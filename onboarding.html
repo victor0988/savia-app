@@ -19086,6 +19086,24 @@ function coachToolLabel(name, input, output) {
     }
     return `<strong>Fase consultada</strong>`;
   }
+  if (name === 'get_day_summary') {
+    if (output?.summary) {
+      return `<strong>Analizando ${_escapeHtml(output.date || '?')}</strong> · ${output.summary.total_kcal || 0} kcal · ${output.summary.meals_count || 0} comidas · ${output.summary.workouts_count || 0} workouts`;
+    }
+    return `<strong>Analizando día</strong>`;
+  }
+  if (name === 'delete_recent_meal') {
+    if (output?.deleted) {
+      return `<strong>Borrado</strong> · ${_escapeHtml(output.deleted.items_text || '?')}`;
+    }
+    if (output?.needs_confirmation) {
+      return `<strong>Confirmación necesaria</strong> · varias coincidencias`;
+    }
+    return `<strong>delete_recent_meal</strong> · ${_escapeHtml(output?.error || 'ejecutado')}`;
+  }
+  if (name === 'update_health_twin') {
+    return `<strong>Aprendí algo</strong> · ${_escapeHtml(output?.field_path || '')} (${output?.operation || ''})`;
+  }
   return `<strong>${_escapeHtml(name || '?')}</strong> · ejecutado`;
 }
 
