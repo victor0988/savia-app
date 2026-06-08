@@ -19031,7 +19031,11 @@ function coachRenderMessages() {
       el.className = `coach-msg ${m.role}`;
       const bubble = document.createElement('div');
       bubble.className = 'coach-bubble';
-      bubble.textContent = m.content || '';
+      // Strip markdown bold/italic del output del modelo antes de mostrar.
+      // User messages no se filtran (no incluirían markdown del LLM).
+      bubble.textContent = m.role === 'assistant'
+        ? _coachStripMarkdown(m.content || '')
+        : (m.content || '');
       el.appendChild(bubble);
       container.appendChild(el);
     }
@@ -19049,6 +19053,19 @@ function coachScrollToBottom() {
 
 function _escapeHtml(s) {
   return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+/**
+ * Strip markdown bold/italic from Claude output. Defense-in-depth contra
+ * el modelo que ignora la regla "no asteriscos" del prompt.
+ * Mantiene el contenido original en state (m.content) — solo limpia al render.
+ */
+function _coachStripMarkdown(s) {
+  return String(s || '')
+    .replace(/\*\*([\s\S]*?)\*\*/g, '$1')   // **bold**
+    .replace(/(?<!\*)\*(?!\*)([^*\n]+?)\*(?!\*)/g, '$1') // *italic* sin tocar **
+    .replace(/__([\s\S]*?)__/g, '$1')        // __bold__
+    .replace(/(?<!_)_(?!_)([^_\n]+?)_(?!_)/g, '$1'); // _italic_
 }
 
 function coachToolLabel(name, input, output) {
