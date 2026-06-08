@@ -18885,12 +18885,14 @@ async function coachSend() {
  * handlers: { onDelta(text), onToolStart({id,name,input}), onToolEnd({id,name,output}) }
  */
 async function coachStreamReply(userText, handlers) {
+  console.log('[coach] streamReply start, threadId:', coachState.threadId);
   const sessRes = await sb.auth.getSession();
   const token = sessRes?.data?.session?.access_token;
   if (!token) throw new Error('No session token');
 
-  // Edge Function URL: usa supabase URL del cliente
   const url = `${SUPABASE_URL}/functions/v1/ai-chat-stream`;
+  console.log('[coach] fetching:', url);
+
   const resp = await fetch(url, {
     method: 'POST',
     headers: {
@@ -18903,9 +18905,11 @@ async function coachStreamReply(userText, handlers) {
       message: userText
     })
   });
+  console.log('[coach] response status:', resp.status, resp.statusText);
 
   if (!resp.ok) {
     const errText = await resp.text().catch(() => 'unknown error');
+    console.error('[coach] non-OK response:', errText);
     throw new Error(`HTTP ${resp.status}: ${errText}`);
   }
   if (!resp.body) throw new Error('No response body');
@@ -18913,10 +18917,14 @@ async function coachStreamReply(userText, handlers) {
   const reader = resp.body.getReader();
   const decoder = new TextDecoder();
   let buffer = '';
+  let eventCount = 0;
 
   while (true) {
     const { done, value } = await reader.read();
-    if (done) break;
+    if (done) {
+      console.log('[coach] stream done. Total events:', eventCount);
+      break;
+    }
     buffer += decoder.decode(value, { stream: true });
 
     // Parse SSE: events separated by \n\n, each event has lines like "event: X\ndata: Y"
@@ -18927,6 +18935,8 @@ async function coachStreamReply(userText, handlers) {
       const parsed = coachParseSSE(rawEvent);
       if (!parsed) continue;
 
+      eventCount++;
+      console.log('[coach] SSE event:', parsed.event, parsed.data);
       if (parsed.event === 'meta' && parsed.data?.thread_id) {
         coachState.threadId = parsed.data.thread_id;
       } else if (parsed.event === 'delta' && parsed.data?.text) {
