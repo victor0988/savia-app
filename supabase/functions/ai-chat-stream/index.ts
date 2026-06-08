@@ -19,7 +19,8 @@ const CORS_HEADERS = {
 
 const MODEL = "claude-haiku-4-5-20251001";
 const MAX_TOKENS = 1024;
-const MAX_HISTORY = 20; // últimos N mensajes que enviamos al modelo
+const MAX_HISTORY = 8; // últimos N mensajes que enviamos al modelo (sliding window)
+const SESSION_MAX_IDLE_HOURS = 4; // si pasaron más horas → archivar thread y crear nuevo
 const MAX_TOOL_ITERATIONS = 4; // máximo de rondas de tool calling por turno
 
 // ─────────────────────────────────────────────────────────────────────
@@ -320,20 +321,97 @@ Deno.serve(async (req: Request) => {
       return jsonError("Message too long (max 4000 chars)", 400);
     }
 
-    // Resolve thread (get default o create new)
+    // Resolve thread (get default o create new) — auto-sesión por inactividad
     let threadId: string | null = body.thread_id || null;
-    if (!threadId) {
-      // Buscar default thread del user
-      const { data: existing } = await supabaseAdmin
+
+    // Si el cliente mandó un thread_id, verificar que siga activo (no archivado
+    // por idle). Si está archivado, ignorarlo y caer al flow de default.
+    if (threadId) {
+      const { data: existingThread } = await supabaseAdmin
         .from("coach_threads")
-        .select("id")
+        .select("archived, last_message_at, created_at")
+        .eq("id", threadId)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!existingThread || existingThread.archived) {
+        threadId = null;
+      } else {
+        // Aún si no está archivado en DB, chequear idle
+        const lastTs = existingThread.last_message_at || existingThread.created_at;
+        if (lastTs) {
+          const idleHours = (Date.now() - new Date(lastTs).getTime()) / 3600000;
+          if (idleHours >= SESSION_MAX_IDLE_HOURS) {
+            console.log(`[ai-chat] auto-archive client-provided thread (idle ${idleHours.toFixed(1)}h)`);
+            await supabaseAdmin
+              .from("coach_threads")
+              .update({ archived: true })
+              .eq("id", threadId);
+            threadId = null;
+          }
+        }
+      }
+    }
+
+    if (!threadId) {
+      // Buscar default thread activo del user — order().limit(1) tolera
+      // duplicados si algún día se cuelan (en lugar de .maybeSingle() que
+      // tira error si hay >1 row).
+      const { data: existingRows } = await supabaseAdmin
+        .from("coach_threads")
+        .select("id, last_message_at, created_at")
         .eq("user_id", user.id)
         .eq("is_default", true)
         .eq("archived", false)
-        .maybeSingle();
+        .order("created_at", { ascending: false })
+        .limit(1);
+      const existing = existingRows && existingRows.length > 0 ? existingRows[0] : null;
+
+      // Capa 2: auto-archivar si pasaron más de SESSION_MAX_IDLE_HOURS sin actividad.
+      // Usar conditional update (archived=false) para evitar race con otra request
+      // concurrente que también esté archivando el mismo thread.
+      let shouldCreateNew = !existing;
       if (existing) {
-        threadId = existing.id;
-      } else {
+        const lastTs = existing.last_message_at || existing.created_at;
+        if (lastTs) {
+          const idleMs = Date.now() - new Date(lastTs).getTime();
+          const idleHours = idleMs / 3600000;
+          if (idleHours >= SESSION_MAX_IDLE_HOURS) {
+            console.log(`[ai-chat] auto-archive thread (idle ${idleHours.toFixed(1)}h)`);
+            const { data: archivedRows } = await supabaseAdmin
+              .from("coach_threads")
+              .update({ archived: true })
+              .eq("id", existing.id)
+              .eq("archived", false)
+              .select("id");
+            // Solo crear nuevo si ganamos la race (la update returnó row).
+            // Si no ganamos, otro request ya archivó y creó uno nuevo — reusamos.
+            if (archivedRows && archivedRows.length > 0) {
+              shouldCreateNew = true;
+            } else {
+              // Re-query: buscar el default activo que el otro request creó.
+              const { data: refreshed } = await supabaseAdmin
+                .from("coach_threads")
+                .select("id")
+                .eq("user_id", user.id)
+                .eq("is_default", true)
+                .eq("archived", false)
+                .order("created_at", { ascending: false })
+                .limit(1);
+              if (refreshed && refreshed.length > 0) {
+                threadId = refreshed[0].id;
+              } else {
+                shouldCreateNew = true;
+              }
+            }
+          } else {
+            threadId = existing.id;
+          }
+        } else {
+          threadId = existing.id;
+        }
+      }
+
+      if (shouldCreateNew) {
         const { data: newThread, error: tErr } = await supabaseAdmin
           .from("coach_threads")
           .insert({ user_id: user.id, is_default: true })
