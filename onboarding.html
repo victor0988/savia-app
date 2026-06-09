@@ -19311,8 +19311,18 @@ function coachRenderMessages() {
   }
   if (empty) empty.style.display = 'none';
 
+  // Tools de READ (consultas que no modifican estado) no muestran badge —
+  // rompen el flow conversacional sin aportar valor al user. Solo se muestran
+  // las tools de WRITE como confirmación de acción.
+  const SILENT_TOOLS = new Set([
+    'get_balance',
+    'get_day_summary',
+    'get_period_summary',
+    'get_cycle_phase',
+  ]);
   coachState.messages.forEach(m => {
     if (m.role === 'tool') {
+      if (SILENT_TOOLS.has(m.tool_name)) return; // skip badge para reads
       const el = document.createElement('div');
       el.className = 'coach-tool-card';
       const isRunning = m.status === 'running';
