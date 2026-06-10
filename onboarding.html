@@ -8523,6 +8523,53 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
   },
 });
 
+// ============================================
+// Telemetría — Sprint 1.C (D1/D7/D30 + TTFMM)
+// ============================================
+// Fire-and-forget. Si falla, no rompe la UX. Idempotencia para "first_*"
+// se controla con localStorage flags — el cliente solo dispara una vez.
+const TELEMETRY_KEYS = {
+  signup: 'savia_evt_signup',
+  onboarding: 'savia_evt_onboarding',
+  firstLogMeal: 'savia_evt_first_log_meal',
+  firstLogWater: 'savia_evt_first_log_water',
+  firstLogWorkout: 'savia_evt_first_log_workout',
+  firstCoach: 'savia_evt_first_coach',
+  firstPulse: 'savia_evt_first_pulse',
+};
+
+async function trackEvent(event_name, metadata) {
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) return; // sin sesión no podemos atribuir el evento
+    const url = `${SUPABASE_URL}/functions/v1/track-event`;
+    // fire-and-forget
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ event_name, metadata: metadata || {} }),
+    }).catch((e) => console.warn('[telemetry] failed:', event_name, e));
+  } catch (e) {
+    console.warn('[telemetry] uncaught:', event_name, e);
+  }
+}
+
+// Helper para eventos "first_*" — solo dispara una vez por user/device.
+function trackFirstEvent(localKey, event_name, metadata) {
+  try {
+    if (localStorage.getItem(localKey)) return;
+    localStorage.setItem(localKey, Date.now().toString());
+    trackEvent(event_name, metadata);
+  } catch (e) {
+    // si localStorage falla, igual disparamos (puede haber duplicados, OK)
+    trackEvent(event_name, metadata);
+  }
+}
+
 // Solo biometría + credenciales remember persisten en localStorage (device-specific)
 const STORAGE = {
   enabled: 'savia_faceid_enabled',
@@ -9710,6 +9757,12 @@ function enterAppSimulation(source) {
     console.error('[SAVIA] goStep(app) failed:', e);
   }
   hideLoading();
+
+  // Telemetría: cada apertura de app dispara session_active.
+  // Si es la primera vez post-signup, también dispara signup + onboarding_completed.
+  trackEvent('session_active', { source: source || 'unknown' });
+  trackFirstEvent(TELEMETRY_KEYS.signup, 'signup', { source: source || 'unknown' });
+  trackFirstEvent(TELEMETRY_KEYS.onboarding, 'onboarding_completed', { source: source || 'unknown' });
   // Mantener oauth-loading hasta que la animación fadeSlide del app screen esté ~80% completa.
   // Sin esto, hay un gap visual oscuro de ~200ms entre el pulse y la app visible.
   setTimeout(() => {
@@ -10431,6 +10484,8 @@ function _renderPulseFallback() {
 }
 
 async function hoyPulseTap() {
+  // Telemetría: primer Pulse abierto (TTFMM Nivel 2)
+  trackFirstEvent(TELEMETRY_KEYS.firstPulse, 'first_pulse_opened', {});
   const pulse = _pulseState.current;
   if (!pulse) {
     // Sin pulse: abre chat normal
@@ -15248,6 +15303,7 @@ async function nutPhotoSaveMeal() {
     };
     if (photoUrl) payload.photo_url = photoUrl;
     await sb.from('meal_logs').insert(payload);
+    trackFirstEvent(TELEMETRY_KEYS.firstLogMeal, 'first_log_meal', { source: 'photo' });
   } catch (e) {
     console.warn('[NUT] photo save failed:', e);
   }
@@ -15711,6 +15767,7 @@ async function nutBcSaveMeal() {
         total_fat_g: fat,
         notes: JSON.stringify(metadata),
       });
+      trackFirstEvent(TELEMETRY_KEYS.firstLogMeal, 'first_log_meal', { source: 'barcode' });
     }
   } catch (e) {
     console.warn('[NUT] save barcode meal failed:', e);
@@ -16406,6 +16463,7 @@ async function nutSaveMealLog() {
         total_fat_g: Math.round(f * 10) / 10,
         from_plan: false,
       });
+      trackFirstEvent(TELEMETRY_KEYS.firstLogMeal, 'first_log_meal', { source: 'manual' });
     }
   } catch (e) { console.warn('[NUT] save meal failed:', e); }
 
@@ -19171,6 +19229,8 @@ async function coachSend() {
  */
 async function coachStreamReply(userText, handlers) {
   console.log('[coach] streamReply start, threadId:', coachState.threadId);
+  // Telemetría: primer mensaje al coach (TTFMM Nivel 2)
+  trackFirstEvent(TELEMETRY_KEYS.firstCoach, 'first_coach_interaction', {});
   const sessRes = await sb.auth.getSession();
   const token = sessRes?.data?.session?.access_token;
   if (!token) throw new Error('No session token');
