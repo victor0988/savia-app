@@ -10440,10 +10440,16 @@ async function renderHoyPulse() {
     const todayStartISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
     const tzOffsetMin = new Date().getTimezoneOffset();
 
-    // Sprint 2.A: morning pulse en ventana 6-11h local. Resto del día queda como daily.
-    // Evening pulse llega en Sprint 2.B con su propio cron + cierre del día.
+    // Pulse type por hora local:
+    //   6-11h  → morning  (Sprint 2.A — propositivo, plan del día)
+    //   18-23h → evening  (Sprint 2.B — reflexivo, cierre del día)
+    //   resto  → daily    (fallback contextual)
+    // El server filtra el race-guard por pulse_type, así que morning y evening
+    // pueden coexistir el mismo día sin pisarse.
     const hourLocal = new Date().getHours();
-    const pulseType = (hourLocal >= 6 && hourLocal < 12) ? 'morning' : 'daily';
+    let pulseType = 'daily';
+    if (hourLocal >= 6 && hourLocal < 12) pulseType = 'morning';
+    else if (hourLocal >= 18 && hourLocal < 24) pulseType = 'evening';
 
     // _forceNext = true cuando una acción upstream invalidó el contexto del pulse
     // (ej. toggle del módulo WH). Se consume en este fetch y se resetea.
