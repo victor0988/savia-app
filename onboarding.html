@@ -18229,7 +18229,10 @@ async function whUpsertProfile(data) {
       console.error('[WH] upsert error:', error);
       return false;
     }
-    state.women_health = payload;
+    // Merge en vez de reemplazo — `data` es un patch parcial, no perfil completo.
+    // Si reemplazamos, perdemos status/goals/enabled/etc en memoria hasta el próximo loadProfile,
+    // y la pill + dashboard quedan desincronizados. Fix QA #H2.
+    state.women_health = { ...(state.women_health || {}), ...payload };
     return true;
   } catch (e) {
     console.error('[WH] upsert exception:', e);

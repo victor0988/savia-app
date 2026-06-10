@@ -2933,7 +2933,7 @@ Fecha: ${ctx.todayISO} · ${ctx.hour}h (${hourLabel})
         phase = cycleDay <= lutealMid ? "luteal_early" : "luteal_late";
       }
       p +=
-        `- Día del ciclo: ${cycleDay} de ${cycleLen} · Fase: **${phase}**\n`;
+        `- Día del ciclo: ${cycleDay} de ${cycleLen} · Fase: ${phase}\n`;
       const daysUntil = Math.max(0, cycleLen - cycleDay);
       p += `- Próximo período en ~${daysUntil} días\n`;
     }
