@@ -723,6 +723,27 @@ ${systemPrompt}`;
                 input_tokens: 0,
                 output_tokens: 0,
               });
+
+              // Sprint 1.D — ALC/MER telemetry (capturar sin decidir).
+              // Detección heurística de referencia a memoria histórica.
+              // Aproach simple (regex). Si la calidad es mala, en Sprint 6
+              // pasamos a classifier Haiku. Por ahora capturamos baseline.
+              const memoryRefMatches = detectMemoryReferences(cleanContent);
+              if (memoryRefMatches.length > 0) {
+                await supabaseAdmin.from("user_events").insert({
+                  user_id: user.id,
+                  event_name: "coach_memory_reference",
+                  metadata: {
+                    thread_id: threadId,
+                    iteration: iterations,
+                    patterns_matched: memoryRefMatches,
+                    text_preview: cleanContent.slice(0, 200),
+                  },
+                });
+                console.log(
+                  `[ai-chat] memory_ref detected: ${memoryRefMatches.join(", ")}`,
+                );
+              }
             }
 
             // Si no hay tool calls, terminamos el loop
@@ -2059,6 +2080,52 @@ async function executeRecordNote(
     created_at: data.created_at,
     summary: `Note guardada (${kind})`,
   };
+}
+
+// ─── Memory Reference Detection (Sprint 1.D — telemetría ALC/MER) ─────
+// Heurística regex para detectar cuando el coach hace referencia a
+// memoria histórica del usuario. Captura SIN decidir — los datos se
+// acumulan para análisis pero no afectan retención ni comportamiento.
+//
+// Patrones cubren las formas más comunes en español rioplatense/neutro
+// que SAVIA usa al invocar memoria. NO es exhaustivo — falsos negativos
+// son aceptables. Falsos positivos también (Sprint 6 calibra con classifier).
+//
+// Retorna lista de patrones que matchearon, [] si ninguno.
+function detectMemoryReferences(text: string): string[] {
+  const lowered = text.toLowerCase();
+  const matched: string[] = [];
+
+  const patterns: Array<{ name: string; re: RegExp }> = [
+    // Referencias temporales explícitas
+    { name: "hace_tiempo", re: /\bhace\s+\d+\s+(d[íi]a|semana|mes|a[ñn]o)s?\b/i },
+    { name: "hace_unos_dias", re: /\bhace\s+(unos?|varios?|algunos?)\s+(d[íi]a|semana|mes)s?\b/i },
+    // Referencias a memoria del usuario
+    { name: "te_acordas", re: /\bte\s+acord[áa]s\b/i },
+    { name: "recordas", re: /\brecord[áa]s\b/i },
+    { name: "como_me_dijiste", re: /\bcomo\s+me\s+dijiste\b|\bme\s+contaste\b|\bme\s+mencionaste\b/i },
+    // Referencias a patrones observados
+    { name: "soles_tendes", re: /\b(sol[ée]s|tend[ée]s)\s+a\b/i },
+    { name: "viene_siendo", re: /\bviene\s+siendo\b/i },
+    { name: "historicamente", re: /\bhist[óo]ricamente\b/i },
+    { name: "tipicamente", re: /\bt[íi]picamente\b/i },
+    // Comparación con pasado
+    { name: "la_ultima_vez", re: /\bla\s+[úu]ltima\s+vez\b/i },
+    { name: "antes_tenias", re: /\bantes\s+(ten[íi]as|hac[íi]as|estabas)\b/i },
+    { name: "el_mes_pasado", re: /\bel\s+(mes|a[ñn]o|d[íi]a)\s+pasado\b|\bla\s+(semana|vez)\s+pasada\b/i },
+    // Aniversarios y hitos
+    { name: "hace_un_anio", re: /\bhace\s+un\s+a[ñn]o\b|\bhace\s+seis\s+meses\b/i },
+    // Patrón con condicional aprendido
+    { name: "los_dias_que", re: /\blos\s+d[íi]as\s+que\b/i },
+    { name: "tus_mejores", re: /\btus\s+mejores\s+(semanas|d[íi]as|meses)\b/i },
+  ];
+
+  for (const p of patterns) {
+    if (p.re.test(lowered)) {
+      matched.push(p.name);
+    }
+  }
+  return matched;
 }
 
 /**
