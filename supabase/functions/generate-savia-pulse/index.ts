@@ -92,14 +92,21 @@ Deno.serve(async (req: Request) => {
     const todayStartISO: string | undefined = body.today_start_iso;
     const tzOffsetMin: number = typeof body.tz_offset_min === "number" ? body.tz_offset_min : 0;
     const force: boolean = !!body.force;
+    // Sprint 2.A: pulse_type permite distinguir morning/evening/weekly del daily.
+    // Default 'daily' = comportamiento legacy (mismo prompt + selector).
+    const pulseType: string = ["daily", "morning", "evening", "weekly"].includes(body.pulse_type)
+      ? body.pulse_type
+      : "daily";
 
-    // ─── Race guard: si hay un pulse activo no expirado, devolverlo ───
-    // (a menos que force=true)
+    // ─── Race guard: si hay un pulse activo no expirado del MISMO type, devolverlo ───
+    // (a menos que force=true). Filtramos por pulse_type para que morning y evening
+    // coexistan el mismo día sin que uno borre al otro.
     if (!force) {
       const { data: existing } = await supabaseAdmin
         .from("savia_pulses")
         .select("*")
         .eq("user_id", user.id)
+        .eq("pulse_type", pulseType)
         .eq("dismissed", false)
         .gt("expires_at", new Date().toISOString())
         .order("created_at", { ascending: false })
@@ -128,7 +135,7 @@ Deno.serve(async (req: Request) => {
     );
 
     // ─── Build prompt + llamar Haiku ───
-    const systemPrompt = buildPulsePrompt(selected.category, ctx);
+    const systemPrompt = buildPulsePrompt(selected.category, ctx, pulseType);
 
     const anthropic = new Anthropic({ apiKey: anthropicKey });
     const message = await anthropic.messages.create({
@@ -181,7 +188,13 @@ Deno.serve(async (req: Request) => {
     // ─── Insert en savia_pulses ───
     // expires_hours vive en CATEGORY_CONFIG, no en el retorno de selectCategory.
     // Fallback 4h si la categoría no tiene config (no debería pasar por el CHECK del schema).
-    const expiresHours = CATEGORY_CONFIG[selected.category]?.expires_hours ?? 4;
+    let expiresHours = CATEGORY_CONFIG[selected.category]?.expires_hours ?? 4;
+    // Sprint 2.A: cap por pulse_type para que morning/evening no se queden activos
+    // fuera de su ventana natural. Morning expira a las ~6h (cubre 7-13h),
+    // evening a las ~6h (cubre 20-02h). Weekly aguanta el fin de semana.
+    if (pulseType === "morning") expiresHours = Math.min(expiresHours, 6);
+    else if (pulseType === "evening") expiresHours = Math.min(expiresHours, 6);
+    else if (pulseType === "weekly") expiresHours = Math.max(expiresHours, 48);
     const expiresAt = new Date(
       Date.now() + expiresHours * 3600 * 1000,
     ).toISOString();
@@ -190,12 +203,14 @@ Deno.serve(async (req: Request) => {
       .from("savia_pulses")
       .insert({
         user_id: user.id,
+        pulse_type: pulseType,
         category: selected.category,
         headline: cleanHeadline,
         context_for_chat: cleanContext,
         expires_at: expiresAt,
         triggering_data: {
           reason: selected.reason,
+          pulse_type: pulseType,
           ht_completeness: ctx.healthTwin?.completeness_score ?? null,
           today_meals_count: ctx.todayMeals.length,
           today_workouts_count: ctx.todayWorkouts.length,
@@ -564,9 +579,34 @@ function selectCategory(
 
 // ─── Prompt builder por categoría ───────────────────────────────────
 
-function buildPulsePrompt(category: string, ctx: PulseContext): string {
+function buildPulsePrompt(category: string, ctx: PulseContext, pulseType: string = "daily"): string {
   const config = CATEGORY_CONFIG[category];
   const name = ctx.healthTwin?.identity?.name?.split(" ")[0] || "usuario";
+
+  // ─── Marco temporal según pulse_type ───
+  // Cada tipo cambia el TONO y FOCO del insight, no la categoría.
+  const typeFraming: Record<string, string> = {
+    morning: `# MARCO: MORNING PULSE
+Es la mañana de ${name}. El día arranca. El insight debe:
+- Orientar la jornada: qué priorizar HOY según recovery, fase, objetivos, patrones.
+- Ser propositivo, no analítico. Forward-looking. "Hoy te conviene…" no "ayer hiciste…".
+- Aterrizar UNA intención concreta. No abrir cinco frentes.
+- Si hay déficit de sueño/HRV bajo/fase folicular tardía, el morning pulse es el momento de avisarlo.`,
+    evening: `# MARCO: EVENING PULSE
+Es el cierre del día de ${name}. El insight debe:
+- Cerrar el día, no abrir uno nuevo. Reflexivo.
+- Reconocer lo que se hizo bien (sin halago vacío) y nombrar UN ajuste.
+- Si quedó déficit fuerte de proteína/agua, sugerir un cierre concreto (snack PM, vaso de agua).
+- Preparar el siguiente día solo si hay algo crítico (entreno mañana, recovery comprometida).`,
+    weekly: `# MARCO: WEEKLY REVIEW
+Es el cierre de semana. El insight debe:
+- Cruzar la semana entera, no el día.
+- Nombrar UN patrón emergente y UNA palanca concreta para la siguiente semana.
+- Conectar al objetivo principal explícitamente.`,
+    daily: `# MARCO: DAILY PULSE
+Insight contextual al momento. Usá la hora local para calibrar (mañana = orientador, tarde = ajuste, noche = cierre).`,
+  };
+  const framing = typeFraming[pulseType] || typeFraming.daily;
 
   // Goals primarios
   const goals = Array.isArray(ctx.healthTwin?.goals) ? ctx.healthTwin.goals : [];
@@ -609,6 +649,8 @@ function buildPulsePrompt(category: string, ctx: PulseContext): string {
   }
 
   return `Sos SAVIA. Generá UN insight para mostrar como hero card en la pantalla Hoy de ${name}.
+
+${framing}
 
 ${config.prompt}
 

@@ -10421,6 +10421,11 @@ async function renderHoyPulse() {
     const todayStartISO = new Date(new Date().setHours(0, 0, 0, 0)).toISOString();
     const tzOffsetMin = new Date().getTimezoneOffset();
 
+    // Sprint 2.A: morning pulse en ventana 6-11h local. Resto del día queda como daily.
+    // Evening pulse llega en Sprint 2.B con su propio cron + cierre del día.
+    const hourLocal = new Date().getHours();
+    const pulseType = (hourLocal >= 6 && hourLocal < 12) ? 'morning' : 'daily';
+
     const url = `${SUPABASE_URL}/functions/v1/generate-savia-pulse`;
     const resp = await fetch(url, {
       method: 'POST',
@@ -10432,6 +10437,7 @@ async function renderHoyPulse() {
       body: JSON.stringify({
         today_start_iso: todayStartISO,
         tz_offset_min: tzOffsetMin,
+        pulse_type: pulseType,
         force: false
       })
     });
@@ -10487,6 +10493,12 @@ async function hoyPulseTap() {
   // Telemetría: primer Pulse abierto (TTFMM Nivel 2)
   trackFirstEvent(TELEMETRY_KEYS.firstPulse, 'first_pulse_opened', {});
   const pulse = _pulseState.current;
+  // Sprint 2.A: telemetry específica por pulse_type para medir adopción del ritual.
+  if (pulse?.pulse_type === 'morning') {
+    trackEvent('morning_pulse_opened', { category: pulse.category || null });
+  } else if (pulse?.pulse_type === 'evening') {
+    trackEvent('evening_pulse_opened', { category: pulse.category || null });
+  }
   if (!pulse) {
     // Sin pulse: abre chat normal
     coachOpen();
