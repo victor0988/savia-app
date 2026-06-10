@@ -8304,6 +8304,18 @@
       <div class="wh-symptom-chips" id="wh-symptom-chips"></div>
     </section>
 
+    <!-- Configuración: desactivar módulo (preserva datos) -->
+    <section class="wh-section" style="padding-bottom:120px;">
+      <div class="wh-section-label">CONFIGURACIÓN</div>
+      <div onclick="whSetEnabled(false)" style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:14px; padding:16px 18px; cursor:pointer; display:flex; align-items:center; justify-content:space-between;">
+        <div style="flex:1;">
+          <div style="font-size:14px; font-weight:600; color:#F8FAFC;">Desactivar módulo</div>
+          <div style="font-size:12px; color:#94A3B8; margin-top:4px; line-height:1.4;">El coach dejará de tomar el ciclo en cuenta. Tus datos se preservan y podés reactivar cuando quieras.</div>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:14px; flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </section>
+
     <!-- FAB -->
     <div class="wh-fab-wrap">
       <button class="wh-fab" onclick="whOpenQuickLog()">
@@ -9793,8 +9805,15 @@ function enterAppSimulation(source) {
   } catch (e) { console.error('[SAVIA] greeting setup failed:', e); }
 
   try {
+    // hoy-cycle-card es la invitación a activar el módulo. Sólo se muestra cuando:
+    //   - sex === 'f', AND
+    //   - el módulo NO está activo (enabled=false o aún no creó perfil WH).
+    // Si ya está activo, la pill (hoy-wh-pill) cubre ese slot con data real.
     const cycleCard = document.getElementById('hoy-cycle-card');
-    if (cycleCard) cycleCard.style.display = (state.sex === 'f') ? '' : 'none';
+    if (cycleCard) {
+      const whEnabled = !!(state.women_health && state.women_health.enabled);
+      cycleCard.style.display = (state.sex === 'f' && !whEnabled) ? '' : 'none';
+    }
   } catch (e) { console.error('[SAVIA] cycle card setup failed:', e); }
 
   try { switchHoyTab('hoy', { skipAnim: true }); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
@@ -11144,6 +11163,16 @@ function openModule(name) {
   }
   if (name === 'workout') {
     wkOpenDashboard();
+    return;
+  }
+  if (name === 'cycle') {
+    // Si el perfil WH existe y está activo → dashboard. Sino → onboarding (sirve de
+    // entrada inicial y de reactivación cuando enabled=false).
+    if (state.women_health && state.women_health.enabled && typeof whOpenDashboard === 'function') {
+      whOpenDashboard();
+    } else if (typeof whOpenOnboardingFromProfile === 'function') {
+      whOpenOnboardingFromProfile();
+    }
     return;
   }
   const labels = {
@@ -18013,8 +18042,12 @@ function whClearAllSelectedClasses() {
 function whOpenOnboardingFromProfile() {
   // Always start clean — no stale DOM state
   whClearAllSelectedClasses();
-  // Pre-fill from existing profile if any
-  if (state.women_health && state.women_health.enabled) {
+  // Pre-fill from existing profile if any.
+  // Sólo chequeamos existencia, NO enabled — si el user apagó el módulo y vuelve
+  // a "Activar", queremos respetar sus datos (status, ciclo, goals, condiciones),
+  // no forzarlo a re-tipear todo desde cero. Al guardar, whUpsertProfile setea
+  // enabled=true y los datos viejos quedan intactos.
+  if (state.women_health) {
     // Hydrate goals: prefer new goals[] array; fallback a goal_primary legacy
     let goalsArr = [];
     if (Array.isArray(state.women_health.goals) && state.women_health.goals.length > 0) {
@@ -18328,6 +18361,67 @@ async function whLoadProfile() {
   }
 }
 
+// ─────── Toggle ON/OFF del módulo ───────
+// Preserva todos los datos. El flag `enabled=false` filtra:
+//   - pill en Hoy (whRenderHoyPill check enabled)
+//   - cycle card en Hoy (enterAppSimulation check)
+//   - inyección de contexto en coach (server-side, ai-chat-stream líneas 1136/1249/3110)
+//   - inyección de contexto en pulse (server-side, generate-savia-pulse línea 3110)
+// Reactivar = todo vuelve sin onboarding repetido.
+function _whToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,23,42,0.95); color:#F8FAFC; padding:14px 22px; border-radius:14px; font-size:14px; font-weight:600; z-index:99999; box-shadow:0 12px 40px rgba(0,0,0,0.4); border:1px solid rgba(255,255,255,0.12); max-width:80%; text-align:center; line-height:1.4;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, 2200);
+}
+
+async function whSetEnabled(targetEnabled) {
+  const enabled = !!targetEnabled;
+  // Sin profile y querés activar: redirigir al onboarding completo (no hay nada que toggle-ar).
+  if (!state.women_health) {
+    if (enabled && typeof whOpenOnboardingFromProfile === 'function') {
+      whOpenOnboardingFromProfile();
+    }
+    return;
+  }
+  // No-op si ya está en el estado pedido.
+  if (state.women_health.enabled === enabled) return;
+
+  // Confirm al apagar (al activar es 1-tap).
+  if (!enabled) {
+    const ok = confirm('Desactivar el módulo de salud femenina?\n\n• Tus datos (ciclo, síntomas, fases) se preservan.\n• El coach dejará de leerlos para nuevas recomendaciones.\n• Mensajes pasados del chat donde mencionaste el ciclo siguen visibles en la historia.\n\nPodés reactivar cuando quieras.');
+    if (!ok) return;
+  }
+
+  const okWrite = await whUpsertProfile({ enabled });
+  if (!okWrite) {
+    alert('No se pudo cambiar el estado. Revisá tu conexión.');
+    return;
+  }
+  // Refresh UI (todas en paralelo, sin bloquear)
+  try {
+    if (typeof whRenderProfileSection === 'function') whRenderProfileSection().catch(()=>{});
+    if (typeof whRenderHoyPill === 'function') whRenderHoyPill().catch(()=>{});
+    const cycleCard = document.getElementById('hoy-cycle-card');
+    if (cycleCard) {
+      cycleCard.style.display = (state.sex === 'f' && !enabled) ? '' : 'none';
+    }
+    // Si está en el dashboard de Mi Ciclo y se desactiva: cerrar y volver a Hoy.
+    const active = document.querySelector('.screen.active[data-step="wh-dashboard"]') ||
+                   document.querySelector('.screen[data-step="wh-dashboard"].active');
+    if (!enabled && active && typeof whDashBack === 'function') {
+      whDashBack();
+    }
+    // Refresh pulse al reactivar: el server inyectará contexto de ciclo en el próximo insight.
+    if (enabled && typeof renderHoyPulse === 'function') {
+      renderHoyPulse().catch(()=>{});
+    }
+  } catch (e) { console.warn('[WH setEnabled] refresh:', e); }
+
+  _whToast(enabled ? 'Módulo activado' : 'Módulo desactivado. Tus datos se preservan.');
+}
+
 async function whRenderProfileSection() {
   const card = document.getElementById('profile-wh-card');
   const action = document.getElementById('profile-wh-action');
@@ -18378,6 +18472,8 @@ async function whRenderProfileSection() {
   }
   // Cuando ya está activo: card es tap-target para abrir dashboard,
   // header action lleva al edit del onboarding.
+  // Toggle "Módulo activado" — apaga preservando datos. `event.stopPropagation()`
+  // evita que el tap del switch abra el dashboard.
   card.innerHTML = `
     <div onclick="whOpenDashboard()" style="cursor:pointer;">
       ${rows.join('')}
@@ -18385,6 +18481,13 @@ async function whRenderProfileSection() {
         <span style="font-size:12px; color:#BEF264; font-weight:700; letter-spacing:0.5px;">VER MI CICLO →</span>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BEF264" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
       </div>
+    </div>
+    <div class="profile-row" style="border-top:1px solid rgba(255,255,255,0.06); margin-top:4px;" onclick="event.stopPropagation(); whSetEnabled(false);">
+      <div>
+        <div class="profile-row-label">Módulo activado</div>
+        <div style="font-size:11px; color:#94A3B8; margin-top:2px; line-height:1.4;">Tap para desactivar. Tus datos se preservan.</div>
+      </div>
+      <div class="profile-toggle on" style="pointer-events:none;"></div>
     </div>`;
   action.textContent = 'Editar';
   action.onclick = whOpenOnboardingFromProfile;
