@@ -599,9 +599,16 @@ ${systemPrompt}`;
               }
               // Si el prefix supera el límite sin tag, el modelo no clasificó
               // → emitir todo lo acumulado al client y empezar a emitir directo.
+              // Defensa: si el modelo emitió el tag DESPUÉS de los 200 chars (caso raro
+              // pero posible), strip cualquier <active_task>...</active_task> residual
+              // antes de enviar — evita leak del tag al user.
               if (pendingPrefix.length > PREFIX_BUFFER_LIMIT) {
                 clientOutputStarted = true;
-                send("delta", { text: pendingPrefix });
+                const cleaned = pendingPrefix.replace(
+                  /<active_task>[A-Z_]+<\/active_task>\s*/g,
+                  "",
+                );
+                send("delta", { text: cleaned });
                 pendingPrefix = "";
               }
             };
@@ -808,7 +815,7 @@ async function executeToolByName(
     if (name === "log_water") return await executeLogWater(input, userId, supabase);
     if (name === "get_balance") return await executeGetBalance(userId, supabase, todayStartISO, todayISO);
     if (name === "log_workout") return await executeLogWorkout(input, userId, supabase);
-    if (name === "log_cycle_symptom") return await executeLogCycleSymptom(input, userId, supabase);
+    if (name === "log_cycle_symptom") return await executeLogCycleSymptom(input, userId, supabase, tzOffsetMin);
     if (name === "get_cycle_phase") return await executeGetCyclePhase(userId, supabase);
     if (name === "update_health_twin") return await executeUpdateHealthTwin(input, userId, supabase);
     if (name === "get_day_summary") return await executeGetDaySummary(input, userId, supabase, tzOffsetMin);
@@ -1068,6 +1075,7 @@ async function executeLogCycleSymptom(
   input: any,
   userId: string,
   supabase: ReturnType<typeof createClient>,
+  tzOffsetMin?: number,
 ): Promise<any> {
   // Verificar Women's Health activado
   const { data: whProfile } = await supabase
@@ -1082,7 +1090,12 @@ async function executeLogCycleSymptom(
     };
   }
 
-  const today = new Date().toISOString().split("T")[0];
+  // Fix L3: usar tzOffsetMin del cliente para calcular "today" en hora local.
+  // Sin esto (Date().toISOString() = UTC), Victor en CR (UTC-6) loggeando entre
+  // 18-23h hora local quedaba registrado el día siguiente UTC.
+  const tzOffset = typeof tzOffsetMin === "number" ? tzOffsetMin : 0;
+  const localNow = new Date(Date.now() - tzOffset * 60 * 1000);
+  const today = localNow.toISOString().split("T")[0];
 
   // Load existing row para merge
   const { data: existing } = await supabase
@@ -2607,7 +2620,7 @@ REGLAS DEL ACTIVE TASK:
 1. SIEMPRE se determina por el ÚLTIMO mensaje del usuario. NUNCA por la conversación previa.
 2. Si hay typo o ambigüedad (ej. "cargos" podría ser "carbos" o "cargo"), ACTIVE TASK = UNCLEAR. Preguntás UNA clarificación: "¿Te referís a [X] o a [Y]?". NO asumas continuidad.
 3. Si el usuario cambió de tema entre turnos (proteína→carbos, balance→registro, comida→síntomas), DESCARTÁS el ACTIVE TASK anterior completamente. No lo recités, no lo arrastrés.
-4. El history es CONTEXTO. NO determina qué pregunta responder.
+4. El history es CONTEXTO, no deuda operativa — ver PRINCIPIO H abajo para el detalle.
 
 # COMPORTAMIENTO POR ACTIVE TASK
 

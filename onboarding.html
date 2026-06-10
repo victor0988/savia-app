@@ -19367,10 +19367,12 @@ function _escapeHtml(s) {
 /**
  * Strip markdown bold/italic from Claude output. Defense-in-depth contra
  * el modelo que ignora la regla "no asteriscos" del prompt.
+ * También strip <active_task>...</active_task> por si el server filter falla.
  * Mantiene el contenido original en state (m.content) — solo limpia al render.
  */
 function _coachStripMarkdown(s) {
   return String(s || '')
+    .replace(/<active_task>[A-Z_]+<\/active_task>\s*/g, '') // tag de classification
     .replace(/\*\*([\s\S]*?)\*\*/g, '$1')   // **bold**
     .replace(/(?<!\*)\*(?!\*)([^*\n]+?)\*(?!\*)/g, '$1') // *italic* sin tocar **
     .replace(/__([\s\S]*?)__/g, '$1')        // __bold__
