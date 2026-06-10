@@ -279,6 +279,34 @@ const TOOLS = [
       required: ["field_path", "operation", "value", "reason"],
     },
   },
+  {
+    name: "record_note",
+    description:
+      "Captura una observación duradera sobre el usuario que vale la pena recordar para futuras conversaciones. Esto NO es para data operacional (comidas, peso, workouts ya viven en sus tablas). Es para conocimiento longitudinal que se perdería si no se captura ahora. Usá esto MÁXIMO 1 vez por turno conversacional. Ver sección CAPTURA DE MEMORIA del prompt para los criterios de qué SÍ y qué NO capturar.",
+    input_schema: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description:
+            "El texto literal de la observación, escrito como si fuera una nota para vos misma del futuro. Concreto, específico, con fecha implícita si aplica. NO uses el output del coach — usá lo que el usuario dijo o lo que vos observaste. Ej: 'No le gusta entrenar en ayunas — dice que se marea', 'Viaja a Madrid del 12 al 18 de noviembre por trabajo', 'Mencionó que los domingos sociales le descarrilan la nutrición'.",
+        },
+        kind: {
+          type: "string",
+          enum: ["preference", "constraint", "observation", "pattern"],
+          description:
+            "preference: algo que prefiere (negociable, modificable). constraint: restricción no negociable (intolerancia, religiosa, lesión, disponibilidad). observation: evento, estado o contexto temporal con peso longitudinal. pattern: SOLO para output de compute jobs — el coach normalmente NO usa este valor.",
+        },
+        source: {
+          type: "string",
+          enum: ["user_said", "coach_observed"],
+          description:
+            "user_said: el usuario lo dijo literalmente en conversación. coach_observed: vos lo notaste analizando el momento (mood, contexto, energía visible en la conversación). NO existe 'computed' acá — eso es para compute jobs.",
+        },
+      },
+      required: ["text", "kind", "source"],
+    },
+  },
 ];
 
 Deno.serve(async (req: Request) => {
@@ -821,6 +849,7 @@ async function executeToolByName(
     if (name === "get_day_summary") return await executeGetDaySummary(input, userId, supabase, tzOffsetMin);
     if (name === "get_period_summary") return await executeGetPeriodSummary(input, userId, supabase, tzOffsetMin);
     if (name === "delete_recent_meal") return await executeDeleteRecentMeal(input, userId, supabase, tzOffsetMin);
+    if (name === "record_note") return await executeRecordNote(input, userId, supabase);
     return { error: `Unknown tool: ${name}` };
   } catch (err) {
     console.error(`[tool ${name}] error:`, err);
@@ -1973,6 +2002,65 @@ async function bootstrapHealthTwin(
   return null;
 }
 
+// ─── record_note (Sprint 1.B — Health Twin Foundation) ───────────────
+// Captura una observación duradera para retrieval futuro (Sprint 4).
+// Solo persiste. NO computa embedding hoy (Sprint 4). NO usa en context
+// del coach todavía (Sprint 4). El activo es el texto + fecha + kind +
+// source — todo lo demás es derivable o se agrega después sin migración.
+async function executeRecordNote(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  const text: string | undefined = input?.text;
+  const kind: string | undefined = input?.kind;
+  const source: string | undefined = input?.source;
+
+  if (!text || typeof text !== "string") {
+    return { error: "text es requerido y debe ser un string." };
+  }
+  if (text.length < 1 || text.length > 2000) {
+    return { error: "text debe tener entre 1 y 2000 caracteres." };
+  }
+  if (!kind || !["preference", "constraint", "observation", "pattern"].includes(kind)) {
+    return {
+      error: "kind debe ser preference, constraint, observation, o pattern.",
+    };
+  }
+  // Para el coach solo aceptamos user_said y coach_observed.
+  // 'computed' está reservado para compute jobs (Best Week Anatomy en Sprint 4).
+  if (!source || !["user_said", "coach_observed"].includes(source)) {
+    return {
+      error: "source debe ser user_said o coach_observed.",
+    };
+  }
+
+  const { data, error } = await supabase
+    .from("notes")
+    .insert({
+      user_id: userId,
+      text,
+      kind,
+      source,
+    })
+    .select("id, created_at")
+    .single();
+
+  if (error) {
+    console.error("[record_note] insert error:", error);
+    return { error: "No pude guardar la nota. Intentá de nuevo." };
+  }
+
+  console.log(`[record_note] user=${userId} kind=${kind} source=${source} text_len=${text.length}`);
+
+  return {
+    ok: true,
+    note_id: data.id,
+    created_at: data.created_at,
+    summary: `Note guardada (${kind})`,
+  };
+}
+
 /**
  * Compactador: convierte HT row a un string narrativo para el system prompt.
  * Solo incluye buckets con data (no muestra "name: null").
@@ -2787,8 +2875,40 @@ Detalles operativos de tools:
 - get_cycle_phase: solo si la fase no está en el contexto inicial y la pregunta lo amerita.
 - delete_recent_meal: si devuelve needs_confirmation=true, mostrás opciones y esperás. No borrás a ciegas.
 - update_health_twin: cuando aprendés algo nuevo de identidad/preferencias/objetivos/preocupaciones/supplements/condiciones. NO para eventos del día.
+- record_note: para capturar observaciones longitudinales sobre ${name} que NO viven en otra tabla. Ver sección CAPTURA DE MEMORIA abajo para la policy completa de qué SÍ y qué NO capturar.
 
 Después de tool: una frase de confirmación + una frase de insight cross-dimensión. Sin pregunta de menú. Sin "¿qué más?".
+
+# CAPTURA DE MEMORIA — POLICY DE record_note
+
+${name} no completó un formulario exhaustivo y nunca lo hará. SAVIA aprende observando conversación a conversación y capturando las observaciones que tienen valor futuro. record_note es la herramienta para esa captura.
+
+## Qué SÍ merece note (capturar con record_note)
+
+- Preferencias declaradas que no viven en otra tabla. Tipo de comidas que prefiere, horarios que le funcionan, estilo de plan que disfruta. kind=preference.
+- Restricciones no negociables: intolerancias, alergias, restricciones religiosas, lesiones físicas reportadas, no-disponibilidad horaria estructural. kind=constraint.
+- Eventos contextuales con peso longitudinal: cambios de vida (mudanza, trabajo, relación), eventos próximos con carga emocional (boda, viaje largo, examen), lesiones recientes, condiciones médicas reportadas. kind=observation, source=user_said.
+- Decisiones declaradas: cuando dice que va a cambiar algo importante ("dejo el café", "voy a entrenar de mañana", "cambié de entrenador"). kind=observation, source=user_said.
+- Patrones que el usuario enmarca como propios: cuando dice "siempre me pasa que…" o "los lunes son típicamente…" sobre algo que se repite. kind=observation.
+- Wins / milestones significativos que conviene recordar: primer logro de un objetivo, primer hito (mes, 90 días), cambio concreto verificable. kind=observation, source=coach_observed.
+
+## Qué NUNCA merece note
+
+- Datos derivables de tablas operacionales: lo que comió, lo que entrenó, su peso de ayer, su balance del día. Eso vive en meal_logs/workout_logs/inbody_records — buscarlo cuando hace falta, NO duplicarlo.
+- Estados transitorios sin enmarque longitudinal: "tiene hambre ahora", "le duele la cabeza hoy" sin pattern. Solo capturar si el usuario lo enmarca como recurrente.
+- Conversación operacional: "registra X", "agregá Y", "borrá Z".
+- Preguntas del usuario sin información nueva sobre él: "cuánta proteína me queda" no es una note.
+- Output del propio coach. PROHIBIDO ABSOLUTO. Nunca persistir prosa generada por vos como note. Las notes son input al modelo, no output. Esta regla previene auto-mimicry documentada como bug histórico.
+
+## Reglas duras de captura
+
+1. MÁXIMO 1 record_note por turno conversacional. Mejor menos.
+2. Si dudás si capturar o no — NO capturás. La policy es restrictiva intencionalmente. Tasa esperada en steady state: ~1 note cada 5-7 días por usuario activo, NO 1 por sesión.
+3. El text de la note se escribe en tercera persona como nota para vos misma del futuro, no como diálogo. Concreto, específico, con fecha o contexto si aplica.
+4. NO capturás constraints que ya están en HT (ej. intolerancia ya guardada en HT.preferences). Verificá contexto antes.
+5. NO capturás 2 notes seguidas sobre lo mismo. Si ya existe una note relacionada (visible en contexto futuro), no duplicar.
+
+Esta captura es inversión silenciosa en defensibilidad futura. El usuario no ve directamente las notes hoy — pero en 6-12 meses, la continuidad biográfica acumulada va a ser lo que distingue SAVIA de cualquier app.
 
 # DESCUBRIMIENTO CONTINUO — CÓMO LLENÁS VACÍOS SIN INTERROGAR
 ${name} no completó un formulario detallado y no lo va a hacer. Su Health Twin tiene huecos. Tu trabajo es ir llenándolos en conversación natural, una pieza a la vez, cuando es relevante al momento.

@@ -19322,6 +19322,10 @@ function coachRenderMessages() {
     'get_day_summary',
     'get_period_summary',
     'get_cycle_phase',
+    // record_note es write pero la captura es silenciosa por diseño —
+    // el user no necesita saber que SAVIA tomó nota mental. Mostrar badge
+    // rompería la naturalidad y haría que la captura se sienta vigilante.
+    'record_note',
   ]);
   coachState.messages.forEach(m => {
     if (m.role === 'tool') {
