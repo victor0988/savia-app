@@ -307,6 +307,37 @@ const TOOLS = [
       required: ["text", "kind", "source"],
     },
   },
+  {
+    name: "log_weight",
+    description:
+      "Registra peso del usuario en body_compositions. Usá esto cuando el usuario menciona su peso explícitamente (ej. 'peso 76 hoy', 'me pesé 73.4', 'estoy en 80 kilos', 'anotá 78kg'). NO preguntés confirmación: registrá directo y avisá el delta vs su última medición si tiene historia. Si el usuario no especifica fecha, asumí HOY. Si menciona también % grasa o masa magra junto al peso, registralos en el mismo call. NO inventés métricas que no dijo.",
+    input_schema: {
+      type: "object",
+      properties: {
+        weight_kg: {
+          type: "number",
+          description: "Peso en kilogramos (20-300). Si el usuario dice 'libras' o 'lb', convertí (1 lb = 0.4536 kg).",
+        },
+        body_fat_pct: {
+          type: "number",
+          description: "% grasa corporal (opcional, solo si el usuario lo mencionó).",
+        },
+        lean_body_mass_kg: {
+          type: "number",
+          description: "Masa magra en kg (opcional, solo si el usuario lo mencionó).",
+        },
+        measured_at_iso: {
+          type: "string",
+          description: "Timestamp ISO de cuándo se tomó la medición. Si el usuario no especifica fecha, omitilo y SAVIA usa NOW(). Solo incluí si dice 'ayer', 'hace 3 días', etc.",
+        },
+        notes: {
+          type: "string",
+          description: "Notas opcionales del usuario (ej. 'en ayunas', 'después de entrenar').",
+        },
+      },
+      required: ["weight_kg"],
+    },
+  },
 ];
 
 Deno.serve(async (req: Request) => {
@@ -871,6 +902,7 @@ async function executeToolByName(
     if (name === "get_period_summary") return await executeGetPeriodSummary(input, userId, supabase, tzOffsetMin);
     if (name === "delete_recent_meal") return await executeDeleteRecentMeal(input, userId, supabase, tzOffsetMin);
     if (name === "record_note") return await executeRecordNote(input, userId, supabase);
+    if (name === "log_weight") return await executeLogWeight(input, userId, supabase);
     return { error: `Unknown tool: ${name}` };
   } catch (err) {
     console.error(`[tool ${name}] error:`, err);
@@ -2082,6 +2114,137 @@ async function executeRecordNote(
   };
 }
 
+// ─── Sprint 3.A — log_weight executor ─────────────────────────────────
+// Registra peso (y opcionalmente %fat / lean mass) en body_compositions.
+// Self INSERT, source='self', method='manual'. Devuelve delta vs last
+// measurement para que el coach pueda dar feedback con contexto.
+async function executeLogWeight(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  const weightKg = Number(input?.weight_kg);
+  if (!weightKg || isNaN(weightKg) || weightKg < 20 || weightKg > 300) {
+    return { error: "weight_kg debe estar entre 20 y 300." };
+  }
+
+  // Validar métricas opcionales
+  const bodyFatPct =
+    input?.body_fat_pct !== undefined && input?.body_fat_pct !== null
+      ? Number(input.body_fat_pct)
+      : null;
+  if (bodyFatPct !== null && (isNaN(bodyFatPct) || bodyFatPct < 2 || bodyFatPct > 70)) {
+    return { error: "body_fat_pct fuera de rango razonable (2-70)." };
+  }
+  const leanKg =
+    input?.lean_body_mass_kg !== undefined && input?.lean_body_mass_kg !== null
+      ? Number(input.lean_body_mass_kg)
+      : null;
+  if (leanKg !== null && (isNaN(leanKg) || leanKg < 10 || leanKg > 200)) {
+    return { error: "lean_body_mass_kg fuera de rango razonable (10-200)." };
+  }
+
+  // measured_at: si viene del input, validamos que sea un ISO válido en
+  // ventana razonable (no futuro, no más de 365 días atrás). Si no, NOW().
+  let measuredAt: string | null = null;
+  if (input?.measured_at_iso && typeof input.measured_at_iso === "string") {
+    const d = new Date(input.measured_at_iso);
+    const now = Date.now();
+    if (!isNaN(d.getTime()) && d.getTime() <= now + 86400000 && d.getTime() >= now - 365 * 86400000) {
+      measuredAt = d.toISOString();
+    }
+  }
+
+  // Buscar última medición previa para calcular delta (output al coach)
+  const { data: prev } = await supabase
+    .from("body_compositions")
+    .select("weight_kg, measured_at")
+    .eq("patient_user_id", userId)
+    .not("weight_kg", "is", null)
+    .order("measured_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  const payload: Record<string, unknown> = {
+    patient_user_id: userId,
+    uploaded_by_user_id: userId,
+    source: "self",
+    method: "manual",
+    weight_kg: Math.round(weightKg * 100) / 100,
+  };
+  if (measuredAt) payload.measured_at = measuredAt;
+  if (bodyFatPct !== null) payload.body_fat_pct = Math.round(bodyFatPct * 10) / 10;
+  if (leanKg !== null) payload.lean_body_mass_kg = Math.round(leanKg * 100) / 100;
+  if (input?.notes && typeof input.notes === "string") {
+    payload.notes = String(input.notes).slice(0, 500);
+  }
+
+  const { data, error } = await supabase
+    .from("body_compositions")
+    .insert(payload)
+    .select("id, measured_at, weight_kg")
+    .single();
+
+  if (error) {
+    console.error("[log_weight] insert error:", error);
+    return { error: "No pude guardar el peso. Intentá de nuevo." };
+  }
+
+  // Delta vs medición previa (si existía)
+  let deltaKg: number | null = null;
+  let daysSincePrev: number | null = null;
+  if (prev?.weight_kg) {
+    deltaKg = Math.round((weightKg - Number(prev.weight_kg)) * 100) / 100;
+    const ms = new Date(data.measured_at).getTime() - new Date(prev.measured_at).getTime();
+    daysSincePrev = Math.round(ms / 86400000);
+  }
+
+  // ─── Sync Health Twin (Sprint 3.A QA fix) ───────────────────────────
+  // Sin esto, el contexto del coach lee weight_kg_current del HT y queda
+  // STALE: el user "peso 76 hoy" pero el coach al día siguiente sigue
+  // saludándolo con 80kg del bootstrap inicial.
+  // Hacemos read-merge-write porque jsonb update parcial requiere RPC.
+  try {
+    const { data: htRow } = await supabase
+      .from("user_health_twin")
+      .select("identity")
+      .eq("user_id", userId)
+      .maybeSingle();
+    const currentIdentity = (htRow?.identity as Record<string, unknown>) || {};
+    const newIdentity: Record<string, unknown> = {
+      ...currentIdentity,
+      weight_kg_current: weightKg,
+    };
+    if (bodyFatPct !== null) newIdentity.body_fat_pct = bodyFatPct;
+    if (leanKg !== null) newIdentity.lean_mass_kg = leanKg;
+    // upsert: crea la row si no existía (user nuevo)
+    await supabase
+      .from("user_health_twin")
+      .upsert({ user_id: userId, identity: newIdentity }, { onConflict: "user_id" });
+  } catch (htErr) {
+    // No bloqueamos el log_weight si el sync falla. El INSERT en
+    // body_compositions ya quedó persistido; la próxima invocación del coach
+    // hará bootstrap del HT desde body_compositions/profile fallback.
+    console.warn("[log_weight] HT sync failed:", htErr);
+  }
+
+  console.log(
+    `[log_weight] user=${userId} weight=${weightKg}kg delta=${deltaKg}kg days_since=${daysSincePrev}`,
+  );
+
+  return {
+    ok: true,
+    id: data.id,
+    measured_at: data.measured_at,
+    weight_kg: Number(data.weight_kg),
+    delta_kg: deltaKg,
+    days_since_prev: daysSincePrev,
+    summary: deltaKg !== null
+      ? `Registrado ${weightKg.toFixed(1)} kg (${deltaKg >= 0 ? "+" : ""}${deltaKg.toFixed(1)} kg en ${daysSincePrev}d).`
+      : `Registrado ${weightKg.toFixed(1)} kg (primera medición).`,
+  };
+}
+
 // ─── Memory Reference Detection (Sprint 1.D — telemetría ALC/MER) ─────
 // Heurística regex para detectar cuando el coach hace referencia a
 // memoria histórica del usuario. Captura SIN decidir — los datos se
@@ -2924,7 +3087,7 @@ Regla: cualquier recomendación o lectura tuya cruza MÍNIMO 2 dimensiones relev
 Las tools NO son el coach. El coach sos vos razonando. Las tools son herramientas que usás cuando claramente sirven al razonamiento.
 
 Llamás una tool cuando:
-- ${name} pide registrar algo concreto y tenés el dato núcleo → log_meal / log_water / log_workout / log_cycle_symptom.
+- ${name} pide registrar algo concreto y tenés el dato núcleo → log_meal / log_water / log_workout / log_cycle_symptom / log_weight.
 - Necesitás traer data del pasado que NO está en el contexto inicial → get_day_summary (un día) / get_period_summary (rango).
 - Aprendiste algo NUEVO que define quién es ${name} → update_health_twin.
 - Pide borrar algo → delete_recent_meal.
@@ -2936,6 +3099,7 @@ Detalles operativos de tools:
 - log_meal: ESTIMÁS kcal y macros con tu conocimiento nutricional — no necesitás certeza. Inferís meal_category por la hora local del contexto: <8h breakfast · 8-11h snack_am · 11-15h lunch · 15-18h snack_pm · ≥18h dinner. Si entrenó hace <2h, post_workout aplica. Solo preguntás si falta el dato núcleo (gramos/porción). Si está en COMIDAS FRECUENTES, usás los macros promedio del bloque sin preguntar.
 - log_water: convertís a ml. "un vaso" ≈ 250ml, "botella chica" 500ml.
 - log_workout: si no sabés kcal exactas, dejalo en null — SAVIA estima.
+- log_weight: si menciona su peso ("peso 76", "me pesé 73.4", "estoy en 80 kilos"), registrás directo sin confirmar. Si menciona libras, convertís (1 lb = 0.4536 kg). Si también dice % grasa o masa magra, los registrás en el mismo call. El output trae delta_kg vs su última medición — usalo para responder con contexto temporal sutil ("vas bajando", "+0.4kg en 12 días, normal por el entreno", etc) en vez de "anoté tu peso".
 - get_day_summary: para UN día pasado específico ("qué entrené el sábado"). NO la uses para HOY — HOY ya está en el contexto.
 - get_period_summary: para RANGO de días ("últimos 7 días", "esta semana"). Cuando termina, sintetizá los 3 componentes (nutrición + entreno + adherencia) contra el goal — NO recites números.
 - get_balance: solo después de registrar algo y necesitás data fresca.

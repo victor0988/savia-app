@@ -2377,6 +2377,90 @@
   .pillar-recovery .pillar-header svg { color: #34D399; }
   .pillar-fatigue { background: rgba(244,114,182,0.06); border-color: rgba(244,114,182,0.18); }
   .pillar-fatigue .pillar-header svg { color: #F472B6; }
+  /* Sprint 3.A — Progress pillar (verde lima signature). Reemplaza Fatigue (locked). */
+  .pillar-progress { background: rgba(190,242,100,0.07); border-color: rgba(190,242,100,0.22); }
+  .pillar-progress .pillar-header svg { color: #BEF264; }
+  .pillar-delta {
+    display: inline-flex; align-items: center;
+    font-size: 10px; font-weight: 700;
+    padding: 1px 5px; border-radius: 5px;
+    margin-left: 4px; vertical-align: middle;
+    letter-spacing: 0;
+  }
+  .pillar-delta.up { color: #BEF264; background: rgba(190,242,100,0.13); }
+  .pillar-delta.down { color: #F87171; background: rgba(248,113,113,0.13); }
+  .pillar-delta.flat { color: #94A3B8; background: rgba(148,163,184,0.10); }
+
+  /* ====================== Sprint 3.A — Tu Progreso ====================== */
+  .pg-screen { background: radial-gradient(ellipse at 50% 0%, #0F1F1A 0%, #050810 60%); color: #F1F5F9; padding: 0 0 100px; }
+  .pg-topbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px 6px; position: sticky; top: 0; background: rgba(5,8,16,0.85); backdrop-filter: blur(12px); z-index: 10; }
+  .pg-back-btn { background: transparent; border: none; color: #BEF264; font-size: 14px; font-weight: 600; cursor: pointer; padding: 6px 0; -webkit-tap-highlight-color: transparent; }
+  .pg-title { font-size: 15px; font-weight: 700; color: #F1F5F9; }
+  .pg-spacer { width: 60px; }
+
+  .pg-kpis { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 14px 18px 8px; }
+  .pg-kpi { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 14px; padding: 12px 10px; text-align: left; }
+  .pg-kpi-label { font-size: 9.5px; color: #94A3B8; font-weight: 700; letter-spacing: 0.5px; }
+  .pg-kpi-val { font-size: 22px; color: #F8FAFC; font-weight: 700; line-height: 1.1; margin-top: 6px; }
+  .pg-kpi-val .unit { font-size: 11px; color: #94A3B8; font-weight: 500; margin-left: 2px; }
+  .pg-kpi-delta { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 5px; margin-top: 6px; }
+  .pg-kpi-delta.up { color: #BEF264; background: rgba(190,242,100,0.13); }
+  .pg-kpi-delta.down { color: #F87171; background: rgba(248,113,113,0.13); }
+  .pg-kpi-delta.flat { color: #94A3B8; background: rgba(148,163,184,0.10); }
+
+  .pg-period { display: flex; gap: 6px; padding: 6px 18px 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .pg-period-chip { flex-shrink: 0; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); color: #94A3B8; font-size: 12px; font-weight: 600; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .pg-period-chip.active { background: rgba(190,242,100,0.12); border-color: rgba(190,242,100,0.35); color: #BEF264; }
+
+  .pg-chart-wrap { padding: 6px 14px 14px; }
+  .pg-chart-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 16px 14px 10px; }
+  .pg-chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+  .pg-chart-title { font-size: 11px; color: #94A3B8; font-weight: 700; letter-spacing: 0.5px; }
+  .pg-chart-legend { display: flex; gap: 10px; }
+  .pg-chart-legend span { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; color: #94A3B8; font-weight: 600; }
+  .pg-chart-legend i { display: inline-block; width: 8px; height: 8px; border-radius: 2px; }
+  .pg-chart-svg { width: 100%; height: 200px; display: block; }
+  .pg-chart-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 200px; gap: 8px; color: #64748B; font-size: 13px; text-align: center; padding: 0 20px; }
+  .pg-chart-empty strong { color: #94A3B8; font-size: 14px; font-weight: 700; }
+
+  .pg-table-wrap { padding: 0 18px 14px; }
+  .pg-table-header { font-size: 11px; color: #94A3B8; font-weight: 700; letter-spacing: 0.5px; margin: 8px 0 10px; }
+  .pg-table { display: flex; flex-direction: column; gap: 6px; }
+  .pg-row { display: grid; grid-template-columns: 70px 1fr auto; align-items: center; padding: 12px 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; }
+  .pg-row-date { font-size: 11px; color: #94A3B8; font-weight: 600; }
+  .pg-row-mid { display: flex; flex-direction: column; gap: 2px; }
+  .pg-row-weight { font-size: 14px; color: #F8FAFC; font-weight: 700; }
+  .pg-row-meta { font-size: 10.5px; color: #94A3B8; }
+  .pg-row-badge { font-size: 9px; font-weight: 700; letter-spacing: 0.3px; padding: 3px 8px; border-radius: 6px; }
+  .pg-row-badge.inbody { color: #60A5FA; background: rgba(96,165,250,0.12); }
+  .pg-row-badge.manual { color: #BEF264; background: rgba(190,242,100,0.12); }
+  .pg-row-badge.dxa { color: #C49FCF; background: rgba(196,159,207,0.15); }
+  .pg-row-badge.silhouette, .pg-row-badge.waist { color: #94A3B8; background: rgba(148,163,184,0.10); }
+
+  .pg-empty { text-align: center; padding: 60px 30px 40px; }
+  .pg-empty svg { width: 60px; height: 60px; color: rgba(190,242,100,0.55); margin-bottom: 18px; }
+  .pg-empty-title { font-size: 17px; font-weight: 700; color: #F8FAFC; margin-bottom: 8px; }
+  .pg-empty-sub { font-size: 13px; color: #94A3B8; line-height: 1.5; margin-bottom: 24px; }
+
+  .pg-fab-wrap { position: fixed; bottom: 24px; left: 0; right: 0; display: flex; justify-content: center; pointer-events: none; padding: 0 20px; z-index: 20; }
+  .pg-fab { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; padding: 14px 22px; background: #BEF264; color: #0a0e1a; border: none; border-radius: 999px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 14px 40px rgba(190,242,100,0.28); -webkit-tap-highlight-color: transparent; }
+  .pg-fab:active { transform: scale(0.97); }
+
+  /* Modal Log peso */
+  .pg-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.62); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+  .pg-modal-overlay.show { display: flex; }
+  .pg-modal { background: #0F1620; border-top: 1px solid rgba(255,255,255,0.08); border-radius: 22px 22px 0 0; padding: 22px 22px 32px; width: 100%; max-width: 480px; }
+  .pg-modal-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.18); border-radius: 2px; margin: 0 auto 18px; }
+  .pg-modal-title { font-size: 17px; font-weight: 700; color: #F8FAFC; margin-bottom: 14px; }
+  .pg-modal-field { margin-bottom: 14px; }
+  .pg-modal-label { font-size: 11px; color: #94A3B8; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .pg-modal-input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.10); border-radius: 12px; padding: 14px 16px; color: #F8FAFC; font-size: 16px; font-weight: 600; font-family: inherit; -webkit-appearance: none; appearance: none; }
+  .pg-modal-input:focus { outline: none; border-color: rgba(190,242,100,0.45); }
+  .pg-modal-actions { display: flex; gap: 10px; margin-top: 6px; }
+  .pg-modal-btn { flex: 1; padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 700; cursor: pointer; border: none; -webkit-tap-highlight-color: transparent; }
+  .pg-modal-btn.cancel { background: rgba(255,255,255,0.06); color: #CBD5E1; }
+  .pg-modal-btn.save { background: #BEF264; color: #0a0e1a; }
+  .pg-modal-btn.save:disabled { opacity: 0.5; }
 
   .pillar-header {
     display: flex; align-items: center; gap: 6px;
@@ -5983,13 +6067,13 @@
           <div class="pillar-value pillar-locked">—</div>
           <div class="pillar-meta">Conectá un wearable</div>
         </div>
-        <div class="hoy-pillar pillar-fatigue">
+        <div class="hoy-pillar pillar-progress" onclick="openModule('progress')">
           <div class="pillar-header">
-            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 116.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z"/></svg>
-            <span>FATIGA</span>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 17l6-6 4 4 8-8M14 7h7v7"/></svg>
+            <span>PROGRESO</span>
           </div>
-          <div class="pillar-value pillar-locked">—</div>
-          <div class="pillar-meta">Requiere HRV</div>
+          <div class="pillar-value" id="hoy-pillar-pg-val">—</div>
+          <div class="pillar-meta" id="hoy-pillar-pg-meta">Tap para registrar</div>
         </div>
       </div>
 
@@ -8482,6 +8566,105 @@
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- Sprint 3.A — TU PROGRESO (body composition timeline)         -->
+  <!-- ============================================================ -->
+  <div class="screen pg-screen" data-step="progress">
+    <div class="pg-topbar">
+      <button class="pg-back-btn" onclick="pgBack()">‹ Hoy</button>
+      <div class="pg-title">Tu progreso</div>
+      <div class="pg-spacer"></div>
+    </div>
+
+    <!-- Contenido: se llena por pgRender() según haya o no measurements -->
+    <div id="pg-content">
+      <!-- KPI cards -->
+      <div class="pg-kpis" id="pg-kpis">
+        <div class="pg-kpi">
+          <div class="pg-kpi-label">PESO</div>
+          <div class="pg-kpi-val" id="pg-kpi-weight">—</div>
+          <div class="pg-kpi-delta flat" id="pg-kpi-weight-delta">—</div>
+        </div>
+        <div class="pg-kpi">
+          <div class="pg-kpi-label">% GRASA</div>
+          <div class="pg-kpi-val" id="pg-kpi-fat">—</div>
+          <div class="pg-kpi-delta flat" id="pg-kpi-fat-delta">—</div>
+        </div>
+        <div class="pg-kpi">
+          <div class="pg-kpi-label">MASA MAGRA</div>
+          <div class="pg-kpi-val" id="pg-kpi-lean">—</div>
+          <div class="pg-kpi-delta flat" id="pg-kpi-lean-delta">—</div>
+        </div>
+      </div>
+
+      <!-- Period chips -->
+      <div class="pg-period" id="pg-period">
+        <button class="pg-period-chip" data-period="30">30 días</button>
+        <button class="pg-period-chip" data-period="90">90 días</button>
+        <button class="pg-period-chip" data-period="365">1 año</button>
+        <button class="pg-period-chip active" data-period="all">Todo</button>
+      </div>
+
+      <!-- Chart -->
+      <div class="pg-chart-wrap">
+        <div class="pg-chart-card">
+          <div class="pg-chart-header">
+            <div class="pg-chart-title">EVOLUCIÓN</div>
+            <div class="pg-chart-legend">
+              <span><i style="background:#BEF264;"></i>Peso</span>
+              <span><i style="background:#F472B6;"></i>Grasa</span>
+              <span><i style="background:#60A5FA;"></i>Magra</span>
+            </div>
+          </div>
+          <div id="pg-chart-body">
+            <svg class="pg-chart-svg" id="pg-chart-svg" viewBox="0 0 700 200" preserveAspectRatio="none"></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla historial -->
+      <div class="pg-table-wrap">
+        <div class="pg-table-header">HISTORIAL</div>
+        <div class="pg-table" id="pg-table"></div>
+      </div>
+    </div>
+
+    <!-- Empty state (mostrado por pgRender si 0 measurements) -->
+    <div id="pg-empty" class="pg-empty" style="display:none;">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 17l6-6 4 4 8-8M14 7h7v7"/></svg>
+      <div class="pg-empty-title">Empezá a trackear tu progreso</div>
+      <div class="pg-empty-sub">Registrá tu peso ahora para ver tu evolución día a día. Cuando tengas un InBody, subilo desde tu perfil y se va a sumar al timeline.</div>
+    </div>
+
+    <!-- FAB Log peso -->
+    <div class="pg-fab-wrap">
+      <button class="pg-fab" onclick="pgOpenLogModal()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Log peso
+      </button>
+    </div>
+  </div>
+
+  <!-- Modal Log peso (overlay reutilizable) -->
+  <div class="pg-modal-overlay" id="pg-modal-overlay" onclick="pgCloseLogModalIfBackdrop(event)">
+    <div class="pg-modal" onclick="event.stopPropagation()">
+      <div class="pg-modal-handle"></div>
+      <div class="pg-modal-title">Registrar peso</div>
+      <div class="pg-modal-field">
+        <div class="pg-modal-label">PESO (kg)</div>
+        <input type="number" inputmode="decimal" step="0.1" min="20" max="300" class="pg-modal-input" id="pg-modal-weight" placeholder="76.4" />
+      </div>
+      <div class="pg-modal-field">
+        <div class="pg-modal-label">FECHA</div>
+        <input type="date" class="pg-modal-input" id="pg-modal-date" />
+      </div>
+      <div class="pg-modal-actions">
+        <button class="pg-modal-btn cancel" onclick="pgCloseLogModal()">Cancelar</button>
+        <button class="pg-modal-btn save" id="pg-modal-save" onclick="pgSaveLog()">Guardar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============== PHOTO CROPPER MODAL ============== -->
   <div class="cropper-overlay" id="cropper-overlay">
     <div class="cropper-topbar">
@@ -10379,6 +10562,11 @@ async function renderHoyPillars() {
       document.getElementById('hoy-pillar-steps-meta').textContent = `${Math.round((daily.steps / goalSteps) * 100)}% de ${goalSteps.toLocaleString()}`;
     }
   }
+
+  // PROGRESO pillar (Sprint 3.A) — fire-and-forget, no bloquea otros pillars.
+  if (typeof renderHoyProgressPillar === 'function') {
+    renderHoyProgressPillar().catch(e => console.warn('[progress pillar]:', e));
+  }
 }
 
 // ─── SAVIA Pulse (hero insight, reemplaza el viejo AI Insight) ───────
@@ -11183,6 +11371,13 @@ function openModule(name) {
       whOpenDashboard();
     } else if (typeof whOpenOnboardingFromProfile === 'function') {
       whOpenOnboardingFromProfile();
+    }
+    return;
+  }
+  if (name === 'progress') {
+    // Sprint 3.A — pantalla Tu Progreso (body composition timeline)
+    if (typeof pgOpenScreen === 'function') {
+      pgOpenScreen();
     }
     return;
   }
@@ -19754,6 +19949,432 @@ async function whLogSave() {
     const saveBtn = document.getElementById('wh-log-save-top');
     if (saveBtn) saveBtn.textContent = 'Guardar';
   }
+}
+
+// =====================================================================
+// Sprint 3.A — TU PROGRESO (body composition timeline)
+// =====================================================================
+// State + render del pillar PROGRESO en Hoy + pantalla full + modal log peso.
+// Lee de body_compositions (schema ya existe, ver SAVIA_BODY_COMPOSITIONS.sql).
+// Self-INSERT permitido por RLS: auth.uid()=patient_user_id=uploaded_by_user_id.
+//
+// Tier 2 de la tesis: el user a día 30 pregunta "¿esto me sirvió?". Esta
+// pantalla es la respuesta visual. Sin esto, churn brutal.
+// ─────────────────────────────────────────────────────────────────────
+
+const pgState = {
+  measurements: [],     // todos los body_compositions del user, ordenados ASC por measured_at
+  loaded: false,
+  loading: false,
+  period: 'all',        // 'all' | '30' | '90' | '365'
+  prevScreen: 'app',    // para volver al tap de back. Default Hoy.
+};
+
+// ─── Helpers comunes ─────────────────────────────────────────────────
+
+function pgFmtDateShort(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  const m = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'][d.getMonth()];
+  return `${d.getDate()} ${m}`;
+}
+function pgFmtDateFull(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('es-CR', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+function pgFmtNumber(n, decimals) {
+  if (n === null || n === undefined || isNaN(n)) return '—';
+  return Number(n).toFixed(decimals);
+}
+function pgDeltaClass(delta, lowerIsBetter) {
+  // Para peso/grasa: bajar es bueno (up=verde si lower is better → reverse)
+  if (delta === null || delta === undefined || isNaN(delta) || Math.abs(delta) < 0.05) return 'flat';
+  if (lowerIsBetter) return delta < 0 ? 'up' : 'down';
+  return delta > 0 ? 'up' : 'down';
+}
+function pgDeltaText(delta, unit, decimals) {
+  if (delta === null || delta === undefined || isNaN(delta)) return '—';
+  const abs = Math.abs(delta);
+  if (abs < 0.05) return `= ${unit || ''}`.trim();
+  const sign = delta > 0 ? '+' : '−';
+  return `${sign}${abs.toFixed(decimals ?? 1)}${unit || ''}`;
+}
+
+// ─── Fetch measurements ──────────────────────────────────────────────
+
+async function pgFetchMeasurements(force) {
+  if (pgState.loading) return pgState.measurements;
+  if (pgState.loaded && !force) return pgState.measurements;
+  pgState.loading = true;
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id;
+    if (!userId) {
+      pgState.loading = false;
+      return [];
+    }
+    const { data, error } = await sb
+      .from('body_compositions')
+      .select('id, measured_at, weight_kg, body_fat_pct, lean_body_mass_kg, muscle_mass_kg, source, method, notes')
+      .eq('patient_user_id', userId)
+      .order('measured_at', { ascending: true });
+    if (error) {
+      console.warn('[pg] fetch error:', error);
+      pgState.loading = false;
+      return [];
+    }
+    pgState.measurements = data || [];
+    pgState.loaded = true;
+    pgState.loading = false;
+    return pgState.measurements;
+  } catch (e) {
+    console.warn('[pg] fetch exception:', e);
+    pgState.loading = false;
+    return [];
+  }
+}
+
+// ─── Render pillar en Hoy ────────────────────────────────────────────
+
+async function renderHoyProgressPillar() {
+  const valEl = document.getElementById('hoy-pillar-pg-val');
+  const metaEl = document.getElementById('hoy-pillar-pg-meta');
+  if (!valEl || !metaEl) return;
+
+  const ms = await pgFetchMeasurements();
+  if (!ms || ms.length === 0) {
+    valEl.innerHTML = '—';
+    metaEl.textContent = 'Tap para registrar';
+    return;
+  }
+  // Buscar último measurement con peso (la columna es opcional)
+  const latest = [...ms].reverse().find(m => m.weight_kg !== null && m.weight_kg !== undefined);
+  const earliest = ms.find(m => m.weight_kg !== null && m.weight_kg !== undefined);
+  if (!latest) {
+    valEl.innerHTML = '—';
+    metaEl.textContent = 'Sin peso registrado';
+    return;
+  }
+  const latestKg = Number(latest.weight_kg);
+  valEl.innerHTML = `${latestKg.toFixed(1)}<span class="unit">kg</span>`;
+
+  if (earliest && earliest.id !== latest.id) {
+    const delta = latestKg - Number(earliest.weight_kg);
+    const cls = pgDeltaClass(delta, true); // peso: lower is better en defecto
+    valEl.innerHTML += `<span class="pillar-delta ${cls}">${pgDeltaText(delta, 'kg', 1)}</span>`;
+    metaEl.textContent = `${ms.length} ${ms.length === 1 ? 'medición' : 'mediciones'}`;
+  } else {
+    metaEl.textContent = 'Primera medición';
+  }
+}
+
+// ─── Abrir / cerrar pantalla ─────────────────────────────────────────
+
+function pgOpenScreen() {
+  // Recordar la pantalla activa para volver al back
+  const active = document.querySelector('.screen.active');
+  pgState.prevScreen = active?.getAttribute('data-step') || 'app';
+  if (typeof goStep === 'function') {
+    goStep('progress');
+  }
+  pgRender().catch(e => console.warn('[pg] render:', e));
+}
+
+function pgBack() {
+  if (typeof goStep === 'function') {
+    goStep(pgState.prevScreen || 'app');
+  }
+}
+
+// ─── Render principal ────────────────────────────────────────────────
+
+async function pgRender() {
+  await pgFetchMeasurements(true);
+  const ms = pgState.measurements;
+  const empty = document.getElementById('pg-empty');
+  const content = document.getElementById('pg-content');
+  if (!ms || ms.length === 0) {
+    if (empty) empty.style.display = '';
+    if (content) content.style.display = 'none';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (content) content.style.display = '';
+
+  pgRenderKPIs(ms);
+  pgRenderPeriodChips();
+  pgRenderChart(ms);
+  pgRenderTable(ms);
+}
+
+function pgRenderKPIs(ms) {
+  // Latest + earliest CON valor (cada métrica puede faltar en algunos rows)
+  const helpers = [
+    { key: 'weight_kg',          id: 'pg-kpi-weight', deltaId: 'pg-kpi-weight-delta', unit: 'kg', decimals: 1, lowerBetter: true },
+    { key: 'body_fat_pct',       id: 'pg-kpi-fat',    deltaId: 'pg-kpi-fat-delta',    unit: '%',  decimals: 1, lowerBetter: true },
+    { key: 'lean_body_mass_kg',  id: 'pg-kpi-lean',   deltaId: 'pg-kpi-lean-delta',   unit: 'kg', decimals: 1, lowerBetter: false },
+  ];
+  for (const h of helpers) {
+    const valid = ms.filter(m => m[h.key] !== null && m[h.key] !== undefined);
+    const valEl = document.getElementById(h.id);
+    const deltaEl = document.getElementById(h.deltaId);
+    if (!valEl || !deltaEl) continue;
+    if (valid.length === 0) {
+      valEl.textContent = '—';
+      deltaEl.className = 'pg-kpi-delta flat';
+      deltaEl.textContent = 'Sin data';
+      continue;
+    }
+    const earliest = valid[0];
+    const latest = valid[valid.length - 1];
+    valEl.innerHTML = `${Number(latest[h.key]).toFixed(h.decimals)}<span class="unit">${h.unit}</span>`;
+    if (valid.length === 1) {
+      deltaEl.className = 'pg-kpi-delta flat';
+      deltaEl.textContent = 'Primera';
+    } else {
+      const delta = Number(latest[h.key]) - Number(earliest[h.key]);
+      deltaEl.className = 'pg-kpi-delta ' + pgDeltaClass(delta, h.lowerBetter);
+      deltaEl.textContent = pgDeltaText(delta, h.unit, h.decimals);
+    }
+  }
+}
+
+function pgRenderPeriodChips() {
+  const chips = document.querySelectorAll('#pg-period .pg-period-chip');
+  chips.forEach(c => {
+    const p = c.getAttribute('data-period');
+    c.classList.toggle('active', p === pgState.period);
+    c.onclick = () => {
+      pgState.period = p;
+      pgRenderPeriodChips();
+      const ms = pgFilterByPeriod(pgState.measurements);
+      pgRenderChart(ms);
+      pgRenderTable(ms);
+    };
+  });
+}
+
+function pgFilterByPeriod(ms) {
+  if (pgState.period === 'all' || !ms || ms.length === 0) return ms;
+  const days = parseInt(pgState.period, 10);
+  if (!days) return ms;
+  const cutoff = Date.now() - days * 86400000;
+  return ms.filter(m => new Date(m.measured_at).getTime() >= cutoff);
+}
+
+// ─── Chart SVG (3 líneas: weight/fat/lean, normalizadas) ────────────
+
+function pgRenderChart(ms) {
+  const svg = document.getElementById('pg-chart-svg');
+  if (!svg) return;
+  // Reset
+  svg.innerHTML = '';
+  if (!ms || ms.length === 0) {
+    pgChartEmpty(svg, 'Sin datos en este rango');
+    return;
+  }
+  if (ms.length === 1) {
+    pgChartEmpty(svg, 'Necesitás 2+ mediciones para ver la línea');
+    return;
+  }
+
+  const W = 700, H = 200, PAD_L = 8, PAD_R = 8, PAD_T = 14, PAD_B = 22;
+  const plotW = W - PAD_L - PAD_R;
+  const plotH = H - PAD_T - PAD_B;
+
+  const t0 = new Date(ms[0].measured_at).getTime();
+  const tN = new Date(ms[ms.length - 1].measured_at).getTime();
+  const tSpan = Math.max(1, tN - t0);
+
+  const series = [
+    { key: 'weight_kg',         color: '#BEF264' },
+    { key: 'body_fat_pct',      color: '#F472B6' },
+    { key: 'lean_body_mass_kg', color: '#60A5FA' },
+  ];
+
+  // Eje X: línea base sutil
+  const baseY = PAD_T + plotH;
+  svg.insertAdjacentHTML('beforeend',
+    `<line x1="${PAD_L}" x2="${W - PAD_R}" y1="${baseY}" y2="${baseY}" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>`);
+
+  // Labels temporales (first/last)
+  svg.insertAdjacentHTML('beforeend',
+    `<text x="${PAD_L}" y="${H - 4}" fill="#64748B" font-size="10" font-family="Inter">${pgFmtDateShort(ms[0].measured_at)}</text>`);
+  svg.insertAdjacentHTML('beforeend',
+    `<text x="${W - PAD_R}" y="${H - 4}" fill="#64748B" font-size="10" font-family="Inter" text-anchor="end">${pgFmtDateShort(ms[ms.length - 1].measured_at)}</text>`);
+
+  // Por cada serie, plot independientemente (escala propia para cada una)
+  for (const s of series) {
+    const valid = ms.filter(m => m[s.key] !== null && m[s.key] !== undefined);
+    if (valid.length < 2) continue;
+
+    const values = valid.map(v => Number(v[s.key]));
+    const minV = Math.min(...values);
+    const maxV = Math.max(...values);
+    const span = Math.max(0.001, maxV - minV); // evita /0
+
+    const pts = valid.map(v => {
+      const x = PAD_L + ((new Date(v.measured_at).getTime() - t0) / tSpan) * plotW;
+      const y = PAD_T + plotH - ((Number(v[s.key]) - minV) / span) * plotH;
+      return `${x.toFixed(2)},${y.toFixed(2)}`;
+    });
+
+    // Path
+    svg.insertAdjacentHTML('beforeend',
+      `<polyline points="${pts.join(' ')}" fill="none" stroke="${s.color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>`);
+
+    // Dot final (más visible)
+    const lastX = pts[pts.length - 1].split(',')[0];
+    const lastY = pts[pts.length - 1].split(',')[1];
+    svg.insertAdjacentHTML('beforeend',
+      `<circle cx="${lastX}" cy="${lastY}" r="3.5" fill="${s.color}" stroke="#050810" stroke-width="2"/>`);
+  }
+}
+
+function pgChartEmpty(svg, msg) {
+  svg.innerHTML = `<text x="350" y="100" text-anchor="middle" fill="#64748B" font-size="13" font-family="Inter" font-weight="600">${msg}</text>`;
+}
+
+// ─── Tabla historial ─────────────────────────────────────────────────
+
+function pgRenderTable(ms) {
+  const el = document.getElementById('pg-table');
+  if (!el) return;
+  if (!ms || ms.length === 0) {
+    el.innerHTML = '<div style="text-align:center; padding:20px; color:#64748B; font-size:13px;">Sin mediciones en este rango.</div>';
+    return;
+  }
+  // Mostrar DESC (más reciente arriba)
+  const rows = [...ms].reverse().map(m => {
+    const bits = [];
+    if (m.body_fat_pct !== null && m.body_fat_pct !== undefined) bits.push(`${Number(m.body_fat_pct).toFixed(1)}% grasa`);
+    if (m.lean_body_mass_kg !== null && m.lean_body_mass_kg !== undefined) bits.push(`${Number(m.lean_body_mass_kg).toFixed(1)}kg magra`);
+    const meta = bits.length > 0 ? bits.join(' · ') : (m.notes || '—');
+    const methodLabel = (m.method || 'manual').toUpperCase();
+    const weightTxt = (m.weight_kg !== null && m.weight_kg !== undefined) ? `${Number(m.weight_kg).toFixed(1)} kg` : '—';
+    return `
+      <div class="pg-row">
+        <div class="pg-row-date">${pgFmtDateShort(m.measured_at)}</div>
+        <div class="pg-row-mid">
+          <div class="pg-row-weight">${weightTxt}</div>
+          <div class="pg-row-meta">${meta}</div>
+        </div>
+        <div class="pg-row-badge ${m.method || 'manual'}">${methodLabel}</div>
+      </div>`;
+  });
+  el.innerHTML = rows.join('');
+}
+
+// ─── Modal Log peso ──────────────────────────────────────────────────
+
+function pgOpenLogModal() {
+  const ov = document.getElementById('pg-modal-overlay');
+  if (!ov) return;
+  // Defaults: fecha hoy, weight vacío
+  const dateEl = document.getElementById('pg-modal-date');
+  if (dateEl) {
+    const today = new Date();
+    const iso = today.toISOString().split('T')[0];
+    dateEl.value = iso;
+    // Prevenir fecha futura. Server también valida pero el client debe bloquear.
+    dateEl.setAttribute('max', iso);
+  }
+  const wEl = document.getElementById('pg-modal-weight');
+  if (wEl) {
+    wEl.value = '';
+    setTimeout(() => wEl.focus(), 100);
+  }
+  ov.classList.add('show');
+}
+
+function pgCloseLogModal() {
+  const ov = document.getElementById('pg-modal-overlay');
+  if (ov) ov.classList.remove('show');
+}
+
+function pgCloseLogModalIfBackdrop(e) {
+  if (e.target === e.currentTarget) pgCloseLogModal();
+}
+
+async function pgSaveLog() {
+  const wEl = document.getElementById('pg-modal-weight');
+  const dateEl = document.getElementById('pg-modal-date');
+  const btn = document.getElementById('pg-modal-save');
+  if (!wEl || !dateEl) return;
+
+  const weight = parseFloat(wEl.value);
+  if (!weight || isNaN(weight) || weight < 20 || weight > 300) {
+    alert('Ingresá un peso válido (20-300 kg).');
+    return;
+  }
+  const dateIso = dateEl.value;
+  if (!dateIso) {
+    alert('Seleccioná una fecha válida.');
+    return;
+  }
+  // Convert date string (YYYY-MM-DD) a timestamp ISO con hora local actual
+  // para que el ORDER BY measured_at refleje el orden real de captura.
+  const measuredAt = new Date(dateIso + 'T' + (new Date().toTimeString().slice(0, 8))).toISOString();
+
+  try {
+    if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id;
+    if (!userId) throw new Error('Sin sesión');
+
+    const { error } = await sb.from('body_compositions').insert({
+      patient_user_id: userId,
+      uploaded_by_user_id: userId,
+      source: 'self',
+      method: 'manual',
+      measured_at: measuredAt,
+      weight_kg: weight,
+    });
+    if (error) throw error;
+
+    // Sync HT — sin esto, el coach lee weight_kg_current viejo del bootstrap
+    // y queda STALE. Read-merge-write porque jsonb update parcial requiere RPC.
+    // Fire-and-forget: si falla, el INSERT en body_compositions ya quedó persistido.
+    try {
+      const { data: htRow } = await sb
+        .from('user_health_twin')
+        .select('identity')
+        .eq('user_id', userId)
+        .maybeSingle();
+      const newIdentity = { ...(htRow?.identity || {}), weight_kg_current: weight };
+      sb.from('user_health_twin')
+        .upsert({ user_id: userId, identity: newIdentity }, { onConflict: 'user_id' })
+        .then(() => {})
+        .catch(e => console.warn('[pg] HT sync:', e));
+    } catch (htErr) {
+      console.warn('[pg] HT sync attempt:', htErr);
+    }
+
+    pgCloseLogModal();
+    // Invalidar cache + re-render
+    pgState.loaded = false;
+    await pgRender();
+    // Refresh pillar en Hoy también
+    renderHoyProgressPillar().catch(()=>{});
+    // Toast
+    pgToast(`Peso registrado: ${weight.toFixed(1)} kg`);
+  } catch (e) {
+    console.error('[pg] save error:', e);
+    alert('No se pudo guardar. Revisá tu conexión.');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Guardar'; }
+  }
+}
+
+function pgToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(15,23,42,0.95); color:#F8FAFC; padding:14px 22px; border-radius:14px; font-size:14px; font-weight:600; z-index:99999; box-shadow:0 12px 40px rgba(0,0,0,0.4); border:1px solid rgba(190,242,100,0.25); line-height:1.4;';
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { if (t.parentNode) t.remove(); }, 1800);
 }
 
 </script>
