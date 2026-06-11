@@ -19591,9 +19591,10 @@ function coachOpen() {
 }
 
 function coachClose() {
-  // Limpiar pulse context pendiente: si el user abrió desde Pulse pero no
-  // mandó mensaje, el context no debería leakear a una próxima conversación.
+  // Limpiar contextos pendientes: si el user abrió desde Pulse o Chapter
+  // pero no mandó mensaje, el contexto no debe leakear a próximas conversaciones.
   state._pendingPulseContext = null;
+  state._pendingChapterContext = null;
   goStep(state._coachFrom || 'app');
   // Restablecer tab "Hoy" como activo si volvemos al app (el tab "SAVIA"
   // no debería quedar visualmente seleccionado cuando dejamos el chat).
@@ -19617,8 +19618,9 @@ function coachStartNewThread() {
   // Sin esto, el server reusa el default activo del user y el history viejo
   // contamina al modelo nuevo (in-context learning poisoning).
   coachState._forceNew = true;
-  // Limpiar también pulse context para que no leakee a la nueva conversación
+  // Limpiar contextos para que no leakeen a la nueva conversación
   state._pendingPulseContext = null;
+  state._pendingChapterContext = null;
   coachRenderMessages();
 }
 
@@ -19793,6 +19795,19 @@ async function coachStreamReply(userText, handlers) {
       // Si el user entró al chat desde un Pulse, mandamos el contexto solo
       // la primera vez. Se limpia después de mandarse.
       pulse_context: state._pendingPulseContext || null,
+      // Si el user entró al chat desde un capítulo (Sprint 3.B.ext.2),
+      // mandamos el chapter_id. Server lo lee + inyecta al system prompt
+      // para que el coach interprete la conversación como sobre el capítulo.
+      // TTL 5 min: si el flag tiene más de 5 min, es stale y no lo mandamos.
+      chapter_context: (() => {
+        const c = state._pendingChapterContext;
+        if (!c) return null;
+        if (typeof c.setAt === 'number' && (Date.now() - c.setAt > 5 * 60 * 1000)) {
+          state._pendingChapterContext = null;
+          return null;
+        }
+        return { chapter_id: c.chapter_id, source_type: c.source_type };
+      })(),
       // Si el usuario apretó "Nueva conversación", forzar thread nuevo en server.
       // Previene contaminación del modelo con history viejo (in-context poisoning).
       force_new: !!coachState._forceNew
@@ -19801,6 +19816,9 @@ async function coachStreamReply(userText, handlers) {
   // Limpiar el pending context después de mandarlo (solo aplica al primer mensaje)
   if (state._pendingPulseContext) {
     state._pendingPulseContext = null;
+  }
+  if (state._pendingChapterContext) {
+    state._pendingChapterContext = null;
   }
   // Limpiar el force_new después de mandarlo (solo aplica al primer mensaje del thread nuevo)
   if (coachState._forceNew) {
@@ -20870,15 +20888,25 @@ async function tcOpenChatWithChapter() {
   if (typeof coachOpen === 'function') coachOpen();
   try {
     if (typeof coachState !== 'undefined' && Array.isArray(coachState.messages)) {
-      // Bootstrap: pregunta abierta, sin replicar contenido del chapter
-      // (el user acaba de leerlo). Sprint 3.B.ext.2 agregará tool
-      // get_latest_transformation_chapter para que el coach lo conozca.
+      // Bootstrap: pregunta abierta. El contenido del chapter NO se replica
+      // como mensaje visible — se pasa como _pendingChapterContext para que
+      // el server inyecte el chapter al system prompt en el primer turn.
       const greeting = 'Acabás de leer tu capítulo. ¿Qué te tocó?';
       coachState.messages.push({ role: 'assistant', content: greeting });
       if (typeof coachRenderMessages === 'function') coachRenderMessages();
       const empty = document.getElementById('coach-empty');
       if (empty) empty.style.display = 'none';
     }
+    // Señal al server: la conversación nace de este capítulo. Cualquier
+    // pregunta del usuario en el primer turn se interpreta sobre el chapter,
+    // no sobre el día actual. El server limpia el flag tras consumirlo.
+    // setAt: TTL implícito de 5 min para evitar flag colgado si el user no
+    // envía mensaje pero abre coach normal después.
+    state._pendingChapterContext = {
+      chapter_id: tcState.currentChapter.id,
+      source_type: tcState.currentChapter.source_type,
+      setAt: Date.now(),
+    };
     if (typeof trackEvent === 'function') {
       trackEvent('chapter_chat_opened', {
         chapter_id: tcState.currentChapter.id,

@@ -610,8 +610,62 @@ Deno.serve(async (req: Request) => {
     const todayStartISO: string | undefined = body.today_start_iso;
     const tzOffsetMin: number | undefined = body.tz_offset_min;
     const pulseContext: string | null = body.pulse_context || null;
+    const chapterContext: { chapter_id?: string; source_type?: string } | null = body.chapter_context || null;
     const ctx = await buildUserContext(supabaseAdmin, user.id, todayStartISO, tzOffsetMin);
     let systemPrompt = buildSystemPrompt(ctx);
+
+    // Sprint 3.B.ext.2 — Si el user entró al chat desde un capítulo, fetch
+    // ese chapter y inyectarlo al system prompt como contexto urgente. El
+    // coach interpreta CUALQUIER pregunta del primer turn como sobre el chapter.
+    if (chapterContext?.chapter_id) {
+      try {
+        const { data: chap } = await supabaseAdmin
+          .from("transformation_chapters")
+          .select(
+            "id, source_type, created_at, how_you_are_today, arc_until_now, what_this_moment_means, where_i_invite_you, narrative_context",
+          )
+          .eq("id", chapterContext.chapter_id)
+          .eq("user_id", user.id)
+          .maybeSingle();
+        if (chap) {
+          const ncObj = (chap.narrative_context as Record<string, unknown>) || {};
+          const daysAgo = Math.max(
+            0,
+            Math.round(
+              (Date.now() - new Date(chap.created_at).getTime()) / 86400000,
+            ),
+          );
+          const daysAgoLabel =
+            daysAgo === 0 ? "hoy mismo" :
+            daysAgo === 1 ? "ayer" :
+            `hace ${daysAgo} días`;
+          systemPrompt = `# CONTEXTO INMEDIATO — el usuario ABRIÓ el chat desde un capítulo de su biblioteca
+
+El usuario acaba de leer su Capítulo${ncObj.analysis_number ? " #" + ncObj.analysis_number : ""} (generado ${daysAgoLabel}, origen: ${chap.source_type}). Cualquier mensaje del usuario en este primer turn es sobre el capítulo, NO sobre el día actual.
+
+CONTENIDO DEL CAPÍTULO (texto inmutable que VOS escribiste en su momento):
+
+Cómo estás hoy:
+${chap.how_you_are_today || "—"}
+
+${chap.arc_until_now ? `El arco hasta acá:\n${chap.arc_until_now}\n` : ""}
+${chap.what_this_moment_means ? `Lo que este momento significa:\n${chap.what_this_moment_means}\n` : ""}
+${chap.where_i_invite_you ? `Hacia dónde te invito:\n${chap.where_i_invite_you}\n` : ""}
+
+REGLAS sobre este capítulo — NO NEGOCIABLES:
+- Cualquier pregunta abierta ("dame tus observaciones", "qué notaste", "cómo estoy", "explicame más") en este turno es sobre EL CAPÍTULO, no sobre el balance del día. NO invoques get_balance ni get_day_summary salvo que el usuario explícitamente pregunte por su día.
+- Comentá citando del capítulo con referencias temporales ("${daysAgoLabel} dejé escrito que…", "en tu último capítulo observé que…").
+- El capítulo es INMUTABLE. NO regeneres el análisis. NO contradigas. Si querés sumar algo nuevo, lo enmarcás como complemento, no como corrección.
+- Si el usuario pregunta sobre algo del DÍA actual (qué comí, cómo voy hoy, balance, registrar comida), ahí sí cambiás de modo y usás las tools normales.
+
+` + systemPrompt;
+        } else {
+          console.warn(`[ai-chat] chapter_context provided but chapter not found: ${chapterContext.chapter_id}`);
+        }
+      } catch (e) {
+        console.warn("[ai-chat] chapter_context fetch failed:", e);
+      }
+    }
 
     // Si el user entró al chat desde un Pulse, inyectar el context_for_chat
     // al inicio del system prompt para que el coach profundice en ese insight
