@@ -2464,9 +2464,6 @@
   .ch-status-dots span:nth-child(2) { animation-delay: 0.2s; }
   .ch-status-dots span:nth-child(3) { animation-delay: 0.4s; }
   @keyframes chDot { 0%, 60%, 100% { opacity: 0.3; } 30% { opacity: 1; } }
-  .ch-reflection { padding: 0 26px 26px; }
-  .ch-reflection-body { font-size: 16px; color: #CBD5E1; font-style: italic; line-height: 1.6; padding-left: 14px; border-left: 2px solid rgba(190,242,100,0.35); }
-  .ch-reflection-attr { font-size: 12px; color: #64748B; margin-top: 6px; padding-left: 14px; }
   .ch-body { padding: 0 26px 8px; }
   .ch-section { margin-bottom: 28px; }
   .ch-section-text { font-size: 16.5px; line-height: 1.72; color: #E2E8F0; font-weight: 400; }
@@ -2493,14 +2490,6 @@
   .th-empty { padding: 24px 20px; text-align: center; background: rgba(255,255,255,0.02); border: 1px dashed rgba(255,255,255,0.08); border-radius: 14px; }
   .th-empty-title { font-size: 14px; color: #CBD5E1; font-weight: 600; margin-bottom: 8px; }
   .th-empty-sub { font-size: 12.5px; color: #64748B; line-height: 1.5; }
-
-  /* Confirm de InBody — campo opcional de user_reflection */
-  .nut-inbody-reflection-wrap { margin-top: 14px; }
-  .nut-inbody-reflection-label { font-size: 11px; color: #94A3B8; font-weight: 700; letter-spacing: 0.4px; margin-bottom: 6px; }
-  .nut-inbody-reflection-hint { font-size: 11px; color: #64748B; margin-bottom: 8px; line-height: 1.4; }
-  .nut-inbody-reflection-input { width: 100%; min-height: 64px; max-height: 140px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 12px 14px; color: #F8FAFC; font-size: 14px; line-height: 1.5; font-family: inherit; resize: vertical; -webkit-appearance: none; appearance: none; }
-  .nut-inbody-reflection-input:focus { outline: none; border-color: rgba(190,242,100,0.35); }
-  .nut-inbody-reflection-input::placeholder { color: #64748B; font-style: italic; }
 
   /* Modal Log peso */
   .pg-modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.62); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
@@ -7146,20 +7135,6 @@
         <div style="font-size:11px; color:#BEF264; font-weight:600; margin-bottom:4px;">¿Por qué importa la LBM?</div>
         <div style="font-size:11px; color:#CBD5E1; line-height:1.5;">Tu proteína se calcula sobre masa magra. Con tu LBM real, tus targets de macros serán mucho más precisos.</div>
       </div>
-
-      <!-- user_reflection opcional (Sprint 3.B.ext.1).
-           La voz del usuario al momento. En 3 años, probablemente
-           el campo más valioso del capítulo. -->
-      <div class="nut-inbody-reflection-wrap">
-        <div class="nut-inbody-reflection-label">¿Cómo te sentís con tu cuerpo hoy? (opcional)</div>
-        <div class="nut-inbody-reflection-hint">Una o dos frases. Esto se guarda con este capítulo de tu historia.</div>
-        <textarea
-          id="nut-inbody-reflection"
-          class="nut-inbody-reflection-input"
-          rows="2"
-          maxlength="500"
-          placeholder="Cómo te ves, cómo te sentís, qué notás…"></textarea>
-      </div>
     </div>
     <button class="nut-onb-continue" id="nut-inbody-save-btn" onclick="nutInBodySave()">Guardar y recalcular macros</button>
   </div>
@@ -8745,12 +8720,6 @@
     <!-- Línea sutil "SAVIA está escribiendo…" (visible solo en skeleton) -->
     <div class="ch-status" id="ch-status">
       <span class="ch-status-text">SAVIA está escribiendo tu capítulo<span class="ch-status-dots"><span>.</span><span>.</span><span>.</span></span></span>
-    </div>
-
-    <!-- user_reflection como cita arriba (oculto si vacío) -->
-    <div class="ch-reflection" id="ch-reflection" style="display:none;">
-      <div class="ch-reflection-body" id="ch-reflection-body">—</div>
-      <div class="ch-reflection-attr">tu reflexión del momento</div>
     </div>
 
     <!-- Body: 4 secciones. Cada una se muestra solo si tiene texto. -->
@@ -12878,14 +12847,11 @@ const nutInBodyState = {
   // Sprint 3.B.ext.1: entry point determina el flujo post-save.
   // 'profile' (legacy) → recalcula targets + comparativo + vuelve a profile.
   // 'progress' (nuevo) → genera transformation_chapter + abre chapter-viewer.
-  // El user_reflection se captura opcionalmente desde el confirm screen.
   entryPoint: 'profile',
-  userReflection: null,
 };
 
 function nutInBodyOpenUpload(entryPoint) {
   nutInBodyState.entryPoint = (entryPoint === 'progress') ? 'progress' : 'profile';
-  nutInBodyState.userReflection = null;
   const input = document.getElementById('profile-inbody-input');
   if (input) { input.value = ''; input.click(); }
 }
@@ -13122,11 +13088,6 @@ async function nutInBodySave() {
         .catch(e => console.warn('[InBody] HT sync:', e));
     } catch (htErr) { console.warn('[InBody] HT sync attempt:', htErr); }
 
-    // Capturar user_reflection del confirm screen (opcional)
-    const reflectionEl = document.getElementById('nut-inbody-reflection');
-    const userReflection = reflectionEl?.value?.trim() || null;
-    nutInBodyState.userReflection = userReflection;
-
     // ─── Bifurcación según entryPoint ─────────────────────────────
     // Sprint 3.B.ext.1:
     //   'progress' (NUEVO) → directo al chapter-viewer con skeleton, en
@@ -13140,8 +13101,6 @@ async function nutInBodySave() {
       nutInBodyState.fileBase64 = null;
       nutInBodyState.fileMime = null;
       nutInBodyState.parsed = null;
-      // Limpiar el textarea para próximo upload
-      if (reflectionEl) reflectionEl.value = '';
 
       // Invalidar cache de Tu Progreso (para próximo render)
       if (typeof pgState !== 'undefined') {
@@ -13153,16 +13112,7 @@ async function nutInBodySave() {
       }
 
       // Abrir chapter-viewer con skeleton + arrancar generación
-      tcOpenChapterFromSource('inbody', saved.id, saved, userReflection);
-
-      // Telemetría: si el user dejó reflexión, contarlo
-      if (userReflection && typeof trackEvent === 'function') {
-        trackEvent('chapter_user_reflection_added', {
-          source_type: 'inbody',
-          source_id: saved.id,
-          length: userReflection.length,
-        });
-      }
+      tcOpenChapterFromSource('inbody', saved.id, saved);
       return;
     }
 
@@ -13177,7 +13127,6 @@ async function nutInBodySave() {
     nutInBodyState.fileBase64 = null;
     nutInBodyState.fileMime = null;
     nutInBodyState.parsed = null;
-    if (reflectionEl) reflectionEl.value = '';
 
     // Disparar generación de chapter fire-and-forget también desde profile flow.
     // El chapter queda persistido para verlo desde Tu Historia más adelante.
@@ -13192,7 +13141,6 @@ async function nutInBodySave() {
         body: JSON.stringify({
           source_type: 'inbody',
           source_id: saved.id,
-          user_reflection: userReflection,
         }),
       }).catch(e => console.warn('[tc] fire-and-forget from profile flow:', e));
     }
@@ -20639,7 +20587,7 @@ const tcState = {
   prevScreen: 'app',
 };
 
-async function tcOpenChapterFromSource(sourceType, sourceId, sourceData, userReflection) {
+async function tcOpenChapterFromSource(sourceType, sourceId, sourceData) {
   // Recordar pantalla previa para back navigation
   const active = document.querySelector('.screen.active');
   tcState.prevScreen = active?.getAttribute('data-step') || 'app';
@@ -20651,9 +20599,6 @@ async function tcOpenChapterFromSource(sourceType, sourceId, sourceData, userRef
 
   // Reset UI: skeleton visible, sections ocultas, footer oculto
   tcShowSkeleton();
-  // Reflection: si user_reflection viene, ya lo mostramos arriba antes de
-  // que llegue el chapter (es información del cliente, no esperamos al server).
-  tcRenderReflection(userReflection);
 
   // Header chip + fecha — temporal, lo refinamos cuando llegue chapter con narrative_context
   const chip = document.getElementById('ch-chip');
@@ -20668,10 +20613,10 @@ async function tcOpenChapterFromSource(sourceType, sourceId, sourceData, userRef
   if (typeof goStep === 'function') goStep('chapter-viewer');
 
   // Disparar generación
-  tcGenerateChapter(sourceType, sourceId, userReflection);
+  tcGenerateChapter(sourceType, sourceId);
 }
 
-async function tcGenerateChapter(sourceType, sourceId, userReflection) {
+async function tcGenerateChapter(sourceType, sourceId) {
   try {
     const { data: { session } } = await sb.auth.getSession();
     if (!session) throw new Error('no_session');
@@ -20685,7 +20630,6 @@ async function tcGenerateChapter(sourceType, sourceId, userReflection) {
       body: JSON.stringify({
         source_type: sourceType,
         source_id: sourceId,
-        user_reflection: userReflection || null,
       }),
     });
     if (!resp.ok) {
@@ -20715,10 +20659,8 @@ async function tcGenerateChapter(sourceType, sourceId, userReflection) {
     tcState.generating = false;
     tcState.generationError = String(e?.message || e);
     // El server garantiza chapter (deterministic fallback). Si llegamos
-    // acá fue error de red. Mostramos retry simple sustituyendo el skeleton.
-    // Guardamos los args en tcState para evitar problemas con quotes en
-    // el reflection si lo embebemos en el onclick string.
-    tcState._lastRetry = { sourceType, sourceId, userReflection: userReflection || null };
+    // acá fue error de red o de auth. Guardamos los args para retry.
+    tcState._lastRetry = { sourceType, sourceId };
     const skel = document.getElementById('ch-skeleton-block');
     if (skel) {
       skel.innerHTML = `<div style="font-size:14px; color:#F87171; margin-bottom:14px; line-height:1.5;">No pudimos cargar tu capítulo en este momento.</div>
@@ -20743,7 +20685,7 @@ function tcRetryGenerate() {
   }
   const status = document.getElementById('ch-status');
   if (status) status.style.display = '';
-  tcGenerateChapter(r.sourceType, r.sourceId, r.userReflection);
+  tcGenerateChapter(r.sourceType, r.sourceId);
 }
 
 function tcShowSkeleton() {
@@ -20755,18 +20697,6 @@ function tcShowSkeleton() {
     const el = document.getElementById(id);
     if (el) el.style.display = 'none';
   });
-}
-
-function tcRenderReflection(userReflection) {
-  const wrap = document.getElementById('ch-reflection');
-  const body = document.getElementById('ch-reflection-body');
-  if (!wrap || !body) return;
-  if (userReflection && String(userReflection).trim().length > 0) {
-    body.textContent = '"' + String(userReflection).trim() + '"';
-    wrap.style.display = '';
-  } else {
-    wrap.style.display = 'none';
-  }
 }
 
 function tcHydrateViewer(chapter) {
@@ -20782,9 +20712,6 @@ function tcHydrateViewer(chapter) {
     const createdAt = chapter.created_at || new Date().toISOString();
     date.textContent = new Date(createdAt).toLocaleDateString('es-CR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
-
-  // Reflection (puede haber sido persistida en el chapter)
-  if (chapter.user_reflection) tcRenderReflection(chapter.user_reflection);
 
   // Esconder skeleton + status
   const status = document.getElementById('ch-status');
@@ -20924,7 +20851,6 @@ async function tcOpenChapterById(chapterId) {
     tcState.currentChapter = chapter;
     tcState.generating = false;
     // Render directo (sin skeleton porque ya tenemos data)
-    tcRenderReflection(chapter.user_reflection || null);
     tcHydrateViewer(chapter);
     if (typeof goStep === 'function') goStep('chapter-viewer');
     if (typeof trackEvent === 'function') {

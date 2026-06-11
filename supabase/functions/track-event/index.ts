@@ -40,7 +40,6 @@ const ALLOWED_EVENTS = new Set([
   "chapter_created",
   "chapter_opened",
   "chapter_chat_opened",
-  "chapter_user_reflection_added",
 ]);
 
 function jsonResponse(body: unknown, status = 200): Response {

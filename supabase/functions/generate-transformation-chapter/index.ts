@@ -13,8 +13,7 @@
 //
 // POST body: {
 //   source_type: 'inbody',
-//   source_id: <body_composition_id>,
-//   user_reflection?: string  (opcional, voz del usuario en el momento)
+//   source_id: <body_composition_id>
 // }
 // Returns: { ok: true, chapter: {...}, cached: boolean }
 // =====================================================================
@@ -68,7 +67,6 @@ Deno.serve(async (req: Request) => {
     const body = await req.json().catch(() => ({}));
     const sourceType: string | undefined = body?.source_type;
     const sourceId: string | undefined = body?.source_id;
-    const userReflection: string | null = body?.user_reflection?.trim() || null;
 
     if (!sourceType || sourceType !== "inbody") {
       return jsonError(
@@ -192,7 +190,6 @@ Deno.serve(async (req: Request) => {
       activeGoals,
       targets,
       narrativeContext,
-      userReflection,
     );
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
@@ -258,7 +255,7 @@ Deno.serve(async (req: Request) => {
         arc_until_now: chapterContent.arc_until_now,
         what_this_moment_means: chapterContent.what_this_moment_means,
         where_i_invite_you: chapterContent.where_i_invite_you,
-        user_reflection: userReflection,
+        user_reflection: null, // El capítulo es 100% lectura de SAVIA; no input del user.
         cover_image_url: null, // Sprint 2
         goals_snapshot: { goals: activeGoals },
         identity_snapshot: identity,
@@ -315,7 +312,6 @@ function buildChapterPrompt(
   activeGoals: any[],
   targets: any,
   narrativeContext: { analysis_number: number; days_since_signup: number; days_since_first_measurement: number },
-  userReflection: string | null,
 ): string {
   const name = (identity?.name as string)?.split(" ")[0] || "el usuario";
   const sex = identity?.sex || "—";
@@ -396,10 +392,6 @@ function buildChapterPrompt(
     year: "numeric",
   });
 
-  const userReflectionSection = userReflection
-    ? `Antes de subir esta medición, ${name} escribió:\n"${userReflection}"`
-    : "";
-
   const targetsLine = targets
     ? `Targets nutricionales activos: kcal ${targets.kcal}, proteína ${targets.protein_g}g.`
     : "Sin targets nutricionales activos.";
@@ -444,15 +436,13 @@ ${previousSection}
 
 ${arcSection}
 
-${userReflectionSection}
-
 ## Las cuatro secciones del capítulo
 
 Cada sección es 2-4 frases densas. Sin headers, sin numeración — el cliente las renderiza con separación tipográfica sutil.
 
 ### 1. how_you_are_today — Cómo estás hoy
 
-Describí el cuerpo de ${name} en este momento. NO recitando métricas como reporte: narrando como observadora que mira con cuidado. Mencioná lo más relevante de su composición actual con voz humana. Si ${name} dejó reflexión antes de subir, hacé eco sutil sin replicar literal.
+Describí el cuerpo de ${name} en este momento. NO recitando métricas como reporte: narrando como observadora que mira con cuidado. Mencioná lo más relevante de su composición actual con voz humana.
 
 ### 2. arc_until_now — El arco hasta acá
 
