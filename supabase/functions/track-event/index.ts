@@ -35,6 +35,12 @@ const ALLOWED_EVENTS = new Set([
   "morning_pulse_opened",
   "evening_pulse_opened",
   "weekly_review_opened",
+  "inbody_review_chat_opened",
+  // Sprint 3.B.ext.1 — Transformation chapters
+  "chapter_created",
+  "chapter_opened",
+  "chapter_chat_opened",
+  "chapter_user_reflection_added",
 ]);
 
 function jsonResponse(body: unknown, status = 200): Response {
