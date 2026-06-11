@@ -58,11 +58,16 @@ Deno.serve(async (req: Request) => {
       return jsonError("Server misconfigured", 500);
     }
 
-    const supabaseAuth = createClient(supabaseUrl, supabaseAnon, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const { data: { user }, error: userErr } = await supabaseAuth.auth.getUser();
-    if (userErr || !user) return jsonError("Unauthorized", 401);
+    // Extraer el JWT del header y pasarlo explícitamente a getUser.
+    // Sin pasar el token, getUser() intenta resolver desde una sesión local
+    // (que no existe en Edge Functions) y falla con JWTs ES256/asymmetric.
+    const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
+    const supabaseAuth = createClient(supabaseUrl, supabaseAnon);
+    const { data: { user }, error: userErr } = await supabaseAuth.auth.getUser(jwt);
+    if (userErr || !user) {
+      console.error("[tc] auth.getUser failed:", userErr?.message || "no user");
+      return jsonError("Unauthorized", 401);
+    }
 
     const body = await req.json().catch(() => ({}));
     const sourceType: string | undefined = body?.source_type;

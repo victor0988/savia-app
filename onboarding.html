@@ -20620,14 +20620,7 @@ async function tcOpenChapterFromSource(sourceType, sourceId, sourceData) {
 async function tcGenerateChapter(sourceType, sourceId) {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) {
-      alert('DEBUG: no hay session en el cliente. Hacé logout + login.');
-      throw new Error('no_session');
-    }
-    // DEBUG TEMPORAL: mostrar primeros caracteres del token para confirmar que existe
-    const tokenPreview = session.access_token ? session.access_token.slice(0, 20) + '…' : 'NULL';
-    console.log('[tc DEBUG] token preview:', tokenPreview, 'len:', session.access_token?.length);
-
+    if (!session) throw new Error('no_session');
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-transformation-chapter`, {
       method: 'POST',
       headers: {
@@ -20642,8 +20635,6 @@ async function tcGenerateChapter(sourceType, sourceId) {
     });
     if (!resp.ok) {
       const txt = await resp.text();
-      // DEBUG TEMPORAL: alert con el detalle exacto del error
-      alert('DEBUG ERROR ' + resp.status + ':\n' + txt.slice(0, 400) + '\n\nToken: ' + tokenPreview);
       throw new Error('HTTP ' + resp.status + ' ' + txt.slice(0, 200));
     }
     const json = await resp.json();
