@@ -339,6 +339,20 @@ const TOOLS = [
     },
   },
   {
+    name: "get_latest_transformation_chapter",
+    description:
+      "Lee un capítulo de la biblioteca de transformación del usuario. Sin argumento, devuelve el último capítulo generado. Usá esto cuando: (1) el usuario menciona 'mi último capítulo' / 'lo que leí' / 'el análisis' / 'mi historia', (2) acaba de leer un capítulo y querés comentar sobre él, (3) querés invocar continuidad biográfica con referencia explícita. El capítulo es INMUTABLE: NO regeneres el análisis. Comentá sobre lo que el capítulo YA dice, profundizá donde el usuario pregunte, conectá con su momento actual.",
+    input_schema: {
+      type: "object",
+      properties: {
+        chapter_id: {
+          type: "string",
+          description: "UUID de un capítulo específico. Si se omite, devuelve el último capítulo del usuario.",
+        },
+      },
+    },
+  },
+  {
     name: "get_best_week",
     description:
       "Calcula la 'mejor semana' del usuario en un período y devuelve un breakdown comportamental de esa semana (workouts, kcal, proteína, adherencia, sueño si hay). Usá esto cuando el usuario pregunta '¿cómo voy?', '¿qué he hecho bien?', '¿cuál fue mi mejor semana?', '¿qué semana funcionó mejor?'. Devuelve el rango exacto + el valor del metric + comparación vs promedio del período + narrative_hooks para que vos cuentes la historia con prosa, no con lista. La idea es atribución honest: conectar acción → resultado.",
@@ -925,6 +939,7 @@ async function executeToolByName(
     if (name === "record_note") return await executeRecordNote(input, userId, supabase);
     if (name === "log_weight") return await executeLogWeight(input, userId, supabase);
     if (name === "get_best_week") return await executeGetBestWeek(input, userId, supabase, tzOffsetMin);
+    if (name === "get_latest_transformation_chapter") return await executeGetLatestTransformationChapter(input, userId, supabase);
     return { error: `Unknown tool: ${name}` };
   } catch (err) {
     console.error(`[tool ${name}] error:`, err);
@@ -2608,6 +2623,90 @@ async function executeGetBestWeek(
   };
 }
 
+// ─── Sprint 3.B.ext.2 — get_latest_transformation_chapter ─────────────
+// Devuelve un capítulo de la biblioteca del usuario. Sin chapter_id,
+// devuelve el último. El capítulo es INMUTABLE — el coach NO debe
+// regenerar análisis, solo comentar sobre lo que dice.
+async function executeGetLatestTransformationChapter(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<any> {
+  const chapterId: string | null = input?.chapter_id?.trim() || null;
+
+  let query = supabase
+    .from("transformation_chapters")
+    .select(
+      "id, source_type, source_id, created_at, how_you_are_today, arc_until_now, what_this_moment_means, where_i_invite_you, narrative_context, generation_status",
+    )
+    .eq("user_id", userId);
+
+  if (chapterId) {
+    query = query.eq("id", chapterId);
+  } else {
+    query = query.order("created_at", { ascending: false }).limit(1);
+  }
+
+  const { data, error } = await query.maybeSingle();
+  if (error) {
+    console.error("[get_latest_transformation_chapter] error:", error);
+    return { error: error.message };
+  }
+  if (!data) {
+    return {
+      ok: false,
+      reason: "no_chapter",
+      summary: "El usuario aún no tiene capítulos en su biblioteca de transformación.",
+    };
+  }
+
+  // Calcular "hace cuánto" para que el coach pueda anclar temporalmente
+  const createdAt = new Date(data.created_at);
+  const daysAgo = Math.max(
+    0,
+    Math.round((Date.now() - createdAt.getTime()) / 86400000),
+  );
+  // Label legible para evitar que el coach diga "hace 0 días" robóticamente
+  const daysAgoLabel =
+    daysAgo === 0 ? "hoy mismo" :
+    daysAgo === 1 ? "ayer" :
+    `hace ${daysAgo} días`;
+  const nc = (data.narrative_context as Record<string, unknown>) || {};
+
+  // Si el chapter fue generado por fallback determinístico (Claude falló),
+  // el coach debe saberlo para citar con respeto pero ser cuidadoso con
+  // la calidad de la prosa. No es un blocker, solo contexto.
+  const fallbackNote =
+    data.generation_status === "deterministic_fallback"
+      ? " Nota: este capítulo se generó con fallback templated (el modelo no pudo escribirlo en su momento)."
+      : "";
+
+  console.log(
+    `[get_latest_transformation_chapter] user=${userId} chapter=${data.id} days_ago=${daysAgo} status=${data.generation_status}`,
+  );
+
+  return {
+    ok: true,
+    chapter_id: data.id,
+    source_type: data.source_type,
+    source_id: data.source_id,
+    created_at: data.created_at,
+    days_ago: daysAgo,
+    days_ago_label: daysAgoLabel,
+    analysis_number: nc.analysis_number ?? null,
+    days_since_signup_at_chapter: nc.days_since_signup ?? null,
+    sections: {
+      how_you_are_today: data.how_you_are_today,
+      arc_until_now: data.arc_until_now,
+      what_this_moment_means: data.what_this_moment_means,
+      where_i_invite_you: data.where_i_invite_you,
+    },
+    generation_status: data.generation_status,
+    summary:
+      `Capítulo${nc.analysis_number ? " #" + nc.analysis_number : ""} de ${daysAgoLabel}. Origen: ${data.source_type}. Comentá sobre lo que el capítulo dice, no regeneres.${fallbackNote}`,
+  };
+}
+
 // ─── Memory Reference Detection (Sprint 1.D — telemetría ALC/MER) ─────
 // Heurística regex para detectar cuando el coach hace referencia a
 // memoria histórica del usuario. Captura SIN decidir — los datos se
@@ -3453,6 +3552,7 @@ Llamás una tool cuando:
 - ${name} pide registrar algo concreto y tenés el dato núcleo → log_meal / log_water / log_workout / log_cycle_symptom / log_weight.
 - Necesitás traer data del pasado que NO está en el contexto inicial → get_day_summary (un día) / get_period_summary (rango).
 - ${name} pregunta '¿cómo voy?', '¿qué he hecho bien?', '¿cuál fue mi mejor semana?', o querés conectar acción → resultado con atribución honest → get_best_week.
+- ${name} menciona 'mi último capítulo', 'mi análisis', 'lo que leí', 'mi historia con SAVIA', o acabás de detectar que abrió chat desde un capítulo → get_latest_transformation_chapter.
 - Aprendiste algo NUEVO que define quién es ${name} → update_health_twin.
 - Pide borrar algo → delete_recent_meal.
 - Acabás de escribir algo y necesitás el balance fresco → get_balance.
@@ -3466,12 +3566,16 @@ Detalles operativos de tools:
 - log_weight: si menciona su peso ("peso 76", "me pesé 73.4", "estoy en 80 kilos"), registrás directo sin confirmar. Si menciona libras, convertís (1 lb = 0.4536 kg). Si también dice % grasa o masa magra, los registrás en el mismo call. El output trae delta_kg vs su última medición — usalo para responder con contexto temporal sutil ("vas bajando", "+0.4kg en 12 días, normal por el entreno", etc) en vez de "anoté tu peso".
 - get_best_week: cuando ${name} pregunta cómo va o qué ha hecho bien, llamás con metric='auto' (default) y narrás la historia con prosa, NO con lista de números. El output trae narrative_hooks: usá 2-3 frases como base, conectalas con conjunciones, agregá interpretación. Ejemplo BUENO: "Tu mejor semana fue la del 12 de mayo. Hiciste 4 workouts (vs 2 promedio) y dormiste 7.4h. Sin coincidencia: perdiste 0.6 kg esa semana." Ejemplo MALO (NO HACER): lista de bullets con los hooks crudos. Si el output es ok=false, decile honestamente que aún no hay data suficiente — no inventés.
 
+- get_latest_transformation_chapter: lee la versión persistida del capítulo. El capítulo es INMUTABLE — NUNCA regeneres el análisis, NUNCA contradigas lo que el capítulo dijo, NUNCA des una "versión nueva" del mismo análisis. El capítulo lo escribiste vos (SAVIA) en su momento; ahora tu rol es comentar sobre lo que él dice, profundizar donde ${name} pregunte, conectar con lo que está viviendo ahora. El output trae 4 secciones (how_you_are_today, arc_until_now, what_this_moment_means, where_i_invite_you) + days_ago. Citá del capítulo con referencias temporales ("hace 5 días dejé escrito que…", "en tu último capítulo observé que…"). Si el output es ok=false (no_chapter), explicá que aún no hay capítulos y que el primero llega al subir un InBody.
+
 # COHERENCIA CON CAPÍTULOS DE TRANSFORMACIÓN
-SAVIA tiene una biblioteca de capítulos de transformación persistentes (transformation_chapters). Cada InBody que sube ${name} genera un capítulo con 4 secciones biográficas inmutables (Cómo estás hoy / El arco hasta acá / Lo que este momento significa / Hacia dónde te invito). El capítulo es el ACTIVO — el chat con vos nace del capítulo, no al revés.
+SAVIA tiene una biblioteca de capítulos de transformación persistentes. Cada InBody que sube ${name} genera un capítulo con 4 secciones biográficas inmutables (Cómo estás hoy / El arco hasta acá / Lo que este momento significa / Hacia dónde te invito). El capítulo es el ACTIVO — el chat con vos nace del capítulo, no al revés.
 
-Si ${name} acaba de leer un capítulo reciente (últimos 30 días) y vino al chat desde ahí, tu tono debe ser COHERENTE con lo que el capítulo dice. NO contradigas la lectura del capítulo. Si el capítulo dijo "estás en una meseta saludable", no le digas mañana "vas mal, hay que cambiar".
-
-En Sprint próximo vas a tener una tool específica para LEER el capítulo directamente (get_latest_transformation_chapter). Por ahora, asumí que existe y mantenete consistente con la información del Health Twin reciente.
+Reglas no negociables:
+1. Cuando ${name} mencione "mi capítulo", "mi análisis", "mi historia con SAVIA", "lo que leí", o cualquier referencia a la biblioteca → invocás get_latest_transformation_chapter ANTES de responder. No respondas de memoria.
+2. El capítulo es INMUTABLE. Vos lo escribiste en su momento. NO regeneres, NO des una versión nueva, NO contradigas. Tu rol al volver al capítulo es comentar, profundizar y conectar con el presente.
+3. Si el capítulo dijo "estás en una meseta saludable" hace 3 días, no le digas hoy "vas mal, hay que cambiar". Si ves data nueva que cambia la lectura, lo decís con respeto al capítulo previo: "lo que observaba en tu último capítulo se mantiene, y ahora veo además que…".
+4. Hablás del capítulo con referencias temporales explícitas: "hace 5 días te dejé escrito que…", "en tu último capítulo notaba que…". Esto es continuidad biográfica visible.
 - get_day_summary: para UN día pasado específico ("qué entrené el sábado"). NO la uses para HOY — HOY ya está en el contexto.
 - get_period_summary: para RANGO de días ("últimos 7 días", "esta semana"). Cuando termina, sintetizá los 3 componentes (nutrición + entreno + adherencia) contra el goal — NO recites números.
 - get_balance: solo después de registrar algo y necesitás data fresca.
