@@ -20588,9 +20588,10 @@ const tcState = {
 };
 
 async function tcOpenChapterFromSource(sourceType, sourceId, sourceData) {
-  // Recordar pantalla previa para back navigation
-  const active = document.querySelector('.screen.active');
-  tcState.prevScreen = active?.getAttribute('data-step') || 'app';
+  // Cuando venimos de un save fresh, el back SIEMPRE va a Hoy. NO volvemos
+  // al confirm screen del InBody — si el user le da back y vuelve al confirm
+  // lleno, hacer click en Guardar crea un duplicado del body_composition.
+  tcState.prevScreen = 'app';
 
   tcState.currentChapter = null;
   tcState.currentSource = sourceData || null;
@@ -20619,7 +20620,14 @@ async function tcOpenChapterFromSource(sourceType, sourceId, sourceData) {
 async function tcGenerateChapter(sourceType, sourceId) {
   try {
     const { data: { session } } = await sb.auth.getSession();
-    if (!session) throw new Error('no_session');
+    if (!session) {
+      alert('DEBUG: no hay session en el cliente. Hacé logout + login.');
+      throw new Error('no_session');
+    }
+    // DEBUG TEMPORAL: mostrar primeros caracteres del token para confirmar que existe
+    const tokenPreview = session.access_token ? session.access_token.slice(0, 20) + '…' : 'NULL';
+    console.log('[tc DEBUG] token preview:', tokenPreview, 'len:', session.access_token?.length);
+
     const resp = await fetch(`${SUPABASE_URL}/functions/v1/generate-transformation-chapter`, {
       method: 'POST',
       headers: {
@@ -20634,6 +20642,8 @@ async function tcGenerateChapter(sourceType, sourceId) {
     });
     if (!resp.ok) {
       const txt = await resp.text();
+      // DEBUG TEMPORAL: alert con el detalle exacto del error
+      alert('DEBUG ERROR ' + resp.status + ':\n' + txt.slice(0, 400) + '\n\nToken: ' + tokenPreview);
       throw new Error('HTTP ' + resp.status + ' ' + txt.slice(0, 200));
     }
     const json = await resp.json();
