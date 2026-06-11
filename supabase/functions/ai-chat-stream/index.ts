@@ -338,6 +338,27 @@ const TOOLS = [
       required: ["weight_kg"],
     },
   },
+  {
+    name: "get_best_week",
+    description:
+      "Calcula la 'mejor semana' del usuario en un período y devuelve un breakdown comportamental de esa semana (workouts, kcal, proteína, adherencia, sueño si hay). Usá esto cuando el usuario pregunta '¿cómo voy?', '¿qué he hecho bien?', '¿cuál fue mi mejor semana?', '¿qué semana funcionó mejor?'. Devuelve el rango exacto + el valor del metric + comparación vs promedio del período + narrative_hooks para que vos cuentes la historia con prosa, no con lista. La idea es atribución honest: conectar acción → resultado.",
+    input_schema: {
+      type: "object",
+      properties: {
+        metric: {
+          type: "string",
+          enum: ["auto", "weight_loss", "workout_volume", "adherence"],
+          description:
+            "auto: SAVIA elige el metric más significativo según data del user. weight_loss: semana con mayor pérdida de peso (requiere ≥2 body_compositions). workout_volume: semana con más kcal/min de entreno. adherence: semana con mayor % kcal+proteína alcanzados. Default 'auto'.",
+        },
+        period_days: {
+          type: "number",
+          description: "Cuántos días hacia atrás analizar. Default 90. Mínimo 14, máximo 365.",
+        },
+      },
+      required: [],
+    },
+  },
 ];
 
 Deno.serve(async (req: Request) => {
@@ -903,6 +924,7 @@ async function executeToolByName(
     if (name === "delete_recent_meal") return await executeDeleteRecentMeal(input, userId, supabase, tzOffsetMin);
     if (name === "record_note") return await executeRecordNote(input, userId, supabase);
     if (name === "log_weight") return await executeLogWeight(input, userId, supabase);
+    if (name === "get_best_week") return await executeGetBestWeek(input, userId, supabase, tzOffsetMin);
     return { error: `Unknown tool: ${name}` };
   } catch (err) {
     console.error(`[tool ${name}] error:`, err);
@@ -2245,6 +2267,347 @@ async function executeLogWeight(
   };
 }
 
+// ─── Sprint 3.B — get_best_week executor ──────────────────────────────
+// Calcula la "mejor semana" del período según UN de 3 metrics y devuelve
+// breakdown comportamental para que el coach narre la atribución con
+// contexto cruzado. metric='auto' (default) elige el más significativo
+// según data del user.
+async function executeGetBestWeek(
+  input: any,
+  userId: string,
+  supabase: ReturnType<typeof createClient>,
+  tzOffsetMin?: number,
+): Promise<any> {
+  const metric: string = ["auto", "weight_loss", "workout_volume", "adherence"].includes(input?.metric)
+    ? input.metric
+    : "auto";
+  let periodDays = Number(input?.period_days);
+  if (!periodDays || isNaN(periodDays)) periodDays = 90;
+  periodDays = Math.max(14, Math.min(365, periodDays));
+
+  const tz = typeof tzOffsetMin === "number" ? tzOffsetMin : 0;
+  const now = new Date();
+  const periodStart = new Date(now.getTime() - periodDays * 86400000);
+
+  // ─── 1. Fetch data en paralelo ───
+  const [bcRes, mealsRes, workoutsRes, targetsRes, dailyRes] = await Promise.all([
+    supabase
+      .from("body_compositions")
+      .select("measured_at, weight_kg, lean_body_mass_kg, body_fat_pct")
+      .eq("patient_user_id", userId)
+      .not("weight_kg", "is", null)
+      .gte("measured_at", periodStart.toISOString())
+      .order("measured_at", { ascending: true }),
+    supabase
+      .from("meal_logs")
+      .select("ts, total_kcal, total_protein_g")
+      .eq("user_id", userId)
+      .gte("ts", periodStart.toISOString()),
+    supabase
+      .from("workout_logs")
+      .select("ts, duration_min, kcal_burned, type, intensity")
+      .eq("user_id", userId)
+      .gte("ts", periodStart.toISOString()),
+    supabase
+      .from("nutrition_targets")
+      .select("kcal, protein_g")
+      .eq("user_id", userId)
+      .eq("active", true)
+      .order("computed_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+    supabase
+      .from("daily_logs")
+      .select("log_date, sleep_hours, steps")
+      .eq("user_id", userId)
+      .gte("log_date", periodStart.toISOString().split("T")[0]),
+  ]);
+
+  const measurements = bcRes.data || [];
+  const meals = mealsRes.data || [];
+  const workouts = workoutsRes.data || [];
+  const target = targetsRes.data || null;
+  const daily = dailyRes.data || [];
+
+  // ─── 2. Agrupar por semana (lunes local como inicio) ───
+  // Para "semana" usamos lunes local. Convertimos cada timestamp a su date
+  // local, después calculamos el lunes de esa semana.
+  const toLocalDate = (iso: string): Date => {
+    const d = new Date(iso);
+    return new Date(d.getTime() - tz * 60000);
+  };
+  const weekStartISO = (d: Date): string => {
+    // d ya es Date "local-virtual". Lunes = (getUTCDay() + 6) % 7 días atrás.
+    const day = d.getUTCDay(); // 0=domingo, 1=lunes...
+    const offset = (day + 6) % 7;
+    const monday = new Date(d.getTime() - offset * 86400000);
+    monday.setUTCHours(0, 0, 0, 0);
+    return monday.toISOString().split("T")[0];
+  };
+
+  type WeekAgg = {
+    week_start: string;
+    workouts_count: number;
+    total_workout_min: number;
+    total_kcal_burned: number;
+    meals_count: number;
+    total_kcal_consumed: number;
+    total_protein_g: number;
+    sleep_hours_sum: number;
+    sleep_days: number;
+    steps_sum: number;
+    steps_days: number;
+  };
+  const weeks = new Map<string, WeekAgg>();
+  const ensureWeek = (k: string): WeekAgg => {
+    let w = weeks.get(k);
+    if (!w) {
+      w = {
+        week_start: k,
+        workouts_count: 0,
+        total_workout_min: 0,
+        total_kcal_burned: 0,
+        meals_count: 0,
+        total_kcal_consumed: 0,
+        total_protein_g: 0,
+        sleep_hours_sum: 0,
+        sleep_days: 0,
+        steps_sum: 0,
+        steps_days: 0,
+      };
+      weeks.set(k, w);
+    }
+    return w;
+  };
+
+  for (const m of meals) {
+    const ws = weekStartISO(toLocalDate(m.ts));
+    const w = ensureWeek(ws);
+    w.meals_count += 1;
+    w.total_kcal_consumed += Number(m.total_kcal || 0);
+    w.total_protein_g += Number(m.total_protein_g || 0);
+  }
+  for (const wk of workouts) {
+    const ws = weekStartISO(toLocalDate(wk.ts));
+    const w = ensureWeek(ws);
+    w.workouts_count += 1;
+    w.total_workout_min += Number(wk.duration_min || 0);
+    w.total_kcal_burned += Number(wk.kcal_burned || 0);
+  }
+  for (const d of daily) {
+    if (!d.log_date) continue;
+    // log_date es YYYY-MM-DD (fecha local del user). Lo tratamos como
+    // medianoche UTC del lookup-virtual para que weekStartISO calcule
+    // el lunes de la semana local correcta.
+    const dateObj = new Date(d.log_date + "T00:00:00.000Z");
+    const ws = weekStartISO(dateObj);
+    const w = ensureWeek(ws);
+    if (d.sleep_hours) {
+      w.sleep_hours_sum += Number(d.sleep_hours);
+      w.sleep_days += 1;
+    }
+    if (d.steps) {
+      w.steps_sum += Number(d.steps);
+      w.steps_days += 1;
+    }
+  }
+
+  // ─── 3. Calcular metrics por semana ───
+  type WeekScored = WeekAgg & {
+    weight_loss_kg: number | null; // delta entre measurement de inicio y fin de semana (negativo = pérdida)
+    adherence_pct: number | null;
+  };
+  const scored: WeekScored[] = [];
+  for (const w of weeks.values()) {
+    const weekStart = new Date(w.week_start + "T00:00:00.000Z");
+    const weekEnd = new Date(weekStart.getTime() + 7 * 86400000);
+    // weight_loss: measurement más cercano a inicio vs measurement más cercano a fin (DENTRO de la semana, primer y último)
+    const inWeek = measurements.filter((m) => {
+      const t = new Date(m.measured_at).getTime();
+      return t >= weekStart.getTime() && t < weekEnd.getTime();
+    });
+    let weightLoss: number | null = null;
+    if (inWeek.length >= 2) {
+      const wFirst = Number(inWeek[0].weight_kg);
+      const wLast = Number(inWeek[inWeek.length - 1].weight_kg);
+      weightLoss = wLast - wFirst; // negativo = perdió peso
+    }
+    // adherence: solo si tenemos target y al menos 3 meals esa semana (sino es ruido)
+    let adherencePct: number | null = null;
+    if (target?.kcal && w.meals_count >= 3) {
+      const days = 7;
+      const avgKcalDay = w.total_kcal_consumed / days;
+      const avgProtDay = w.total_protein_g / days;
+      const kcalScore = Math.min(1, avgKcalDay / Number(target.kcal));
+      const protScore = target.protein_g
+        ? Math.min(1, avgProtDay / Number(target.protein_g))
+        : 1;
+      adherencePct = Math.round(((kcalScore + protScore) / 2) * 100);
+    }
+    scored.push({ ...w, weight_loss_kg: weightLoss, adherence_pct: adherencePct });
+  }
+
+  if (scored.length === 0) {
+    return {
+      ok: false,
+      reason: "no_data",
+      summary: `No tengo datos suficientes en los últimos ${periodDays} días para identificar una mejor semana.`,
+    };
+  }
+
+  // ─── 4. Elegir best week según metric ───
+  const pickBy = (key: "weight_loss" | "workout_volume" | "adherence"): WeekScored | null => {
+    if (key === "weight_loss") {
+      const elig = scored.filter((w) => w.weight_loss_kg !== null);
+      if (elig.length === 0) return null;
+      // Best = MÁS negativo (mayor pérdida)
+      return elig.reduce((a, b) => (a.weight_loss_kg! < b.weight_loss_kg! ? a : b));
+    }
+    if (key === "workout_volume") {
+      const elig = scored.filter((w) => w.workouts_count > 0);
+      if (elig.length === 0) return null;
+      return elig.reduce((a, b) => (b.total_kcal_burned + b.total_workout_min > a.total_kcal_burned + a.total_workout_min ? b : a));
+    }
+    if (key === "adherence") {
+      const elig = scored.filter((w) => w.adherence_pct !== null);
+      if (elig.length === 0) return null;
+      return elig.reduce((a, b) => ((b.adherence_pct ?? 0) > (a.adherence_pct ?? 0) ? b : a));
+    }
+    return null;
+  };
+
+  let chosenMetric = metric;
+  let best: WeekScored | null = null;
+  if (metric === "auto") {
+    // Preferencia: weight_loss > adherence > workout_volume
+    best = pickBy("weight_loss");
+    chosenMetric = "weight_loss";
+    if (!best) {
+      best = pickBy("adherence");
+      chosenMetric = "adherence";
+    }
+    if (!best) {
+      best = pickBy("workout_volume");
+      chosenMetric = "workout_volume";
+    }
+  } else {
+    best = pickBy(metric as any);
+  }
+
+  if (!best) {
+    return {
+      ok: false,
+      reason: "no_metric_data",
+      summary: metric === "auto"
+        ? `Sin datos suficientes para ningún metric en los últimos ${periodDays} días.`
+        : `Sin datos suficientes para metric=${metric}. Sugiero metric=auto.`,
+    };
+  }
+
+  // ─── 5. Comparación vs promedio del período ───
+  const avgWorkoutsPerWeek = scored.reduce((s, w) => s + w.workouts_count, 0) / scored.length;
+  const avgKcalBurnedPerWeek = scored.reduce((s, w) => s + w.total_kcal_burned, 0) / scored.length;
+  const adherenceCohort = scored.filter((w) => w.adherence_pct !== null);
+  const avgAdherence = adherenceCohort.length > 0
+    ? adherenceCohort.reduce((s, w) => s + (w.adherence_pct as number), 0) / adherenceCohort.length
+    : null;
+
+  // ─── 6. Narrative hooks: 3-5 frases factuales que el coach puede usar
+  const hooks: string[] = [];
+  if (best.workouts_count > 0 && avgWorkoutsPerWeek > 0) {
+    const diff = best.workouts_count - avgWorkoutsPerWeek;
+    if (Math.abs(diff) >= 0.5) {
+      hooks.push(
+        `${best.workouts_count} workouts esa semana vs ${avgWorkoutsPerWeek.toFixed(1)} promedio.`,
+      );
+    } else {
+      hooks.push(`${best.workouts_count} workouts (parecido al promedio).`);
+    }
+  } else if (best.workouts_count > 0) {
+    hooks.push(`${best.workouts_count} workouts esa semana.`);
+  }
+  if (best.adherence_pct !== null && avgAdherence !== null) {
+    const diff = best.adherence_pct - avgAdherence;
+    if (Math.abs(diff) >= 5) {
+      hooks.push(
+        `${best.adherence_pct}% adherencia nutricional (vs ${Math.round(avgAdherence)}% promedio).`,
+      );
+    }
+  }
+  if (best.sleep_days > 0) {
+    const avgSleep = best.sleep_hours_sum / best.sleep_days;
+    if (avgSleep >= 7) hooks.push(`Sueño promedio ${avgSleep.toFixed(1)}h (≥7h, bueno).`);
+    else if (avgSleep < 6) hooks.push(`Sueño promedio ${avgSleep.toFixed(1)}h (corto).`);
+  }
+  if (best.weight_loss_kg !== null) {
+    const abs = Math.abs(best.weight_loss_kg);
+    if (best.weight_loss_kg < -0.1) {
+      hooks.push(`Perdiste ${abs.toFixed(1)} kg esa semana.`);
+    } else if (best.weight_loss_kg > 0.1) {
+      hooks.push(`Ganaste ${abs.toFixed(1)} kg esa semana.`);
+    }
+  }
+  if (best.total_protein_g > 0 && best.meals_count >= 3) {
+    const avgProtDay = best.total_protein_g / 7;
+    hooks.push(`Proteína promedio ${avgProtDay.toFixed(0)}g/día.`);
+  }
+
+  // Si no hay hooks narrativos, la semana ganadora no tiene señal
+  // suficiente para que el coach narre algo factual. Devolvemos honest
+  // fallback en lugar de dejar al coach inventar.
+  if (hooks.length === 0) {
+    return {
+      ok: false,
+      reason: "insufficient_signal",
+      summary: `Identifiqué una semana ganadora (${best.week_start}, metric=${chosenMetric}) pero la señal es muy débil para narrar una historia honest. Sugerí al usuario seguir registrando peso, comidas o workouts unas semanas más.`,
+    };
+  }
+
+  console.log(`[get_best_week] user=${userId} metric=${chosenMetric} week=${best.week_start}`);
+
+  return {
+    ok: true,
+    metric_used: chosenMetric,
+    period_days: periodDays,
+    week_start: best.week_start,
+    week_end: new Date(new Date(best.week_start + "T00:00:00.000Z").getTime() + 6 * 86400000)
+      .toISOString().split("T")[0],
+    value: chosenMetric === "weight_loss"
+      ? best.weight_loss_kg
+      : chosenMetric === "adherence"
+      ? best.adherence_pct
+      : best.total_kcal_burned,
+    breakdown: {
+      workouts_count: best.workouts_count,
+      total_workout_min: best.total_workout_min,
+      total_kcal_burned: Math.round(best.total_kcal_burned),
+      meals_count: best.meals_count,
+      avg_kcal_consumed_per_day: best.meals_count >= 3
+        ? Math.round(best.total_kcal_consumed / 7)
+        : null,
+      avg_protein_g_per_day: best.meals_count >= 3
+        ? Math.round(best.total_protein_g / 7)
+        : null,
+      avg_sleep_hours: best.sleep_days > 0
+        ? Math.round((best.sleep_hours_sum / best.sleep_days) * 10) / 10
+        : null,
+      avg_steps: best.steps_days > 0
+        ? Math.round(best.steps_sum / best.steps_days)
+        : null,
+      weight_loss_kg: best.weight_loss_kg,
+      adherence_pct: best.adherence_pct,
+    },
+    comparison_to_period: {
+      total_weeks_analyzed: scored.length,
+      avg_workouts_per_week: Math.round(avgWorkoutsPerWeek * 10) / 10,
+      avg_kcal_burned_per_week: Math.round(avgKcalBurnedPerWeek),
+      avg_adherence_pct: avgAdherence !== null ? Math.round(avgAdherence) : null,
+    },
+    narrative_hooks: hooks,
+    summary: `Mejor semana: ${best.week_start} (metric=${chosenMetric}). ${hooks.slice(0, 2).join(" ")}`,
+  };
+}
+
 // ─── Memory Reference Detection (Sprint 1.D — telemetría ALC/MER) ─────
 // Heurística regex para detectar cuando el coach hace referencia a
 // memoria histórica del usuario. Captura SIN decidir — los datos se
@@ -3089,6 +3452,7 @@ Las tools NO son el coach. El coach sos vos razonando. Las tools son herramienta
 Llamás una tool cuando:
 - ${name} pide registrar algo concreto y tenés el dato núcleo → log_meal / log_water / log_workout / log_cycle_symptom / log_weight.
 - Necesitás traer data del pasado que NO está en el contexto inicial → get_day_summary (un día) / get_period_summary (rango).
+- ${name} pregunta '¿cómo voy?', '¿qué he hecho bien?', '¿cuál fue mi mejor semana?', o querés conectar acción → resultado con atribución honest → get_best_week.
 - Aprendiste algo NUEVO que define quién es ${name} → update_health_twin.
 - Pide borrar algo → delete_recent_meal.
 - Acabás de escribir algo y necesitás el balance fresco → get_balance.
@@ -3100,6 +3464,7 @@ Detalles operativos de tools:
 - log_water: convertís a ml. "un vaso" ≈ 250ml, "botella chica" 500ml.
 - log_workout: si no sabés kcal exactas, dejalo en null — SAVIA estima.
 - log_weight: si menciona su peso ("peso 76", "me pesé 73.4", "estoy en 80 kilos"), registrás directo sin confirmar. Si menciona libras, convertís (1 lb = 0.4536 kg). Si también dice % grasa o masa magra, los registrás en el mismo call. El output trae delta_kg vs su última medición — usalo para responder con contexto temporal sutil ("vas bajando", "+0.4kg en 12 días, normal por el entreno", etc) en vez de "anoté tu peso".
+- get_best_week: cuando ${name} pregunta cómo va o qué ha hecho bien, llamás con metric='auto' (default) y narrás la historia con prosa, NO con lista de números. El output trae narrative_hooks: usá 2-3 frases como base, conectalas con conjunciones, agregá interpretación. Ejemplo BUENO: "Tu mejor semana fue la del 12 de mayo. Hiciste 4 workouts (vs 2 promedio) y dormiste 7.4h. Sin coincidencia: perdiste 0.6 kg esa semana." Ejemplo MALO (NO HACER): lista de bullets con los hooks crudos. Si el output es ok=false, decile honestamente que aún no hay data suficiente — no inventés.
 - get_day_summary: para UN día pasado específico ("qué entrené el sábado"). NO la uses para HOY — HOY ya está en el contexto.
 - get_period_summary: para RANGO de días ("últimos 7 días", "esta semana"). Cuando termina, sintetizá los 3 componentes (nutrición + entreno + adherencia) contra el goal — NO recites números.
 - get_balance: solo después de registrar algo y necesitás data fresca.
