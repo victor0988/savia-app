@@ -8621,6 +8621,20 @@
       <div class="pg-spacer"></div>
     </div>
 
+    <!-- Sprint onboarding fix — Banner CTA "Calculá tus macros" para users con
+         body_composition pero sin nutrition_targets. Renderizado por
+         pgRenderMacrosBanner() desde pgRender. Oculto por default. -->
+    <div id="pg-macros-banner" style="display:none; margin:14px 18px 0; padding:14px 16px; background:rgba(190,242,100,0.06); border:1px solid rgba(190,242,100,0.20); border-radius:14px; cursor:pointer; -webkit-tap-highlight-color:transparent;" onclick="pgMacrosBannerTap()">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="font-size:22px;">🥗</div>
+        <div style="flex:1;">
+          <div style="font-size:13.5px; font-weight:700; color:#F8FAFC; margin-bottom:3px;">Calculá tus macros con tu InBody</div>
+          <div style="font-size:11.5px; color:#94A3B8; line-height:1.4;">Tomamos tu peso y % grasa de la última medición para darte targets precisos.</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#BEF264" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>
+
     <!-- Contenido: se llena por pgRender() según haya o no measurements -->
     <div id="pg-content">
       <!-- KPI cards -->
@@ -11545,12 +11559,95 @@ async function openNutritionModule() {
     // Pre-llenar objetivo desde el onboarding principal (state.goals)
     // Llamada sincrónica: goStep ya completó cambio de DOM
     nutPrefillFromMainOnboarding();
+    // Sprint onboarding fix — Pre-llenar peso/grasa desde último InBody si
+    // existe. Fire-and-forget; el user lo ve al llegar al step 2.
+    nutPrefillFromLatestInBody().catch(e => console.warn('[NUT] prefill inbody:', e));
     return;
   }
   nutState.targets = targets;
   await nutLoadTodayData();
   nutRenderDashboard();
   goStep('nutrition');
+}
+
+// Sprint onboarding fix — Pre-llena peso, grasa y método 'inbody' en el step 2
+// del nutrition onboarding desde el último body_composition. El user todavía
+// puede ajustar manualmente si quiere ignorar el InBody.
+async function nutPrefillFromLatestInBody() {
+  // Si el user explicitamente eligió "Ingresar manual" en esta sesión, NO
+  // volvemos a auto-rellenar al re-entrar al onboarding. Respeta su decisión.
+  if (nutState._userChoseManual) return;
+  const bc = await nutLoadLatestBodyComp();
+  if (!bc) return;
+
+  // Pre-llenar peso
+  if (bc.weight_kg != null) {
+    const wEl = document.getElementById('nut-weight');
+    if (wEl && !wEl.value) {
+      wEl.value = bc.weight_kg;
+      nutState.weight = Number(bc.weight_kg);
+    }
+  }
+  // Pre-llenar altura del profile si está
+  const hVal = nutState.height || state.height_cm;
+  if (hVal) {
+    const hEl = document.getElementById('nut-height');
+    if (hEl && !hEl.value) {
+      hEl.value = hVal;
+      nutState.height = Number(hVal);
+    }
+  }
+  // Si tenemos body_fat del InBody, seteamos directo sin selector silueta/cintura
+  if (bc.body_fat_pct != null) {
+    nutState.bodyFat = Number(bc.body_fat_pct);
+    nutState.bodyMethod = 'inbody';
+    nutState.inbodySourceId = bc.id;
+
+    // Ocultar selector silueta/cintura, mostrar banner verde con dato del InBody
+    const methodSelector = document.getElementById('nut-method-selector');
+    const silhouetteSection = document.getElementById('nut-silhouette-section');
+    const waistSection = document.getElementById('nut-waist-section');
+    if (methodSelector) methodSelector.style.display = 'none';
+    if (silhouetteSection) silhouetteSection.style.display = 'none';
+    if (waistSection) waistSection.style.display = 'none';
+
+    const composContainer = methodSelector?.parentElement;
+    if (composContainer && !document.getElementById('nut-inbody-prefill-banner')) {
+      const banner = document.createElement('div');
+      banner.id = 'nut-inbody-prefill-banner';
+      banner.style.cssText = 'margin-top:14px; padding:12px 14px; background:rgba(190,242,100,0.08); border:1px solid rgba(190,242,100,0.22); border-radius:12px;';
+      const leanBit = bc.lean_body_mass_kg
+        ? ` · Masa magra <strong style="color:#F8FAFC;">${Number(bc.lean_body_mass_kg).toFixed(1)} kg</strong>`
+        : '';
+      banner.innerHTML = `
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div style="font-size:20px;">📊</div>
+          <div style="flex:1;">
+            <div style="font-size:13px; font-weight:700; color:#BEF264; margin-bottom:2px;">Datos de tu InBody</div>
+            <div style="font-size:12px; color:#CBD5E1; line-height:1.4;">Grasa <strong style="color:#F8FAFC;">${Number(bc.body_fat_pct).toFixed(1)}%</strong>${leanBit}</div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:#64748B; margin-top:8px; line-height:1.4;">Usamos esta medición para calcular tus targets. <a onclick="nutSwitchToManualMethod()" style="color:#BEF264; cursor:pointer; -webkit-tap-highlight-color:transparent;">Ingresar manual</a></div>
+      `;
+      composContainer.appendChild(banner);
+    }
+    nutValidateStep2();
+  }
+}
+
+// Sprint onboarding fix — Permite volver al selector silueta/cintura si el
+// user quiere ignorar el InBody y dar valores manuales.
+function nutSwitchToManualMethod() {
+  nutState.bodyFat = null;
+  nutState.bodyMethod = null;
+  nutState.inbodySourceId = null;
+  // Marcar la decisión del user para que un re-entry NO pise su elección.
+  nutState._userChoseManual = true;
+  const methodSelector = document.getElementById('nut-method-selector');
+  const banner = document.getElementById('nut-inbody-prefill-banner');
+  if (methodSelector) methodSelector.style.display = '';
+  if (banner) banner.remove();
+  nutValidateStep2();
 }
 
 // Inferir objetivos nutricionales desde los goals del onboarding principal.
@@ -11568,7 +11665,34 @@ function nutInferGoalsFromMainOnboarding() {
   return inferred;
 }
 
-function nutPrefillFromMainOnboarding() {
+// Sprint onboarding fix — Carga el último body_composition del user para
+// pre-llenar peso/grasa en el step 2 del nutrition onboarding. Sin esto,
+// el user nuevo que ya subió InBody tendría que re-ingresar manualmente
+// peso/grasa y elegir silueta/cintura, ignorando data que ya dio.
+async function nutLoadLatestBodyComp() {
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id;
+    if (!userId) return null;
+    const { data, error } = await sb
+      .from('body_compositions')
+      .select('id, weight_kg, body_fat_pct, lean_body_mass_kg, measured_at, method')
+      .eq('patient_user_id', userId)
+      .order('measured_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) {
+      console.warn('[NUT] load latest body comp error:', error);
+      return null;
+    }
+    return data || null;
+  } catch (e) {
+    console.warn('[NUT] load latest body comp exception:', e);
+    return null;
+  }
+}
+
+async function nutPrefillFromMainOnboarding() {
   const banner = document.getElementById('nut-onb-prefill-banner');
   if (banner) banner.style.display = 'none';
   let inferred = nutInferGoalsFromMainOnboarding();
@@ -20283,6 +20407,56 @@ function pgBack() {
   }
 }
 
+// Sprint onboarding fix — Banner CTA para que user nuevo con InBody calcule
+// sus macros. Solo aparece si tiene measurements pero no nutrition_targets.
+async function pgRenderMacrosBanner(measurements) {
+  const banner = document.getElementById('pg-macros-banner');
+  if (!banner) return;
+  // Solo mostrar si hay al menos un body_composition
+  if (!measurements || measurements.length === 0) {
+    banner.style.display = 'none';
+    return;
+  }
+  // Si ya tiene targets en nutState, esconder
+  if (nutState && nutState.targets) {
+    banner.style.display = 'none';
+    return;
+  }
+  // Si no, verificar en DB
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id;
+    if (!userId) {
+      banner.style.display = 'none';
+      return;
+    }
+    const { data } = await sb
+      .from('nutrition_targets')
+      .select('id')
+      .eq('user_id', userId)
+      .eq('active', true)
+      .limit(1)
+      .maybeSingle();
+    if (data) {
+      banner.style.display = 'none';
+    } else {
+      banner.style.display = '';
+    }
+  } catch (e) {
+    console.warn('[pg] banner check failed:', e);
+    banner.style.display = 'none';
+  }
+}
+
+function pgMacrosBannerTap() {
+  // Abre el flow de Nutrition Module. openNutritionModule detecta que no hay
+  // targets y manda al onboarding, donde nutPrefillFromLatestInBody pre-rellena
+  // peso y % grasa desde el InBody existente.
+  if (typeof openNutritionModule === 'function') {
+    openNutritionModule();
+  }
+}
+
 // ─── Render principal ────────────────────────────────────────────────
 
 async function pgRender() {
@@ -20296,6 +20470,9 @@ async function pgRender() {
   if (typeof tcRenderTuHistoria === 'function') {
     tcRenderTuHistoria().catch(e => console.warn('[th] render:', e));
   }
+  // Sprint onboarding fix — Banner "Calculá tus macros" si hay measurements
+  // pero no hay nutrition_targets activos.
+  pgRenderMacrosBanner(ms).catch(e => console.warn('[pg] macros banner:', e));
 
   if (!ms || ms.length === 0) {
     if (empty) empty.style.display = '';
