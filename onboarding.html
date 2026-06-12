@@ -20794,11 +20794,77 @@ async function tcFetchChapters() {
   }
 }
 
+// Auto-backfill: detecta body_compositions inbody sin chapter generado y los
+// genera secuencialmente en orden cronológico. Esto cubre casos como InBody
+// subidos antes del feature de chapters, o chapters que fallaron en su momento.
+// Genera en orden de measured_at para que analysis_number quede correcto.
+async function tcAutoBackfillChapters() {
+  if (tcState._backfillRunning) return;
+  tcState._backfillRunning = true;
+  try {
+    const sessRes = await sb.auth.getSession();
+    const userId = sessRes?.data?.session?.user?.id;
+    const token = sessRes?.data?.session?.access_token;
+    if (!userId || !token) return;
+
+    const [bcRes, chRes] = await Promise.all([
+      sb.from('body_compositions')
+        .select('id, measured_at')
+        .eq('patient_user_id', userId)
+        .eq('method', 'inbody')
+        .order('measured_at', { ascending: true }),
+      sb.from('transformation_chapters')
+        .select('source_id')
+        .eq('user_id', userId)
+        .eq('source_type', 'inbody'),
+    ]);
+    const bcs = bcRes.data || [];
+    const chSourceIds = new Set((chRes.data || []).map(c => c.source_id).filter(Boolean));
+    const orphans = bcs.filter(bc => !chSourceIds.has(bc.id));
+    if (orphans.length === 0) return;
+
+    console.log('[tc] auto-backfill: generating', orphans.length, 'missing chapter(s)');
+
+    // Generar secuencialmente (NO en paralelo) para que analysis_number se
+    // calcule correctamente — cada chapter cuenta los previos al momento.
+    for (const bc of orphans) {
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/generate-transformation-chapter`, {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ source_type: 'inbody', source_id: bc.id }),
+        });
+      } catch (e) {
+        console.warn('[tc] auto-backfill failed for', bc.id, e);
+      }
+    }
+    // Invalidar cache + re-render
+    tcState.chaptersLoaded = false;
+    await tcRenderTuHistoria();
+  } catch (e) {
+    console.warn('[tc] auto-backfill exception:', e);
+  } finally {
+    tcState._backfillRunning = false;
+  }
+}
+
 async function tcRenderTuHistoria() {
   const wrap = document.getElementById('th-wrap');
   const list = document.getElementById('th-list');
   const stats = document.getElementById('th-stats');
   if (!wrap || !list) return;
+
+  // Auto-backfill silencioso de chapters faltantes (fire-and-forget la primera vez).
+  // Se ejecuta solo si pgRender no lo invocó antes (evita loops por la propia
+  // llamada interna a tcRenderTuHistoria al final del backfill).
+  if (!tcState._backfillTriggered) {
+    tcState._backfillTriggered = true;
+    tcAutoBackfillChapters().catch(() => {});
+  }
 
   const chapters = await tcFetchChapters();
 

@@ -135,10 +135,11 @@ Deno.serve(async (req: Request) => {
           .order("computed_at", { ascending: false })
           .limit(1)
           .maybeSingle(),
-        // Conteo de chapters previos del user (para analysis_number)
+        // Todos los chapters previos del user con su source_id
+        // (para calcular analysis_number por orden cronológico de measured_at)
         supabaseAdmin
           .from("transformation_chapters")
-          .select("id", { count: "exact", head: true })
+          .select("id, source_type, source_id")
           .eq("user_id", user.id),
         // Info de signup del user
         supabaseAdmin.auth.admin.getUserById(user.id),
@@ -151,14 +152,30 @@ Deno.serve(async (req: Request) => {
     const goals = Array.isArray(ht.goals) ? ht.goals : [];
     const activeGoals = goals.filter((g: any) => !g.status || g.status === "active");
     const targets = targetsRes.data || null;
-    const chaptersPreviousCount = chaptersCountRes.count || 0;
+    const existingChapters = chaptersCountRes.data || [];
     const signupAt = userRes?.data?.user?.created_at
       ? new Date(userRes.data.user.created_at)
       : new Date(bc.created_at);
 
-    // ─── Calcular narrative_context ───
-    const analysisNumber = chaptersPreviousCount + 1;
+    // ─── Calcular analysis_number por orden cronológico ───
+    // El #1 es el InBody con measured_at más antiguo, no el primero generado.
+    // Esto refleja la biografía real: si subís uno viejo después, queda #1.
     const measuredAt = new Date(bc.measured_at);
+    let chaptersBeforeOrEqual = 0;
+    const inbodySourceIds = existingChapters
+      .filter((c: any) => c.source_type === "inbody" && c.source_id)
+      .map((c: any) => c.source_id);
+    if (inbodySourceIds.length > 0) {
+      const { data: srcBcs } = await supabaseAdmin
+        .from("body_compositions")
+        .select("id, measured_at")
+        .in("id", inbodySourceIds);
+      const currentTs = measuredAt.getTime();
+      chaptersBeforeOrEqual = (srcBcs || []).filter((s: any) =>
+        new Date(s.measured_at).getTime() < currentTs
+      ).length;
+    }
+    const analysisNumber = chaptersBeforeOrEqual + 1;
     const daysSinceSignup = Math.max(
       0,
       Math.round((measuredAt.getTime() - signupAt.getTime()) / 86400000),
