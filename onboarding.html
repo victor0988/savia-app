@@ -5220,15 +5220,10 @@
       <div class="q-hint" style="font-size: 14px; margin-top: 8px;">Elegí cómo querés entrar. Sin passwords, sin formularios largos.</div>
     </div>
 
-    <!-- Consentimiento informado (Sprint Seguridad Fase 0) -->
-    <div id="auth-consent-row" style="display:flex; align-items:flex-start; gap:10px; padding:12px 14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:12px; margin-bottom:18px; cursor:pointer; -webkit-tap-highlight-color:transparent;" onclick="authToggleConsent(event)">
-      <div id="auth-consent-checkbox" style="flex-shrink:0; width:20px; height:20px; border:2px solid rgba(255,255,255,0.25); border-radius:5px; margin-top:1px; transition:all 0.15s; position:relative;">
-        <svg id="auth-consent-tick" style="display:none; position:absolute; top:1px; left:1px;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0a0e1a" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-      </div>
-      <div style="font-size:12.5px; color:#CBD5E1; line-height:1.5;">
-        Acepto los <a href="/terms.html" target="_blank" onclick="event.stopPropagation();" style="color:#BEF264; font-weight:600;">Términos</a> y la <a href="/privacy.html" target="_blank" onclick="event.stopPropagation();" style="color:#BEF264; font-weight:600;">Política de Privacidad</a>. Entiendo que SAVIA es un servicio de bienestar, no médico.
-      </div>
-    </div>
+    <!-- Sprint Seguridad Fase 0 (refactor): consent movido a modal post-auth.
+         Se chequea profiles.terms_accepted_at en enterAppSimulation y, si está
+         vacío, se muestra el modal blocker (id="auth-consent-modal") al final
+         del body. Logins subsiguientes no ven nada (idempotente). -->
 
     <button class="auth-btn auth-apple" disabled title="Próximamente">
       <svg fill="white" viewBox="0 0 24 24" style="width:20px; height:20px;"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
@@ -10090,10 +10085,11 @@ function enterAppSimulation(source) {
   }
   hideLoading();
 
-  // Sprint Seguridad Fase 0: persistir timestamp de aceptación de Términos
-  // si es la primera vez (idempotente: si ya estaba seteado, no toca).
-  if (typeof authPersistConsentTimestamp === 'function') {
-    authPersistConsentTimestamp().catch(() => {});
+  // Sprint Seguridad Fase 0 (refactor): chequeo de consent post-auth.
+  // Si profiles.terms_accepted_at está vacío → modal blocker. Si tiene
+  // fecha → no hace nada. Idempotente. No bloquea el render del app.
+  if (typeof authCheckConsentOrBlock === 'function') {
+    authCheckConsentOrBlock().catch(() => {});
   }
 
   // Telemetría: cada apertura de app dispara session_active.
@@ -17067,67 +17063,83 @@ function nutOpenSettings() {
 //  PASSWORDLESS AUTH (Google + Email OTP)
 // =============================================
 
-// Sprint Seguridad Fase 0 — Consentimiento informado
-let _consentAccepted = false;
+// Sprint Seguridad Fase 0 (refactor) — Consentimiento informado post-auth
+// ----------------------------------------------------------------------
+// El consent ya NO se pide en la pantalla pre-auth (era molesto: cada login
+// pedía marcar el checkbox de nuevo). Ahora:
+//   1) Login normal (Google o Email OTP) sin fricción.
+//   2) Tras auth, enterAppSimulation llama authCheckConsentOrBlock.
+//   3) Si profiles.terms_accepted_at está vacío → modal blocker.
+//   4) Modal solo se cierra aceptando (o cerrando sesión).
+//   5) En logins futuros, terms_accepted_at ya tiene fecha → no se muestra.
+const TERMS_VERSION = '2026-06-11';
 
-function authToggleConsent(e) {
-  if (e && e.target && e.target.tagName === 'A') return; // tap en link no toggle
-  _consentAccepted = !_consentAccepted;
-  authRenderConsent();
-}
-
-function authRenderConsent() {
-  const box = document.getElementById('auth-consent-checkbox');
-  const tick = document.getElementById('auth-consent-tick');
-  if (!box || !tick) return;
-  if (_consentAccepted) {
-    box.style.background = '#BEF264';
-    box.style.borderColor = '#BEF264';
-    tick.style.display = '';
-  } else {
-    box.style.background = '';
-    box.style.borderColor = 'rgba(255,255,255,0.25)';
-    tick.style.display = 'none';
-  }
-}
-
-function authRequireConsent() {
-  if (!_consentAccepted) {
-    // Pulso visual sobre el checkbox para llamar la atención
-    const row = document.getElementById('auth-consent-row');
-    if (row) {
-      row.style.transition = 'border-color 0.2s';
-      row.style.borderColor = '#F87171';
-      setTimeout(() => { row.style.borderColor = 'rgba(255,255,255,0.08)'; }, 1400);
-    }
-    return false;
-  }
-  return true;
-}
-
-// Persiste timestamp de aceptación en el profile. Se llama tras signup
-// exitoso (Google o email OTP). Idempotente: si ya estaba seteado, no toca.
-async function authPersistConsentTimestamp() {
+async function authCheckConsentOrBlock() {
   try {
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) return;
+    if (!user) return; // sin sesión, no aplica
     const { data: profile } = await sb
       .from('profiles')
       .select('terms_accepted_at')
       .eq('id', user.id)
       .maybeSingle();
     if (profile && profile.terms_accepted_at) return; // ya aceptó antes
+    // Falta consent: mostrar modal blocker.
+    authShowConsentModal();
+  } catch (e) {
+    // Fallback: si la red falla, NO bloqueamos (mejor UX que blocker permanente
+    // por glitch de conexión). El próximo login lo volverá a chequear.
+    console.warn('[auth] consent check failed:', e);
+  }
+}
+
+function authShowConsentModal() {
+  const modal = document.getElementById('auth-consent-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+async function authAcceptConsent() {
+  const btn = document.getElementById('auth-consent-accept-btn');
+  if (btn) { btn.disabled = true; btn.textContent = 'Guardando…'; }
+  try {
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      alert('Tu sesión expiró. Recargá la página y volvé a entrar.');
+      if (btn) { btn.disabled = false; btn.textContent = 'Acepto y continuar'; }
+      return;
+    }
     const now = new Date().toISOString();
-    sb.from('profiles')
-      .update({ terms_accepted_at: now, terms_version: '2026-06-11' })
-      .eq('id', user.id)
-      .then(() => {})
-      .catch(e => console.warn('[auth] consent persist failed:', e));
-  } catch (e) { console.warn('[auth] consent persist exception:', e); }
+    const { error } = await sb.from('profiles')
+      .update({ terms_accepted_at: now, terms_version: TERMS_VERSION })
+      .eq('id', user.id);
+    if (error) {
+      console.error('[auth] consent persist failed:', error);
+      alert('No pudimos guardar tu aceptación: ' + error.message);
+      if (btn) { btn.disabled = false; btn.textContent = 'Acepto y continuar'; }
+      return;
+    }
+    // Éxito: cerrar modal
+    const modal = document.getElementById('auth-consent-modal');
+    if (modal) modal.style.display = 'none';
+    document.body.style.overflow = '';
+  } catch (e) {
+    console.error('[auth] consent accept exception:', e);
+    alert('Error inesperado. Intentá de nuevo.');
+    if (btn) { btn.disabled = false; btn.textContent = 'Acepto y continuar'; }
+  }
+}
+
+async function authRejectConsent() {
+  if (!confirm('¿Cerrar sesión sin aceptar? No vas a poder usar SAVIA sin aceptar los Términos.')) return;
+  try {
+    await sb.auth.signOut();
+  } catch (e) { console.warn('[auth] signOut failed:', e); }
+  window.location.href = '/onboarding.html';
 }
 
 async function signInWithGoogle() {
-  if (!authRequireConsent()) return;
   showLoading('Conectando con Google');
   try {
     const { data, error } = await sb.auth.signInWithOAuth({
@@ -17168,13 +17180,9 @@ function validateOtpEmail() {
 
 let lastOtpEmail = '';
 async function requestOtpCode(isResend) {
-  // Sprint Seguridad Fase 0: requiere consentimiento si es signup (no resend).
-  // El consent fue aceptado en la pantalla auth antes de venir acá.
-  if (!isResend && !_consentAccepted) {
-    alert('Volvé a la pantalla anterior y aceptá los Términos para continuar.');
-    goStep('auth');
-    return;
-  }
+  // Sprint Seguridad Fase 0 (refactor): el consent se chequea POST-auth
+  // (ver authCheckConsentOrBlock en enterAppSimulation). Aquí solo
+  // pedimos el código OTP.
   const email = document.getElementById('otp-email-input').value.trim();
   if (!isValidEmail(email)) return;
   const btn = document.getElementById('otp-email-btn');
@@ -21263,5 +21271,30 @@ async function tcOpenChatWithChapter() {
 }
 
 </script>
+
+<!-- ============== CONSENT MODAL POST-AUTH (Sprint Seguridad Fase 0 refactor) ==============
+     Blocker: usuario debe aceptar Términos + Privacidad antes de usar la app.
+     Se muestra UNA SOLA VEZ por cuenta (no por device): controlado por
+     profiles.terms_accepted_at. Logins futuros no ven nada. -->
+<div id="auth-consent-modal" style="display:none; position:fixed; inset:0; z-index:100000; background:rgba(5,8,16,0.92); -webkit-backdrop-filter:blur(8px); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:24px;">
+  <div style="max-width:440px; width:100%; background:#0F1729; border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:28px 24px; box-shadow:0 24px 80px rgba(0,0,0,0.6);">
+    <div style="font-size:22px; font-weight:700; color:#F8FAFC; margin-bottom:10px; letter-spacing:-0.3px;">Antes de comenzar</div>
+    <div style="font-size:14.5px; color:#CBD5E1; line-height:1.6; margin-bottom:20px;">
+      Para usar SAVIA necesitamos tu aceptación explícita de cómo manejamos tus datos. Es un servicio de bienestar, no médico, y tu información de salud te pertenece.
+    </div>
+    <div style="background:rgba(190,242,100,0.04); border-left:3px solid #BEF264; padding:14px 16px; border-radius:8px; margin-bottom:24px;">
+      <div style="font-size:13.5px; color:#E2E8F0; line-height:1.55;">
+        Al continuar aceptás los <a href="/terms.html" target="_blank" style="color:#BEF264; font-weight:600;">Términos de Servicio</a> y la <a href="/privacy.html" target="_blank" style="color:#BEF264; font-weight:600;">Política de Privacidad</a>. Tu data está cifrada, no se vende, y podés eliminar tu cuenta cuando quieras.
+      </div>
+    </div>
+    <button id="auth-consent-accept-btn" onclick="authAcceptConsent()" style="width:100%; padding:15px; background:#BEF264; color:#0a0e1a; font-size:15.5px; font-weight:700; border:none; border-radius:12px; cursor:pointer; -webkit-tap-highlight-color:transparent;">
+      Acepto y continuar
+    </button>
+    <div style="text-align:center; margin-top:14px;">
+      <a href="#" onclick="event.preventDefault(); authRejectConsent();" style="font-size:13px; color:#64748B; text-decoration:none;">No acepto — cerrar sesión</a>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
