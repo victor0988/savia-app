@@ -400,16 +400,22 @@
     align-items: center; justify-content: center;
     text-align: center; width: 100%;
   }
+  /* Splash mark: container cream con logo wellness adentro.
+     Solo el splash usa esta clase. Loadings usan calc-pulse-core / loading-pulse-core. */
   .savia-mark {
-    width: 88px; height: 88px;
-    border-radius: 26px;
-    background: linear-gradient(135deg, #10B981 0%, #064E3B 100%);
+    width: 96px; height: 96px;
+    border-radius: 28px;
+    background: #F5EFE3; /* cream wellness, matches el theme del logo */
     display: flex; align-items: center; justify-content: center;
-    color: white; font-weight: 900; font-size: 42px;
-    box-shadow: 0 0 48px rgba(16, 185, 129, 0.35);
+    padding: 10px;
+    box-shadow: 0 8px 32px rgba(245, 239, 227, 0.18), 0 0 60px rgba(132, 204, 22, 0.10);
     margin-bottom: 36px;
     animation: float 4s ease-in-out infinite;
-    letter-spacing: -2px;
+  }
+  .savia-mark img {
+    width: 100%; height: 100%;
+    object-fit: contain;
+    display: block;
   }
   @keyframes float {
     0%, 100% { transform: translateY(0); }
@@ -5194,8 +5200,7 @@
   <!-- ============== SPLASH ============== -->
   <div class="screen splash" data-step="0">
     <div class="splash-content">
-      <div class="savia-mark">S</div>
-      <div class="splash-title">SAVIA</div>
+      <div class="savia-mark"><img src="savia-logo.png" alt="SAVIA wellness"></div>
       <div class="splash-tag">Tu cuerpo, entendido.</div>
     </div>
     <div class="splash-buttons">
