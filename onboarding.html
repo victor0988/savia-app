@@ -7236,26 +7236,6 @@
           <div class="v2-chap-empty">Tus capítulos van a aparecer acá mientras avanza tu transformación.</div>
         </div>
 
-        <!-- Energía & Recuperación -->
-        <div class="v2-section-label">ENERGÍA & RECUPERACIÓN</div>
-        <div class="v2-energy-grid" id="v2-energy-grid">
-          <div class="v2-energy-tile empty">
-            <div class="v2-energy-source">STRAVA</div>
-            <div class="v2-energy-value">—</div>
-            <div class="v2-energy-label">Conectá Strava</div>
-          </div>
-          <div class="v2-energy-tile empty">
-            <div class="v2-energy-source">OURA</div>
-            <div class="v2-energy-value">—</div>
-            <div class="v2-energy-label">Próximamente</div>
-          </div>
-          <div class="v2-energy-tile empty">
-            <div class="v2-energy-source">APPLE</div>
-            <div class="v2-energy-value">—</div>
-            <div class="v2-energy-label">Próximamente</div>
-          </div>
-        </div>
-
         <!-- Insight SAVIA -->
         <div class="v2-section-label">INSIGHT SAVIA</div>
         <div class="v2-savia-insight">
@@ -7272,22 +7252,42 @@
         <!-- Próximos Hitos -->
         <div class="v2-section-label">PRÓXIMOS HITOS</div>
         <div class="v2-milestone-list" id="v2-milestones">
+          <!-- Mock — refleja visión multi-módulo. Fase B: schema real de tratamientos/dosis. -->
           <div class="v2-milestone-item">
-            <div class="v2-milestone-icon">◆</div>
+            <div class="v2-milestone-icon">●</div>
             <div class="v2-milestone-body">
-              <div class="v2-milestone-title">Subí tu primer capítulo</div>
-              <div class="v2-milestone-meta">Tu evolución arranca con una foto</div>
+              <div class="v2-milestone-title">Próxima dosis Semaglutida</div>
+              <div class="v2-milestone-meta">Día 7 del ciclo · ajuste leve</div>
             </div>
-            <div class="v2-milestone-when">esta semana</div>
+            <div class="v2-milestone-when">en 2 días</div>
+          </div>
+          <div class="v2-milestone-item">
+            <div class="v2-milestone-icon">◐</div>
+            <div class="v2-milestone-body">
+              <div class="v2-milestone-title">Sesión PRP facial</div>
+              <div class="v2-milestone-meta">Tercera sesión del protocolo · Dra. Méndez</div>
+            </div>
+            <div class="v2-milestone-when">en 9 días</div>
           </div>
           <div class="v2-milestone-item">
             <div class="v2-milestone-icon">▣</div>
             <div class="v2-milestone-body">
               <div class="v2-milestone-title">Próximo InBody</div>
-              <div class="v2-milestone-meta">Control con tu clínica</div>
+              <div class="v2-milestone-meta">Control mensual con tu clínica</div>
             </div>
-            <div class="v2-milestone-when">por agendar</div>
+            <div class="v2-milestone-when">en 14 días</div>
           </div>
+          <div class="v2-milestone-item">
+            <div class="v2-milestone-icon">⚗</div>
+            <div class="v2-milestone-body">
+              <div class="v2-milestone-title">Laboratorio · panel hormonal</div>
+              <div class="v2-milestone-meta">Antes de ajuste de péptidos</div>
+            </div>
+            <div class="v2-milestone-when">en 3 sem</div>
+          </div>
+        </div>
+        <div style="margin-top:12px; padding:12px 16px; background:rgba(176,112,80,0.06); border-left:3px solid #B07050; border-radius:10px; font-size:12.5px; color:#5A6E5A; line-height:1.5;">
+          Estos hitos son ejemplo de la visión multi-módulo. En la versión final cada uno viene de tu clínica con fecha confirmada.
         </div>
       </div>
     </div>
@@ -12981,59 +12981,7 @@ async function renderV2Progreso() {
     }
   } catch (e) { console.warn('[v2-progreso] chapters failed:', e); }
 
-  // --- Energía & Recuperación: workout_logs (source=strava) últimos 7 días ---
-  // Schema real: Strava activities se sincronizan a workout_logs con source='strava'.
-  // Connection state vive en wearable_connections.
-  try {
-    const sess = await sb.auth.getSession();
-    const userId = sess?.data?.session?.user?.id;
-    if (userId) {
-      // Chequear connection status primero
-      const { data: conn } = await sb
-        .from('wearable_connections')
-        .select('id, status, last_sync_at')
-        .eq('user_id', userId)
-        .eq('provider', 'strava')
-        .eq('status', 'active')
-        .limit(1);
-      const stravaConnected = conn && conn.length > 0;
-
-      // Contar workouts últimos 7 días
-      const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      const { data: acts, error: actsErr } = await sb
-        .from('workout_logs')
-        .select('id, ts, type, distance_km, source')
-        .eq('user_id', userId)
-        .gte('ts', sevenDaysAgo.toISOString())
-        .order('ts', { ascending: false });
-      if (actsErr) console.warn('[v2-progreso] workout_logs error:', actsErr);
-
-      const stravaTile = document.querySelector('#v2-energy-grid .v2-energy-tile:first-child');
-      if (stravaTile) {
-        if (acts && acts.length > 0) {
-          stravaTile.classList.remove('empty');
-          // Total km de la semana
-          const totalKm = acts.reduce((sum, a) => sum + (parseFloat(a.distance_km) || 0), 0);
-          const kmLabel = totalKm > 0 ? `${totalKm.toFixed(1)} km · 7d` : 'Entrenos · 7d';
-          stravaTile.innerHTML = `
-            <div class="v2-energy-source">STRAVA</div>
-            <div class="v2-energy-value">${acts.length}</div>
-            <div class="v2-energy-label">${kmLabel}</div>
-            <div class="v2-energy-trend">↑ activo</div>
-          `;
-        } else if (stravaConnected) {
-          // Conectado pero sin actividades los últimos 7 días
-          stravaTile.classList.remove('empty');
-          stravaTile.innerHTML = `
-            <div class="v2-energy-source">STRAVA</div>
-            <div class="v2-energy-value">0</div>
-            <div class="v2-energy-label">Conectado · sin entrenos 7d</div>
-          `;
-        }
-        // Si no conectado y sin actividades, queda como estaba ("Conectá Strava")
-      }
-    }
-  } catch (e) { console.warn('[v2-progreso] strava failed:', e); }
+  // (Sección Energía & Recuperación eliminada — los Pillars de TU DÍA cubren workout/pasos/sueño/agua)
 
   // --- Insight SAVIA: último savia_pulse activo ---
   // Schema real: savia_pulses (no daily_pulses), campos: headline, category, created_at.
