@@ -3324,7 +3324,7 @@
   .pg-modal-overlay { position: fixed; inset: 0; background: rgba(42,58,42,0.20); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 24px; }
   .pg-modal-overlay.show { display: flex; }
   .pg-modal { background: #F5EFE3; border: 1px solid rgba(42,58,42,0.09); border-radius: 22px; padding: 22px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(42,58,42,0.25); }
-  .pg-modal-handle { width: 36px; height: 4px; background: rgba(42,58,42,0.20); border-radius: 2px; margin: 0 auto 18px; }
+  .pg-modal-handle { display: none; }  /* legacy de bottom sheet — pg-modal ahora es modal centrado */
   .pg-modal-title { font-size: 17px; font-weight: 700; color: #2A3A2A; margin-bottom: 14px; }
   .pg-modal-field { margin-bottom: 14px; }
   .pg-modal-label { font-size: 11px; color: #5A6E5A; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 6px; }
