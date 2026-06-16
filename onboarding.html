@@ -2649,6 +2649,136 @@
   /* Cards aesthetic en Plan tab (siempre visibles cuando demo) */
   html.demo-aesthetic .v2-aest-card-plan { display: block; }
   .v2-aest-card-plan { display: none; }
+
+  /* ====================================================================
+     V2 · Card extensions (Fase aesthetic content) — sub-sections, callouts,
+     skincare AM/PM, métricas inline
+     ==================================================================== */
+  .v2-module-tag.skin { background: rgba(212, 165, 160, 0.18); color: #B85450; }
+
+  /* Sub-section dentro de v2-module-card */
+  .v2-module-subsection {
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid #E8E0D2;
+  }
+  .v2-module-subsection-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: #5A6E5A;
+    margin-bottom: 6px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .v2-module-subsection-label .v2-mod-count {
+    font-weight: 600; font-size: 10px;
+    color: #B07050;
+    margin-left: auto;
+  }
+
+  /* Callout para próxima dosis/sesión */
+  .v2-module-callout {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: rgba(176, 112, 80, 0.08);
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .v2-module-callout-icon {
+    width: 32px; height: 32px;
+    background: rgba(176, 112, 80, 0.14);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: #B07050; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .v2-module-callout-body { flex: 1; min-width: 0; }
+  .v2-module-callout-label {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 1px;
+    color: #B07050;
+  }
+  .v2-module-callout-text {
+    font-size: 13.5px; font-weight: 600;
+    color: #2A3A2A; margin-top: 2px;
+  }
+  .v2-module-callout-meta {
+    font-size: 11.5px;
+    color: #5A6E5A; margin-top: 2px;
+  }
+
+  /* Métrica inline (Progreso de colágeno, Efectos reportados) */
+  .v2-module-metric {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: rgba(92, 124, 90, 0.06);
+    border-radius: 10px;
+    border-left: 3px solid #5C7C5A;
+  }
+  .v2-module-metric-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: #5A6E5A;
+  }
+  .v2-module-metric-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -0.5px;
+    line-height: 1; margin-top: 4px;
+  }
+  .v2-module-metric-sub {
+    font-size: 11.5px; color: #5A6E5A; margin-top: 4px;
+  }
+
+  /* Producto skincare (numbered list compacto) */
+  .v2-module-product {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0;
+    font-size: 13px;
+    color: #2A3A2A;
+  }
+  .v2-module-product-num {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    background: rgba(184, 153, 104, 0.16);
+    color: #B89968;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .v2-module-product.done .v2-module-product-num {
+    background: #5C7C5A; color: white;
+  }
+  .v2-module-product.done .v2-module-product-num::before {
+    content: '✓'; font-size: 11px;
+  }
+  .v2-module-product.done .v2-module-product-num span { display: none; }
+  .v2-module-product-name {
+    flex: 1;
+    font-weight: 500;
+  }
+  .v2-module-product.done .v2-module-product-name {
+    color: #5A6E5A;
+    text-decoration: line-through;
+  }
+  .v2-module-product-brand {
+    font-size: 11px;
+    color: #5A6E5A;
+    flex-shrink: 0;
+  }
+
+  /* Botón inline (Reportar al médico) */
+  .v2-module-inline-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 9px 14px;
+    background: transparent;
+    border: 1px solid #E8E0D2;
+    border-radius: 100px;
+    font-size: 11.5px; font-weight: 600;
+    color: #2A3A2A;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .v2-module-inline-btn:hover { border-color: rgba(176, 112, 80, 0.4); background: rgba(176, 112, 80, 0.04); }
   /* Capturar: tile Selfie deja de ser PRONTO en demo */
   html.demo-aesthetic .v2-cap-tile[onclick*="selfie"] { opacity: 1; }
   html.demo-aesthetic .v2-cap-tile[onclick*="selfie"] .v2-cap-tile-badge { display: none; }
@@ -13407,14 +13537,15 @@ async function renderV2Plan() {
   const prpPractitioner = demoAest ? 'Dra. Méndez · sesión 3/12' : 'Activable si tu clínica lo prescribe';
   const glpPractitioner = demoAest ? 'Dra. Vargas · medicina funcional' : 'Activable si tu médico lo prescribe';
 
-  // Card PRP (solo en demo)
+  // ========== CARDS RICAS (modo demo aesthetic) ==========
   if (demoAest) {
+    // ===== PRP facial =====
     cards.push(`
       <div class="v2-module-card">
         <div class="v2-module-head">
           <div class="v2-module-meta-left">
-            <div class="v2-module-tag aest">ESTÉTICA</div>
-            <div class="v2-module-name">PRP facial</div>
+            <div class="v2-module-tag aest">ESTÉTICA · PRP</div>
+            <div class="v2-module-name">Plan rejuvenecimiento</div>
             <div class="v2-module-practitioner">${escapeHtml(prpPractitioner)}</div>
           </div>
           <div class="v2-module-progress">
@@ -13422,79 +13553,163 @@ async function renderV2Plan() {
             <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:25%;"></div></div>
           </div>
         </div>
-        <div class="v2-module-actions">
-          <div class="v2-module-action done">
-            <div class="v2-module-action-check"></div>
-            <div class="v2-module-action-text">Sesión 2 completada · 26 jun</div>
+        <div class="v2-module-callout">
+          <div class="v2-module-callout-icon">◐</div>
+          <div class="v2-module-callout-body">
+            <div class="v2-module-callout-label">PRÓXIMA SESIÓN</div>
+            <div class="v2-module-callout-text">Martes 25 jun · 10:30 AM</div>
+            <div class="v2-module-callout-meta">en 9 días · clínica Vargas Wellness</div>
           </div>
-          <div class="v2-module-action">
-            <div class="v2-module-action-check"></div>
-            <div class="v2-module-action-text">Foto facial pre-sesión · martes</div>
+        </div>
+        <div class="v2-module-subsection">
+          <div class="v2-module-subsection-label">PREPARACIÓN PRE-SESIÓN</div>
+          <div class="v2-module-action done"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Sin makeup 24h antes</div></div>
+          <div class="v2-module-action"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Foto facial pre-sesión</div></div>
+          <div class="v2-module-action"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Hidratación: 2L hoy</div></div>
+        </div>
+        <div class="v2-module-subsection">
+          <div class="v2-module-subsection-label">CUIDADO POST-SESIÓN ANTERIOR</div>
+          <div class="v2-module-action done"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Crema cicatrizante aplicada</div></div>
+          <div class="v2-module-action done"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Sin sol directo 72h</div></div>
+        </div>
+      </div>
+    `);
+
+    // ===== Bioestimulador (Sculptra) =====
+    cards.push(`
+      <div class="v2-module-card">
+        <div class="v2-module-head">
+          <div class="v2-module-meta-left">
+            <div class="v2-module-tag aest">ESTÉTICA · BIOESTIMULADOR</div>
+            <div class="v2-module-name">Sculptra · firmeza facial</div>
+            <div class="v2-module-practitioner">${escapeHtml(aestPractitioner)}</div>
           </div>
-          <div class="v2-module-action">
-            <div class="v2-module-action-check"></div>
-            <div class="v2-module-action-text">Sin makeup 24h antes</div>
+          <div class="v2-module-progress">
+            <div class="v2-module-week">SEM 8/16</div>
+            <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:50%;"></div></div>
+          </div>
+        </div>
+        <div class="v2-module-metric">
+          <div class="v2-module-metric-label">PROGRESO DE COLÁGENO</div>
+          <div class="v2-module-metric-value">+22% firmeza</div>
+          <div class="v2-module-metric-sub">Pico esperado: semana 12 · vas en camino</div>
+        </div>
+        <div class="v2-module-subsection">
+          <div class="v2-module-subsection-label">HOY</div>
+          <div class="v2-module-action done"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Masaje facial 5 min · 06:30 AM</div></div>
+          <div class="v2-module-action done"><div class="v2-module-action-check"></div><div class="v2-module-action-text">SPF 50 antes de salir</div></div>
+          <div class="v2-module-action"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Foto semanal · martes</div></div>
+        </div>
+        <div class="v2-module-callout">
+          <div class="v2-module-callout-icon">📅</div>
+          <div class="v2-module-callout-body">
+            <div class="v2-module-callout-label">PRÓXIMO RETOQUE</div>
+            <div class="v2-module-callout-text">En 8 semanas · 15 ago</div>
+            <div class="v2-module-callout-meta">Sesión completa · Dra. Méndez</div>
           </div>
         </div>
       </div>
     `);
-  }
 
-  // Card GLP-1 (siempre ghost a menos que demo)
-  cards.push(`
-    <div class="v2-module-card ${aestClass}">
-      <div class="v2-module-head">
-        <div class="v2-module-meta-left">
+    // ===== GLP-1 Tirzepatida =====
+    cards.push(`
+      <div class="v2-module-card">
+        <div class="v2-module-head">
+          <div class="v2-module-meta-left">
+            <div class="v2-module-tag glp">GLP-1</div>
+            <div class="v2-module-name">Tirzepatida 5 mg semanal</div>
+            <div class="v2-module-practitioner">${escapeHtml(glpPractitioner)}</div>
+          </div>
+          <div class="v2-module-progress">
+            <div class="v2-module-week">SEM 8/24</div>
+            <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:33%;"></div></div>
+          </div>
+        </div>
+        <div class="v2-module-callout">
+          <div class="v2-module-callout-icon">●</div>
+          <div class="v2-module-callout-body">
+            <div class="v2-module-callout-label">PRÓXIMA DOSIS</div>
+            <div class="v2-module-callout-text">Domingo 23 jun · 1.0 mg subcutánea</div>
+            <div class="v2-module-callout-meta">en 4 días · rotación abdomen izq</div>
+          </div>
+        </div>
+        <div class="v2-module-subsection">
+          <div class="v2-module-subsection-label">HOY</div>
+          <div class="v2-module-action done"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Hidratación: 2.4 / 3 L</div></div>
+          <div class="v2-module-action"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Foto cintura · semanal</div></div>
+          <div class="v2-module-action"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Proteína: 130 / 150 g</div></div>
+        </div>
+        <div class="v2-module-subsection">
+          <div class="v2-module-subsection-label">EFECTOS REPORTADOS · ÚLTIMA SEMANA</div>
+          <div class="v2-module-action"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Náuseas: leve (lunes mañana)</div></div>
+          <div class="v2-module-action"><div class="v2-module-action-check"></div><div class="v2-module-action-text">Saciedad: alta · positivo</div></div>
+        </div>
+        <button class="v2-module-inline-btn" onclick="event.stopPropagation(); v2CapToast('Demo: ventana para reportar efectos a Dra. Vargas');">+ Reportar efecto a la médica</button>
+      </div>
+    `);
+
+    // ===== SKINCARE diario (nuevo) =====
+    cards.push(`
+      <div class="v2-module-card">
+        <div class="v2-module-head">
+          <div class="v2-module-meta-left">
+            <div class="v2-module-tag skin">SKINCARE</div>
+            <div class="v2-module-name">Rutina prescriptiva</div>
+            <div class="v2-module-practitioner">Dra. Méndez · derma + estética</div>
+          </div>
+          <div class="v2-module-progress">
+            <div class="v2-module-week">DÍA 56</div>
+            <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:62%;"></div></div>
+          </div>
+        </div>
+        <div class="v2-module-subsection">
+          <div class="v2-module-subsection-label">RUTINA MAÑANA <span class="v2-mod-count">4/5 · 06:30 AM</span></div>
+          <div class="v2-module-product done"><div class="v2-module-product-num"><span>1</span></div><div class="v2-module-product-name">Limpiador suave</div><div class="v2-module-product-brand">CeraVe AM</div></div>
+          <div class="v2-module-product done"><div class="v2-module-product-num"><span>2</span></div><div class="v2-module-product-name">Suero Vitamina C 15%</div><div class="v2-module-product-brand">SkinCeuticals</div></div>
+          <div class="v2-module-product done"><div class="v2-module-product-num"><span>3</span></div><div class="v2-module-product-name">Crema hidratante</div><div class="v2-module-product-brand">Avène</div></div>
+          <div class="v2-module-product done"><div class="v2-module-product-num"><span>4</span></div><div class="v2-module-product-name">SPF 50 ligero</div><div class="v2-module-product-brand">ISDIN Fusion</div></div>
+          <div class="v2-module-product"><div class="v2-module-product-num"><span>5</span></div><div class="v2-module-product-name">Bálsamo labial SPF</div><div class="v2-module-product-brand">La Roche-Posay</div></div>
+        </div>
+        <div class="v2-module-subsection">
+          <div class="v2-module-subsection-label">RUTINA NOCHE <span class="v2-mod-count">0/4 · 10:00 PM</span></div>
+          <div class="v2-module-product"><div class="v2-module-product-num"><span>1</span></div><div class="v2-module-product-name">Doble limpieza</div><div class="v2-module-product-brand">DHC + CeraVe</div></div>
+          <div class="v2-module-product"><div class="v2-module-product-num"><span>2</span></div><div class="v2-module-product-name">Tónico ácido 2%</div><div class="v2-module-product-brand">Paula's Choice</div></div>
+          <div class="v2-module-product"><div class="v2-module-product-num"><span>3</span></div><div class="v2-module-product-name">Retinol 0.5%</div><div class="v2-module-product-brand">The Ordinary</div></div>
+          <div class="v2-module-product"><div class="v2-module-product-num"><span>4</span></div><div class="v2-module-product-name">Crema barrera</div><div class="v2-module-product-brand">Avène Cicalfate</div></div>
+        </div>
+        <button class="v2-module-inline-btn" onclick="event.stopPropagation(); v2CapToast('Demo: foto de irritación se enviaría a Dra. Méndez');">+ Reportar irritación</button>
+      </div>
+    `);
+  } else {
+    // Modo NO demo: cards ghost (preview vacío de la visión multi-módulo)
+    cards.push(`
+      <div class="v2-module-card ghost">
+        <div class="v2-module-head"><div class="v2-module-meta-left">
           <div class="v2-module-tag glp">GLP-1</div>
           <div class="v2-module-name">Tirzepatida · pérdida de grasa</div>
-          <div class="v2-module-practitioner">${escapeHtml(glpPractitioner)}</div>
-        </div>
-        ${demoAest ? `<div class="v2-module-progress"><div class="v2-module-week">SEM 8/24</div><div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:33%;"></div></div></div>` : ''}
+          <div class="v2-module-practitioner">Activable si tu médico lo prescribe</div>
+        </div></div>
       </div>
-      <div class="v2-module-actions">
-        <div class="v2-module-action ${demoAest ? 'done' : ''}">
-          <div class="v2-module-action-check"></div>
-          <div class="v2-module-action-text">${demoAest ? 'Dosis aplicada · domingo' : 'Próxima dosis · seguimiento semanal'}</div>
-        </div>
-        <div class="v2-module-action">
-          <div class="v2-module-action-check"></div>
-          <div class="v2-module-action-text">Hidratación reforzada · efectos digestivos</div>
-        </div>
-        <div class="v2-module-action">
-          <div class="v2-module-action-check"></div>
-          <div class="v2-module-action-text">Sintomas reportados al médico</div>
-        </div>
-      </div>
-    </div>
-  `);
-
-  // Card Bioestimulador (siempre ghost a menos que demo)
-  cards.push(`
-    <div class="v2-module-card ${aestClass}">
-      <div class="v2-module-head">
-        <div class="v2-module-meta-left">
+    `);
+    cards.push(`
+      <div class="v2-module-card ghost">
+        <div class="v2-module-head"><div class="v2-module-meta-left">
           <div class="v2-module-tag aest">ESTÉTICA FACIAL</div>
-          <div class="v2-module-name">Bioestimulador · firmeza</div>
-          <div class="v2-module-practitioner">${escapeHtml(aestPractitioner)}</div>
-        </div>
-        ${demoAest ? `<div class="v2-module-progress"><div class="v2-module-week">SEM 8/16</div><div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:50%;"></div></div></div>` : ''}
+          <div class="v2-module-name">PRP + Bioestimulador</div>
+          <div class="v2-module-practitioner">Activable si tu clínica lo prescribe</div>
+        </div></div>
       </div>
-      <div class="v2-module-actions">
-        <div class="v2-module-action ${demoAest ? 'done' : ''}">
-          <div class="v2-module-action-check"></div>
-          <div class="v2-module-action-text">Protector solar SPF 50 mañana</div>
-        </div>
-        <div class="v2-module-action ${demoAest ? 'done' : ''}">
-          <div class="v2-module-action-check"></div>
-          <div class="v2-module-action-text">Skincare nocturno con retinol</div>
-        </div>
-        <div class="v2-module-action">
-          <div class="v2-module-action-check"></div>
-          <div class="v2-module-action-text">Foto facial semanal · misma luz</div>
-        </div>
+    `);
+    cards.push(`
+      <div class="v2-module-card ghost">
+        <div class="v2-module-head"><div class="v2-module-meta-left">
+          <div class="v2-module-tag skin">SKINCARE</div>
+          <div class="v2-module-name">Rutina prescriptiva</div>
+          <div class="v2-module-practitioner">Activable cuando tu clínica te prescribe productos</div>
+        </div></div>
       </div>
-    </div>
-  `);
+    `);
+  }
 
   // --- Empty fallback si no hay ninguna real ---
   const hasReal = cards.length > 2; // las 2 ghost siempre están
