@@ -32,6 +32,10 @@
     if (sessionStorage.getItem('savia_nav_v2') === '1') {
       document.documentElement.classList.add('nav-v2');
     }
+    // Demo aesthetic mode flag (localStorage para que persista entre tabs)
+    if (localStorage.getItem('savia_demo_aesthetic') === '1') {
+      document.documentElement.classList.add('demo-aesthetic');
+    }
   } catch (e) {}
 </script>
 <style>
@@ -2568,6 +2572,76 @@
     line-height: 1.4;
   }
   .v2day-next-arrow { color: #B07050; font-size: 16px; }
+
+  /* ====================================================================
+     V2 · MODO DEMO ESTÉTICA — features de tratamientos clínicos
+     Activado por localStorage 'savia_demo_aesthetic' + class on html.demo-aesthetic
+     ==================================================================== */
+  /* Sección facial (silueta cara + firmeza) — solo visible en modo demo */
+  .v2-aest-section { display: none; }
+  html.demo-aesthetic .v2-aest-section { display: block; }
+  /* Tarjeta evolución facial — clone visual del v2-evo-card pero con face shapes */
+  .v2-aest-card {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 20px 18px 16px;
+    margin-bottom: 12px;
+  }
+  .v2-face-silhouette {
+    width: 64px; height: 78px;
+    background: #E8E0D2;
+    border-radius: 50% 50% 45% 45%;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .v2-face-silhouette.smaller { opacity: 0.92; width: 60px; height: 74px; }
+  /* Toggle CSS */
+  .v2-demo-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 14px;
+    cursor: pointer;
+    width: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .v2-demo-toggle-text { flex: 1; }
+  .v2-demo-toggle-title { font-size: 14px; font-weight: 600; color: #2A3A2A; }
+  .v2-demo-toggle-sub { font-size: 11.5px; color: #5A6E5A; margin-top: 2px; }
+  .v2-demo-toggle-switch {
+    width: 44px; height: 24px;
+    background: #E8E0D2;
+    border-radius: 100px;
+    position: relative;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+  .v2-demo-toggle-switch::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: #FFFFFF;
+    border-radius: 50%;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 3px rgba(42,58,42,0.2);
+  }
+  html.demo-aesthetic .v2-demo-toggle-switch {
+    background: #5C7C5A;
+  }
+  html.demo-aesthetic .v2-demo-toggle-switch::after {
+    transform: translateX(20px);
+  }
+  /* Cards aesthetic en Plan tab (siempre visibles cuando demo) */
+  html.demo-aesthetic .v2-aest-card-plan { display: block; }
+  .v2-aest-card-plan { display: none; }
+  /* Capturar: tile Selfie deja de ser PRONTO en demo */
+  html.demo-aesthetic .v2-cap-tile[onclick*="selfie"] { opacity: 1; }
+  html.demo-aesthetic .v2-cap-tile[onclick*="selfie"] .v2-cap-tile-badge { display: none; }
 
   /* V2 modal centrado — opciones contextuales (InBody PDF/Manual, etc.)
      Antes era bottom sheet pero como vive dentro de .app-frame, el position:fixed
@@ -7244,6 +7318,38 @@
           </div>
         </div>
 
+        <!-- TU PROTOCOLO ESTÉTICO (demo mode) — solo visible si html.demo-aesthetic -->
+        <div class="v2-aest-section">
+          <div class="v2-section-label">TU PROTOCOLO ESTÉTICO</div>
+          <div class="v2-aest-card">
+            <div class="v2-evo-head">
+              <div class="v2-evo-label">FIRMEZA FACIAL</div>
+              <div class="v2-evo-chapter-pill">Bioestimulador · sem 8</div>
+            </div>
+            <div class="v2-silhouette-row">
+              <div class="v2-silhouette-card">
+                <span class="v2-silhouette-tag">INICIO</span>
+                <div class="v2-face-silhouette"></div>
+              </div>
+              <div class="v2-silhouette-card">
+                <span class="v2-silhouette-tag">HOY</span>
+                <div class="v2-face-silhouette smaller"></div>
+              </div>
+            </div>
+            <div class="v2-evo-delta-row">
+              <div>
+                <span class="v2-evo-delta-value">+22</span><span class="v2-evo-delta-unit"> % firmeza</span>
+                <div class="v2-evo-caption" style="margin-top:4px;">8 semanas · el colágeno sigue trabajando</div>
+              </div>
+              <div class="v2-evo-delta-badge">+22%</div>
+            </div>
+          </div>
+          <div class="v2-evo-insight">
+            <div class="v2-evo-insight-dot"></div>
+            <div class="v2-evo-insight-text">La firmeza del bioestimulador llega a su punto máximo entre semana 8 y 12. Vas en camino.</div>
+          </div>
+        </div>
+
         <!-- Tu Historia (capítulos) -->
         <div class="v2-section-label">TU HISTORIA</div>
         <div id="v2-chapters-container">
@@ -7452,6 +7558,18 @@
               <div class="v2-perfil-row-title">Privacidad y términos</div>
               <div class="v2-perfil-row-sub">Datos cifrados · nunca vendidos</div>
             </div>
+          </div>
+        </div>
+
+        <!-- DEMO controls (visible solo en nav-v2 — para que vos veas cómo se vería paciente estética) -->
+        <div class="v2-section-label">DEMO · MODO PACIENTE</div>
+        <div class="v2-perfil-section">
+          <div class="v2-demo-toggle" onclick="v2ToggleDemoAesthetic();">
+            <div class="v2-demo-toggle-text">
+              <div class="v2-demo-toggle-title">Modo paciente estética</div>
+              <div class="v2-demo-toggle-sub">Activa PRP facial + Bioestimulador como demo</div>
+            </div>
+            <div class="v2-demo-toggle-switch"></div>
           </div>
         </div>
       </div>
@@ -13269,21 +13387,62 @@ async function renderV2Plan() {
     }
   } catch (e) { console.warn('[v2-plan] WH card failed:', e); }
 
-  // --- Cards 4-5: Placeholders demo (GLP-1 + Estética facial) ---
-  // Estas son ghost cards intencionales — la doctora ve la visión multi-módulo.
+  // --- Cards 4-5: Estética y GLP-1 ---
+  // En modo demo aesthetic: cards REALES (no ghost). Default: ghost.
+  const demoAest = document.documentElement.classList.contains('demo-aesthetic');
+  const aestClass = demoAest ? '' : 'ghost';
+  const aestPractitioner = demoAest ? 'Dra. Méndez · Estética médica' : 'Activable si tu clínica lo prescribe';
+  const prpPractitioner = demoAest ? 'Dra. Méndez · sesión 3/12' : 'Activable si tu clínica lo prescribe';
+  const glpPractitioner = demoAest ? 'Dra. Vargas · medicina funcional' : 'Activable si tu médico lo prescribe';
+
+  // Card PRP (solo en demo)
+  if (demoAest) {
+    cards.push(`
+      <div class="v2-module-card">
+        <div class="v2-module-head">
+          <div class="v2-module-meta-left">
+            <div class="v2-module-tag aest">ESTÉTICA</div>
+            <div class="v2-module-name">PRP facial</div>
+            <div class="v2-module-practitioner">${escapeHtml(prpPractitioner)}</div>
+          </div>
+          <div class="v2-module-progress">
+            <div class="v2-module-week">SES 3/12</div>
+            <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:25%;"></div></div>
+          </div>
+        </div>
+        <div class="v2-module-actions">
+          <div class="v2-module-action done">
+            <div class="v2-module-action-check"></div>
+            <div class="v2-module-action-text">Sesión 2 completada · 26 jun</div>
+          </div>
+          <div class="v2-module-action">
+            <div class="v2-module-action-check"></div>
+            <div class="v2-module-action-text">Foto facial pre-sesión · martes</div>
+          </div>
+          <div class="v2-module-action">
+            <div class="v2-module-action-check"></div>
+            <div class="v2-module-action-text">Sin makeup 24h antes</div>
+          </div>
+        </div>
+      </div>
+    `);
+  }
+
+  // Card GLP-1 (siempre ghost a menos que demo)
   cards.push(`
-    <div class="v2-module-card ghost">
+    <div class="v2-module-card ${aestClass}">
       <div class="v2-module-head">
         <div class="v2-module-meta-left">
           <div class="v2-module-tag glp">GLP-1</div>
           <div class="v2-module-name">Tirzepatida · pérdida de grasa</div>
-          <div class="v2-module-practitioner">Activable si tu médico lo prescribe</div>
+          <div class="v2-module-practitioner">${escapeHtml(glpPractitioner)}</div>
         </div>
+        ${demoAest ? `<div class="v2-module-progress"><div class="v2-module-week">SEM 8/24</div><div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:33%;"></div></div></div>` : ''}
       </div>
       <div class="v2-module-actions">
-        <div class="v2-module-action">
+        <div class="v2-module-action ${demoAest ? 'done' : ''}">
           <div class="v2-module-action-check"></div>
-          <div class="v2-module-action-text">Próxima dosis · seguimiento semanal</div>
+          <div class="v2-module-action-text">${demoAest ? 'Dosis aplicada · domingo' : 'Próxima dosis · seguimiento semanal'}</div>
         </div>
         <div class="v2-module-action">
           <div class="v2-module-action-check"></div>
@@ -13296,21 +13455,24 @@ async function renderV2Plan() {
       </div>
     </div>
   `);
+
+  // Card Bioestimulador (siempre ghost a menos que demo)
   cards.push(`
-    <div class="v2-module-card ghost">
+    <div class="v2-module-card ${aestClass}">
       <div class="v2-module-head">
         <div class="v2-module-meta-left">
           <div class="v2-module-tag aest">ESTÉTICA FACIAL</div>
           <div class="v2-module-name">Bioestimulador · firmeza</div>
-          <div class="v2-module-practitioner">Activable si tu clínica lo prescribe</div>
+          <div class="v2-module-practitioner">${escapeHtml(aestPractitioner)}</div>
         </div>
+        ${demoAest ? `<div class="v2-module-progress"><div class="v2-module-week">SEM 8/16</div><div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:50%;"></div></div></div>` : ''}
       </div>
       <div class="v2-module-actions">
-        <div class="v2-module-action">
+        <div class="v2-module-action ${demoAest ? 'done' : ''}">
           <div class="v2-module-action-check"></div>
           <div class="v2-module-action-text">Protector solar SPF 50 mañana</div>
         </div>
-        <div class="v2-module-action">
+        <div class="v2-module-action ${demoAest ? 'done' : ''}">
           <div class="v2-module-action-check"></div>
           <div class="v2-module-action-text">Skincare nocturno con retinol</div>
         </div>
@@ -13371,8 +13533,19 @@ function v2CapAction(kind) {
       if (typeof goStep === 'function') goStep('daily-log');
       else v2CapToast('Daily log no disponible');
       return;
-    case 'photo':
     case 'selfie':
+      // En modo demo aesthetic: ofrecer flow básico de selfie con guía
+      if (document.documentElement.classList.contains('demo-aesthetic')) {
+        v2SheetShow('Selfie facial · 3 ángulos', [
+          { icon: '◉', title: 'Frontal', meta: 'Mirando directo a la cámara', action: () => v2CapToast('Demo: cámara se abriría con guía frontal') },
+          { icon: '◕', title: 'Perfil izquierdo', meta: 'Cabeza ligeramente girada a la izq', action: () => v2CapToast('Demo: cámara perfil izquierdo') },
+          { icon: '◔', title: 'Perfil derecho', meta: 'Cabeza ligeramente girada a la der', action: () => v2CapToast('Demo: cámara perfil derecho') },
+        ]);
+      } else {
+        v2CapToast('Activable por tu clínica · disponible próximamente');
+      }
+      return;
+    case 'photo':
     case 'lab':
     case 'measure':
       v2CapToast('Activable por tu clínica · disponible próximamente');
@@ -13651,6 +13824,23 @@ async function renderV2Day() {
   } else if (v2Next) {
     v2Next.style.display = 'none';
   }
+}
+
+/* V2 · DEMO aesthetic mode toggle — para que Victor vea cómo se vería paciente estética
+   Activa: PRP card real + Bioestimulador card real + sección "Tu protocolo estético" + selfie funcional. */
+function v2ToggleDemoAesthetic() {
+  const isOn = document.documentElement.classList.contains('demo-aesthetic');
+  if (isOn) {
+    document.documentElement.classList.remove('demo-aesthetic');
+    localStorage.removeItem('savia_demo_aesthetic');
+  } else {
+    document.documentElement.classList.add('demo-aesthetic');
+    localStorage.setItem('savia_demo_aesthetic', '1');
+  }
+  // Re-render Plan + Perfil porque sus cards/secciones cambian
+  if (typeof renderV2Plan === 'function') renderV2Plan().catch(() => {});
+  if (typeof renderV2Perfil === 'function') renderV2Perfil().catch(() => {});
+  // Mi Progreso: la sección estética usa CSS, no requiere re-render
 }
 
 /* V2 · Quick add agua: reutiliza nutAddHydration con 250ml default */
