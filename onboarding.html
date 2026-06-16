@@ -2357,7 +2357,10 @@
   }
   .v2-cap-toast.show { opacity: 1; }
 
-  /* V2 bottom sheet — para opciones de InBody (PDF vs Manual) */
+  /* V2 modal centrado — opciones contextuales (InBody PDF/Manual, etc.)
+     Antes era bottom sheet pero como vive dentro de .app-frame, el position:fixed
+     se anclaba al frame (no viewport) y se sentía "muy abajo". Solución: modal
+     centrado, sin anclaje al bottom. */
   .v2-sheet-overlay {
     position: fixed;
     inset: 0;
@@ -2366,34 +2369,30 @@
     backdrop-filter: blur(4px);
     z-index: 99998;
     display: none;
-    align-items: flex-end;
+    align-items: center;       /* centrado vertical (era flex-end) */
     justify-content: center;
+    padding: 24px;             /* aire en los bordes */
     opacity: 0;
     transition: opacity 0.2s ease;
   }
   .v2-sheet-overlay.show { display: flex; opacity: 1; }
   .v2-sheet {
     width: 100%;
-    max-width: 460px;
-    min-height: 48vh;
+    max-width: 380px;
+    max-height: 80vh;
+    overflow-y: auto;
     background: #FAF7EF;
-    border-radius: 24px 24px 0 0;
-    padding: 18px 22px calc(40px + env(safe-area-inset-bottom, 0px));
-    box-shadow: 0 -20px 60px rgba(42, 58, 42, 0.2);
-    transform: translateY(20px);
+    border-radius: 24px;       /* redondeado en todos los lados (era 24px 24px 0 0) */
+    padding: 24px 22px;
+    box-shadow: 0 20px 60px rgba(42, 58, 42, 0.25);
+    transform: translateY(20px) scale(0.98);
     transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     display: flex;
     flex-direction: column;
   }
-  .v2-sheet .v2-sheet-options { flex: 1; justify-content: center; }
-  .v2-sheet-title { margin-bottom: 28px; }
-  .v2-sheet-overlay.show .v2-sheet { transform: translateY(0); }
-  .v2-sheet-handle {
-    width: 36px; height: 4px;
-    background: #E8E0D2;
-    border-radius: 100px;
-    margin: 0 auto 16px;
-  }
+  .v2-sheet-title { margin-bottom: 22px; }
+  .v2-sheet-overlay.show .v2-sheet { transform: translateY(0) scale(1); }
+  .v2-sheet-handle { display: none; }  /* handle solo aplica a bottom sheet */
   .v2-sheet-title {
     font-family: 'Cormorant Garamond', serif;
     font-size: 24px; font-weight: 500;
@@ -3237,9 +3236,9 @@
   .th-empty-sub { font-size: 12.5px; color: #5A6E5A; line-height: 1.5; }
 
   /* Modal Log peso */
-  .pg-modal-overlay { position: fixed; inset: 0; background: rgba(42,58,42,0.20); backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: flex-end; justify-content: center; }
+  .pg-modal-overlay { position: fixed; inset: 0; background: rgba(42,58,42,0.20); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 24px; }
   .pg-modal-overlay.show { display: flex; }
-  .pg-modal { background: #F5EFE3; border-top: 1px solid rgba(42,58,42,0.09); border-radius: 22px 22px 0 0; padding: 22px 22px calc(32px + env(safe-area-inset-bottom, 0px)); width: 100%; max-width: 480px; }
+  .pg-modal { background: #F5EFE3; border: 1px solid rgba(42,58,42,0.09); border-radius: 22px; padding: 22px; width: 100%; max-width: 380px; max-height: 80vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(42,58,42,0.25); }
   .pg-modal-handle { width: 36px; height: 4px; background: rgba(42,58,42,0.20); border-radius: 2px; margin: 0 auto 18px; }
   .pg-modal-title { font-size: 17px; font-weight: 700; color: #2A3A2A; margin-bottom: 14px; }
   .pg-modal-field { margin-bottom: 14px; }
