@@ -1728,13 +1728,15 @@
      ==================================================================== */
   .tabbar-v2 { display: none; }
   .v2-tab { display: none; }
-  /* Cuando flag activo: ocultar nav vieja, mostrar nav nueva */
+  /* Cuando flag activo: ocultar TODA la UI vieja (topbar + content + tabbar), mostrar v2 */
   html.nav-v2 .hoy-tabbar { display: none !important; }
-  html.nav-v2 .hoy-tab-hoy,
-  html.nav-v2 .hoy-tab-cuerpo,
-  html.nav-v2 .hoy-tab-savia { display: none !important; }
+  html.nav-v2 .hoy-topbar { display: none !important; }
+  html.nav-v2 .hoy-content { display: none !important; }
+  html.nav-v2 .hoy-calib-pill { display: none !important; }
   html.nav-v2 .tabbar-v2 { display: flex; }
   html.nav-v2 .v2-tab.active { display: flex; }
+  /* La screen.app cuando v2 activo: sin padding propio, los v2-tabs lo manejan */
+  html.nav-v2 .screen.app-screen { padding: 0; }
 
   /* V2 tab container — copia el comportamiento de hoy-tab (column scroll) */
   .v2-tab {
