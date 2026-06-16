@@ -12367,13 +12367,15 @@ async function renderV2Progreso() {
           const body = (c.how_you_are_today || '').trim();
           let title = body.split(/[\.\n]/)[0].trim() || `Capítulo ${num}`;
           if (title.length > 60) title = title.slice(0, 57) + '…';
-          const safeTitle = title.replace(/</g, '&lt;');
-          const dateStr = formatRelativeDate(c.created_at);
+          const safeTitle = escapeHtml(title);
+          const safeNum = escapeHtml(String(num));
+          const safeId = escapeHtml(String(c.id || ''));
+          const dateStr = escapeHtml(formatRelativeDate(c.created_at));
           return `
-            <div class="v2-chap-card" onclick="if (typeof tcOpenChapterById === 'function') tcOpenChapterById('${c.id}');">
-              <div class="v2-chap-image">${num}</div>
+            <div class="v2-chap-card" onclick="if (typeof tcOpenChapterById === 'function') tcOpenChapterById('${safeId}');">
+              <div class="v2-chap-image">${safeNum}</div>
               <div class="v2-chap-body">
-                <div class="v2-chap-num">CAPÍTULO ${num}</div>
+                <div class="v2-chap-num">CAPÍTULO ${safeNum}</div>
                 <div class="v2-chap-title">${safeTitle}</div>
                 <div class="v2-chap-meta">${dateStr}</div>
               </div>
@@ -12647,7 +12649,7 @@ async function renderV2Plan() {
         const startStr = new Date(first.measured_at).toLocaleDateString('es', { day: 'numeric', month: 'short' });
         const weeksSince = Math.max(1, Math.ceil((new Date() - new Date(first.measured_at)) / (1000*60*60*24*7)));
         cards.push(`
-          <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('progress');">
+          <div class="v2-module-card" onclick="if (typeof pgOpenScreen === 'function') pgOpenScreen(); else goStep('progress');">
             <div class="v2-module-head">
               <div class="v2-module-meta-left">
                 <div class="v2-module-tag body">COMPOSICIÓN</div>
@@ -12801,26 +12803,24 @@ function v2OpenPlanView() {
     console.warn('[v2] planViewOpen no disponible');
     return;
   }
-  // Override del back solo si estamos en nav-v2
+  // Override del back solo si estamos en nav-v2.
+  // Idempotente: flag __v2Hijacked previene encadenar overrides en doble-tap
+  // (sin el flag, originalBack apuntaría a un override viejo, corrompiendo SAVIA v1).
   if (document.documentElement.classList.contains('nav-v2')) {
-    const originalBack = window.planViewBack;
-    window.planViewBack = function() {
-      // Restaurar el original primero (idempotente)
-      window.planViewBack = originalBack;
-      // Volver al app + Plan tab v2
-      try {
-        if (typeof goStep === 'function') goStep('app');
-        if (typeof switchV2Tab === 'function') switchV2Tab('plan');
-      } catch (e) { console.warn('[v2] planViewBack override falló:', e); }
-    };
+    if (!window.planViewBack || !window.planViewBack.__v2Hijacked) {
+      const originalBack = window.planViewBack;
+      const overrideFn = function() {
+        window.planViewBack = originalBack; // restaurar real, no override
+        try {
+          if (typeof goStep === 'function') goStep('app');
+          if (typeof switchV2Tab === 'function') switchV2Tab('plan');
+        } catch (e) { console.warn('[v2] planViewBack override falló:', e); }
+      };
+      overrideFn.__v2Hijacked = true;
+      window.planViewBack = overrideFn;
+    }
   }
   planViewOpen();
-}
-
-/* Escape HTML helper (defensivo contra XSS en datos de Supabase) */
-function escapeHtml(s) {
-  if (s == null) return '';
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 /* Helper local — fecha relativa simple */
