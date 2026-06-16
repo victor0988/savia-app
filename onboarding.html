@@ -2357,6 +2357,89 @@
   }
   .v2-cap-toast.show { opacity: 1; }
 
+  /* V2 bottom sheet — para opciones de InBody (PDF vs Manual) */
+  .v2-sheet-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(42, 58, 42, 0.45);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    z-index: 99998;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .v2-sheet-overlay.show { display: flex; opacity: 1; }
+  .v2-sheet {
+    width: 100%;
+    max-width: 460px;
+    background: #FAF7EF;
+    border-radius: 24px 24px 0 0;
+    padding: 14px 22px 32px;
+    box-shadow: 0 -20px 60px rgba(42, 58, 42, 0.2);
+    transform: translateY(20px);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .v2-sheet-overlay.show .v2-sheet { transform: translateY(0); }
+  .v2-sheet-handle {
+    width: 36px; height: 4px;
+    background: #E8E0D2;
+    border-radius: 100px;
+    margin: 0 auto 16px;
+  }
+  .v2-sheet-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -0.5px;
+    margin-bottom: 18px;
+    text-align: center;
+  }
+  .v2-sheet-options { display: flex; flex-direction: column; gap: 8px; }
+  .v2-sheet-option {
+    background: #FFFFFF;
+    border: 1px solid #E8E0D2;
+    border-radius: 16px;
+    padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .v2-sheet-option:active { transform: scale(0.99); }
+  .v2-sheet-option:hover { border-color: rgba(92, 124, 90, 0.4); }
+  .v2-sheet-option-icon {
+    width: 38px; height: 38px;
+    background: rgba(92, 124, 90, 0.10);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    color: #5C7C5A;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .v2-sheet-option-body { flex: 1; min-width: 0; }
+  .v2-sheet-option-title {
+    font-size: 14.5px; font-weight: 700;
+    color: #2A3A2A; margin-bottom: 2px;
+  }
+  .v2-sheet-option-meta {
+    font-size: 11.5px; color: #5A6E5A;
+    line-height: 1.4;
+  }
+  .v2-sheet-cancel {
+    width: 100%;
+    background: transparent;
+    border: 1px solid #E8E0D2;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 13.5px; font-weight: 600;
+    color: #5A6E5A;
+    margin-top: 16px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
   /* Coming soon screens (Cuerpo, SAVIA) */
   .hoy-coming-soon {
     flex: 1;
@@ -6829,6 +6912,19 @@
          ==================================================================== -->
     <div class="v2-flag-banner">DEMO · ?v=2 · TRANSFORMATION PLATFORM</div>
 
+    <!-- V2 · Toast (top-level, no atrapado dentro de v2-tab) -->
+    <div class="v2-cap-toast" id="v2-cap-toast"></div>
+
+    <!-- V2 · Bottom sheet para opciones InBody -->
+    <div class="v2-sheet-overlay" id="v2-sheet-overlay" onclick="v2SheetClose(event)">
+      <div class="v2-sheet" id="v2-sheet">
+        <div class="v2-sheet-handle"></div>
+        <div class="v2-sheet-title" id="v2-sheet-title">Subir InBody</div>
+        <div class="v2-sheet-options" id="v2-sheet-options"></div>
+        <button class="v2-sheet-cancel" onclick="v2SheetHide()">Cancelar</button>
+      </div>
+    </div>
+
     <div class="v2-tab v2-tab-progreso active" data-v2tab="progreso">
       <div class="v2-progreso">
         <!-- Hero -->
@@ -6989,8 +7085,6 @@
           </div>
         </div>
       </div>
-      <!-- Toast container (shared, único) -->
-      <div class="v2-cap-toast" id="v2-cap-toast"></div>
     </div>
 
     <div class="v2-tab v2-tab-savia" data-v2tab="savia">
@@ -12948,8 +13042,14 @@ function v2CapAction(kind) {
       else if (typeof goStep === 'function') goStep('progress');
       return;
     case 'inbody':
-      if (typeof nutInBodyOpenUpload === 'function') nutInBodyOpenUpload();
-      else v2CapToast('Subida de InBody no disponible ahora');
+      v2SheetShow('Subir InBody', [
+        { icon: '📄', title: 'Subir PDF o foto', meta: 'Vamos a leer tu InBody automáticamente', action: () => {
+          if (typeof nutInBodyOpenUpload === 'function') nutInBodyOpenUpload();
+        }},
+        { icon: '✎', title: 'Ingresar manualmente', meta: 'Peso, grasa, masa magra, viscerial', action: () => {
+          if (typeof goStep === 'function') goStep('nut-inbody-confirm');
+        }},
+      ]);
       return;
     case 'weight':
       // Abrir pg-screen primero (donde vive el modal) y luego el log modal
@@ -12981,6 +13081,44 @@ function v2CapToast(msg) {
   t.classList.add('show');
   clearTimeout(t._timer);
   t._timer = setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+/* V2 · Bottom sheet — opciones contextuales (ej. cómo subir InBody) */
+function v2SheetShow(title, options) {
+  const overlay = document.getElementById('v2-sheet-overlay');
+  const titleEl = document.getElementById('v2-sheet-title');
+  const optsEl = document.getElementById('v2-sheet-options');
+  if (!overlay || !titleEl || !optsEl) return;
+  titleEl.textContent = title;
+  optsEl.innerHTML = '';
+  options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'v2-sheet-option';
+    btn.innerHTML = `
+      <div class="v2-sheet-option-icon">${opt.icon}</div>
+      <div class="v2-sheet-option-body">
+        <div class="v2-sheet-option-title">${escapeHtml(opt.title)}</div>
+        <div class="v2-sheet-option-meta">${escapeHtml(opt.meta || '')}</div>
+      </div>
+    `;
+    btn.addEventListener('click', () => {
+      v2SheetHide();
+      if (typeof opt.action === 'function') {
+        // Pequeño delay para que la animación de cierre se vea bien
+        setTimeout(opt.action, 200);
+      }
+    });
+    optsEl.appendChild(btn);
+  });
+  overlay.classList.add('show');
+}
+function v2SheetHide() {
+  const overlay = document.getElementById('v2-sheet-overlay');
+  if (overlay) overlay.classList.remove('show');
+}
+function v2SheetClose(e) {
+  // Solo cerrar si tap en el backdrop, no en el sheet
+  if (e.target && e.target.id === 'v2-sheet-overlay') v2SheetHide();
 }
 
 /* V2 · abrir Nutrition module — llama openNutritionModule() que carga targets + meals + render.
