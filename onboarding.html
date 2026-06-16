@@ -12280,17 +12280,21 @@ async function renderV2Progreso() {
     }
   } catch (e) { console.warn('[v2-progreso] strava failed:', e); }
 
-  // --- Insight SAVIA: último Daily Pulse ---
+  // --- Insight SAVIA: último savia_pulse activo ---
+  // Schema real: savia_pulses (no daily_pulses), campos: headline, category, created_at.
+  // Filtro: no dismissed + no expirado.
   try {
     const sess = await sb.auth.getSession();
     const userId = sess?.data?.session?.user?.id;
     if (userId) {
-      const { data: pulses } = await sb
-        .from('daily_pulses')
-        .select('id, generated_at, body_text, pulse_type')
+      const { data: pulses, error: pErr } = await sb
+        .from('savia_pulses')
+        .select('id, created_at, headline, category, context_for_chat')
         .eq('user_id', userId)
-        .order('generated_at', { ascending: false })
+        .eq('dismissed', false)
+        .order('created_at', { ascending: false })
         .limit(1);
+      if (pErr) console.warn('[v2-progreso] savia_pulses error:', pErr);
       if (pulses && pulses.length > 0) {
         const p = pulses[0];
         const labelEl = document.getElementById('v2-savia-insight-label');
@@ -12298,10 +12302,11 @@ async function renderV2Progreso() {
         if (labelEl) {
           const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : 1;
           const week = Math.max(1, Math.ceil(days / 7));
-          labelEl.textContent = `HOY · SEMANA ${week}`;
+          const catLabel = (p.category || '').toUpperCase().replace(/_/g, ' ');
+          labelEl.textContent = catLabel ? `${catLabel} · SEMANA ${week}` : `HOY · SEMANA ${week}`;
         }
-        if (textEl && p.body_text) {
-          textEl.textContent = p.body_text;
+        if (textEl && p.headline) {
+          textEl.textContent = p.headline;
         }
       }
     }
