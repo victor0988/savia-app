@@ -12564,8 +12564,10 @@ async function renderV2Plan() {
         </div>
       `);
     }
-    // Caso B: no hay meal_plan pero tiene nutrition_targets (macros calculados por SAVIA)
-    else if (userId) {
+    // Caso B: nutrition_targets (macros calculados por SAVIA — tracking operativo).
+    // Se muestra SIEMPRE cuando existe, INCLUSO si ya hay meal_plan de nutricionista,
+    // porque la doctora prescribe la referencia y SAVIA es donde el usuario opera el día a día.
+    if (userId) {
       const { data: targets } = await sb
         .from('nutrition_targets')
         .select('id, kcal, protein_g, carbs_g, fat_g, water_ml, computed_at')
@@ -12600,9 +12602,9 @@ async function renderV2Plan() {
           <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('nutrition');">
             <div class="v2-module-head">
               <div class="v2-module-meta-left">
-                <div class="v2-module-tag nut">NUTRICIÓN</div>
+                <div class="v2-module-tag nut">TRACKING DIARIO</div>
                 <div class="v2-module-name">Tu plan SAVIA</div>
-                <div class="v2-module-practitioner">Calculado por SAVIA · ${escapeHtml(kcalStr)}</div>
+                <div class="v2-module-practitioner">Macros operativos · ${escapeHtml(kcalStr)}</div>
               </div>
               ${weekStr ? `<div class="v2-module-progress">
                 <div class="v2-module-week">${weekStr}</div>
