@@ -2258,6 +2258,105 @@
     line-height: 1.5;
   }
 
+  /* ====================================================================
+     V2 · CAPTURAR (Fase 4) — Centro de evidencia
+     ==================================================================== */
+  .v2-cap-wrap { padding: 0 18px 20px; }
+  .v2-cap-hero { padding: 36px 0 22px; text-align: center; }
+  .v2-cap-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -1.2px;
+    margin-bottom: 8px;
+  }
+  .v2-cap-sub {
+    font-size: 13px; color: #5A6E5A;
+    max-width: 320px; margin: 0 auto;
+    line-height: 1.5;
+  }
+  .v2-cap-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .v2-cap-tile {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 22px 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    position: relative;
+  }
+  .v2-cap-tile:active { transform: scale(0.98); }
+  .v2-cap-tile:hover {
+    border-color: rgba(92, 124, 90, 0.3);
+    box-shadow: 0 4px 16px rgba(42, 58, 42, 0.06);
+  }
+  .v2-cap-tile.featured {
+    grid-column: span 2;
+    background: #2A3A2A;
+    border-color: #2A3A2A;
+    padding: 24px 18px 22px;
+  }
+  .v2-cap-tile.featured .v2-cap-tile-title,
+  .v2-cap-tile.featured .v2-cap-tile-meta { color: #F5EFE3; }
+  .v2-cap-tile.featured .v2-cap-tile-icon {
+    background: rgba(245, 239, 227, 0.15);
+    color: #F5EFE3;
+  }
+  .v2-cap-tile.soon { opacity: 0.65; cursor: pointer; }
+  .v2-cap-tile.soon .v2-cap-tile-badge { display: inline-block; }
+  .v2-cap-tile-badge {
+    display: none;
+    position: absolute;
+    top: 12px; right: 12px;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    padding: 3px 8px;
+    background: rgba(176, 112, 80, 0.10);
+    color: #B07050;
+    border-radius: 100px;
+  }
+  .v2-cap-tile-icon {
+    width: 44px; height: 44px;
+    background: rgba(92, 124, 90, 0.10);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 12px;
+    color: #5C7C5A;
+    font-size: 22px;
+  }
+  .v2-cap-tile-title {
+    font-size: 14px; font-weight: 700;
+    color: #2A3A2A; margin-bottom: 4px;
+  }
+  .v2-cap-tile-meta {
+    font-size: 11px; color: #5A6E5A;
+    line-height: 1.4;
+  }
+  /* Toast simple para "Próximamente" */
+  .v2-cap-toast {
+    position: fixed;
+    bottom: 110px; left: 50%; transform: translateX(-50%);
+    background: rgba(42, 58, 42, 0.96);
+    color: #F5EFE3;
+    padding: 12px 20px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 600;
+    z-index: 9999;
+    box-shadow: 0 12px 40px rgba(42, 58, 42, 0.3);
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    max-width: 320px;
+    text-align: center;
+    line-height: 1.4;
+  }
+  .v2-cap-toast.show { opacity: 1; }
+
   /* Coming soon screens (Cuerpo, SAVIA) */
   .hoy-coming-soon {
     flex: 1;
@@ -6830,12 +6929,68 @@
     </div>
 
     <div class="v2-tab v2-tab-capturar" data-v2tab="capturar">
-      <div class="v2-placeholder">
-        <div class="v2-placeholder-tag">TAB 3 · CENTRO DE EVIDENCIA</div>
-        <div class="v2-placeholder-title">Capturar</div>
-        <div class="v2-placeholder-desc">Foto, selfie, InBody, laboratorio, peso, medición, nota. El combustible de tu transformación.</div>
-        <div class="v2-placeholder-phase">Fase 4</div>
+      <div class="v2-cap-wrap">
+        <div class="v2-cap-hero">
+          <div class="v2-cap-title">Capturar evidencia</div>
+          <div class="v2-cap-sub">Lo que registres hoy alimenta tu transformación mañana.</div>
+        </div>
+        <div class="v2-cap-grid">
+          <!-- Featured: Capítulo de la semana -->
+          <div class="v2-cap-tile featured" onclick="v2CapAction('chapter');">
+            <div class="v2-cap-tile-icon">◉</div>
+            <div class="v2-cap-tile-title">Capítulo de la semana</div>
+            <div class="v2-cap-tile-meta">Ver tu biblioteca de transformación</div>
+          </div>
+          <!-- InBody (funcional — abre nutInBodyOpenUpload) -->
+          <div class="v2-cap-tile" onclick="v2CapAction('inbody');">
+            <div class="v2-cap-tile-icon">▣</div>
+            <div class="v2-cap-tile-title">InBody</div>
+            <div class="v2-cap-tile-meta">PDF · foto · escaneo</div>
+          </div>
+          <!-- Peso (funcional — abre pg-modal de log) -->
+          <div class="v2-cap-tile" onclick="v2CapAction('weight');">
+            <div class="v2-cap-tile-icon">⚖</div>
+            <div class="v2-cap-tile-title">Peso</div>
+            <div class="v2-cap-tile-meta">Registro rápido</div>
+          </div>
+          <!-- Nota (funcional — daily-log) -->
+          <div class="v2-cap-tile" onclick="v2CapAction('note');">
+            <div class="v2-cap-tile-icon">✎</div>
+            <div class="v2-cap-tile-title">Nota</div>
+            <div class="v2-cap-tile-meta">Cómo te sentís hoy</div>
+          </div>
+          <!-- Foto rápida (placeholder) -->
+          <div class="v2-cap-tile soon" onclick="v2CapAction('photo');">
+            <div class="v2-cap-tile-badge">PRONTO</div>
+            <div class="v2-cap-tile-icon">📷</div>
+            <div class="v2-cap-tile-title">Foto rápida</div>
+            <div class="v2-cap-tile-meta">Frontal o lateral</div>
+          </div>
+          <!-- Selfie facial (placeholder — módulo estética) -->
+          <div class="v2-cap-tile soon" onclick="v2CapAction('selfie');">
+            <div class="v2-cap-tile-badge">PRONTO</div>
+            <div class="v2-cap-tile-icon">◔</div>
+            <div class="v2-cap-tile-title">Selfie facial</div>
+            <div class="v2-cap-tile-meta">Luz frontal · 3 ángulos</div>
+          </div>
+          <!-- Laboratorio (placeholder) -->
+          <div class="v2-cap-tile soon" onclick="v2CapAction('lab');">
+            <div class="v2-cap-tile-badge">PRONTO</div>
+            <div class="v2-cap-tile-icon">⚗</div>
+            <div class="v2-cap-tile-title">Laboratorio</div>
+            <div class="v2-cap-tile-meta">Análisis sanguíneo</div>
+          </div>
+          <!-- Medición (placeholder) -->
+          <div class="v2-cap-tile soon" onclick="v2CapAction('measure');">
+            <div class="v2-cap-tile-badge">PRONTO</div>
+            <div class="v2-cap-tile-icon">📏</div>
+            <div class="v2-cap-tile-title">Medición</div>
+            <div class="v2-cap-tile-meta">Cintura · cadera · muslo</div>
+          </div>
+        </div>
       </div>
+      <!-- Toast container (shared, único) -->
+      <div class="v2-cap-toast" id="v2-cap-toast"></div>
     </div>
 
     <div class="v2-tab v2-tab-savia" data-v2tab="savia">
@@ -12781,6 +12936,51 @@ async function renderV2Plan() {
       </div>
     `;
   }
+}
+
+/* V2 · CAPTURAR — dispatcher de tiles
+   Tiles activos llaman flow existente. Tiles "Pronto" muestran toast. */
+function v2CapAction(kind) {
+  switch (kind) {
+    case 'chapter':
+      // Llevar a la biblioteca de capítulos (Tu Progreso tiene la sección)
+      if (typeof pgOpenScreen === 'function') pgOpenScreen();
+      else if (typeof goStep === 'function') goStep('progress');
+      return;
+    case 'inbody':
+      if (typeof nutInBodyOpenUpload === 'function') nutInBodyOpenUpload();
+      else v2CapToast('Subida de InBody no disponible ahora');
+      return;
+    case 'weight':
+      // Abrir pg-screen primero (donde vive el modal) y luego el log modal
+      if (typeof pgOpenScreen === 'function') pgOpenScreen();
+      // Pequeño delay para que pg-screen ya esté visible cuando abra el modal
+      setTimeout(() => {
+        if (typeof pgOpenLogModal === 'function') pgOpenLogModal();
+      }, 150);
+      return;
+    case 'note':
+      if (typeof goStep === 'function') goStep('daily-log');
+      else v2CapToast('Daily log no disponible');
+      return;
+    case 'photo':
+    case 'selfie':
+    case 'lab':
+    case 'measure':
+      v2CapToast('Activable por tu clínica · disponible próximamente');
+      return;
+    default:
+      v2CapToast('Acción no reconocida');
+  }
+}
+
+function v2CapToast(msg) {
+  const t = document.getElementById('v2-cap-toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2400);
 }
 
 /* V2 · abrir Nutrition module — llama openNutritionModule() que carga targets + meals + render.
