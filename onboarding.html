@@ -2357,6 +2357,91 @@
   }
   .v2-cap-toast.show { opacity: 1; }
 
+  /* ====================================================================
+     V2 · PERFIL (Fase 5) — Cuenta + Equipo + Módulos + Conexiones
+     ==================================================================== */
+  .v2-perfil-wrap { padding: 0 18px 20px; }
+  .v2-perfil-hero {
+    padding: 36px 0 22px;
+    text-align: center;
+  }
+  .v2-perfil-avatar {
+    width: 84px; height: 84px;
+    border-radius: 50%;
+    background: #2A3A2A;
+    color: #F5EFE3;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 34px; font-weight: 500;
+    margin: 0 auto 14px;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    border: 3px solid #FAF7EF;
+    box-shadow: 0 4px 16px rgba(42, 58, 42, 0.10);
+  }
+  .v2-perfil-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -0.6px;
+    line-height: 1.1;
+    margin-bottom: 4px;
+  }
+  .v2-perfil-since {
+    font-size: 13px; color: #5A6E5A;
+    margin-bottom: 18px;
+  }
+  .v2-perfil-edit {
+    display: inline-block;
+    background: transparent;
+    border: 1px solid #E8E0D2;
+    border-radius: 100px;
+    padding: 8px 18px;
+    font-size: 12.5px; font-weight: 600;
+    color: #2A3A2A;
+    cursor: pointer;
+    font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .v2-perfil-edit:hover { border-color: rgba(92, 124, 90, 0.4); }
+
+  .v2-perfil-section {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .v2-perfil-row {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #E8E0D2;
+  }
+  .v2-perfil-row:last-child { border-bottom: none; }
+  .v2-perfil-row-icon {
+    width: 32px; height: 32px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 15px;
+  }
+  .v2-perfil-row-icon.connected { background: rgba(92, 124, 90, 0.12); color: #5C7C5A; }
+  .v2-perfil-row-icon.disconnected { background: #E8E0D2; color: #5A6E5A; }
+  .v2-perfil-row-icon.clinic { background: rgba(176, 112, 80, 0.10); color: #B07050; }
+  .v2-perfil-row-body { flex: 1; min-width: 0; }
+  .v2-perfil-row-title { font-size: 14px; font-weight: 600; color: #2A3A2A; }
+  .v2-perfil-row-sub { font-size: 11.5px; color: #5A6E5A; margin-top: 2px; }
+  .v2-perfil-row-status {
+    font-size: 11px; font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 100px;
+    flex-shrink: 0;
+  }
+  .v2-perfil-row-status.on { background: rgba(92, 124, 90, 0.12); color: #5C7C5A; }
+  .v2-perfil-row-status.off { background: rgba(176, 112, 80, 0.10); color: #B07050; }
+  .v2-perfil-row-status.manual { background: rgba(184, 153, 104, 0.14); color: #B89968; }
+
   /* V2 modal centrado — opciones contextuales (InBody PDF/Manual, etc.)
      Antes era bottom sheet pero como vive dentro de .app-frame, el position:fixed
      se anclaba al frame (no viewport) y se sentía "muy abajo". Solución: modal
@@ -7101,11 +7186,64 @@
     </div>
 
     <div class="v2-tab v2-tab-perfil" data-v2tab="perfil">
-      <div class="v2-placeholder">
-        <div class="v2-placeholder-tag">TAB 5 · CUENTA</div>
-        <div class="v2-placeholder-title">Perfil</div>
-        <div class="v2-placeholder-desc">Tu clínica, módulos activos, conexiones (Oura/Strava/Apple Health), settings. Por ahora abre el perfil actual.</div>
-        <div class="v2-placeholder-phase">Fase 5 (perfil actual ya funciona)</div>
+      <div class="v2-perfil-wrap">
+        <div class="v2-perfil-hero">
+          <div class="v2-perfil-avatar" id="v2-perfil-avatar" onclick="openProfile()">—</div>
+          <div class="v2-perfil-name" id="v2-perfil-name">—</div>
+          <div class="v2-perfil-since" id="v2-perfil-since">Paciente desde —</div>
+          <button class="v2-perfil-edit" onclick="openProfile()">Editar perfil completo</button>
+        </div>
+
+        <!-- Tu equipo médico -->
+        <div class="v2-section-label">TU EQUIPO MÉDICO</div>
+        <div class="v2-perfil-section" id="v2-perfil-team">
+          <!-- Mock cards (Fase B: vendrá de practitioners table) -->
+          <div class="v2-perfil-row">
+            <div class="v2-perfil-row-icon clinic">◆</div>
+            <div class="v2-perfil-row-body">
+              <div class="v2-perfil-row-title">Tu clínica</div>
+              <div class="v2-perfil-row-sub">Próximamente · invitación pendiente</div>
+            </div>
+          </div>
+          <div class="v2-perfil-row">
+            <div class="v2-perfil-row-icon connected">●</div>
+            <div class="v2-perfil-row-body">
+              <div class="v2-perfil-row-title">Dra. Sofía López</div>
+              <div class="v2-perfil-row-sub">Nutricionista · prescribió tu plan</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Módulos activos -->
+        <div class="v2-section-label">MÓDULOS ACTIVOS</div>
+        <div class="v2-perfil-section" id="v2-perfil-modules">
+          <!-- Llenado dinámicamente por renderV2Perfil -->
+        </div>
+
+        <!-- Conexiones -->
+        <div class="v2-section-label">CONEXIONES</div>
+        <div class="v2-perfil-section" id="v2-perfil-connections">
+          <!-- Llenado dinámicamente por renderV2Perfil -->
+        </div>
+
+        <!-- Cuenta -->
+        <div class="v2-section-label">CUENTA</div>
+        <div class="v2-perfil-section">
+          <div class="v2-perfil-row" onclick="openProfile()" style="cursor:pointer;">
+            <div class="v2-perfil-row-icon disconnected">@</div>
+            <div class="v2-perfil-row-body">
+              <div class="v2-perfil-row-title">Tu perfil completo</div>
+              <div class="v2-perfil-row-sub">Email · objetivos · información personal</div>
+            </div>
+          </div>
+          <div class="v2-perfil-row" onclick="window.open('/privacy.html', '_blank')" style="cursor:pointer;">
+            <div class="v2-perfil-row-icon disconnected">⚭</div>
+            <div class="v2-perfil-row-body">
+              <div class="v2-perfil-row-title">Privacidad y términos</div>
+              <div class="v2-perfil-row-sub">Datos cifrados · nunca vendidos</div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -7127,7 +7265,7 @@
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.86 9.86 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
         <div class="tabbar-v2-btn-label">SAVIA</div>
       </button>
-      <button class="tabbar-v2-btn" data-v2tab="perfil" onclick="switchV2Tab('perfil', { thenOpenProfile: true })">
+      <button class="tabbar-v2-btn" data-v2tab="perfil" onclick="switchV2Tab('perfil')">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
         <div class="tabbar-v2-btn-label">Perfil</div>
       </button>
@@ -12497,6 +12635,9 @@ function switchV2Tab(tab, opts) {
   if (tab === 'plan') {
     renderV2Plan().catch(e => console.warn('[v2] renderV2Plan failed:', e));
   }
+  if (tab === 'perfil') {
+    renderV2Perfil().catch(e => console.warn('[v2] renderV2Perfil failed:', e));
+  }
   // Scroll al top de la tab activa
   const active = document.querySelector('.v2-tab.active');
   if (active) active.scrollTop = 0;
@@ -13123,6 +13264,141 @@ function v2SheetHide() {
 function v2SheetClose(e) {
   // Solo cerrar si tap en el backdrop, no en el sheet
   if (e.target && e.target.id === 'v2-sheet-overlay') v2SheetHide();
+}
+
+/* ============================================================
+   V2 · PERFIL — render dinámico
+   ------------------------------------------------------------
+   Hero: avatar/nombre/fecha desde signup.
+   Equipo: hardcoded mock + Sofía López (Fase B: real practitioners).
+   Módulos: detecta nutrition_targets/meal_plans/workout_logs/WH.
+   Conexiones: wearable_connections + body_compositions count.
+   ============================================================ */
+async function renderV2Perfil() {
+  if (!document.documentElement.classList.contains('nav-v2')) return;
+
+  // --- Hero: avatar + nombre + signup ---
+  try {
+    const firstName = (state.name || 'paciente').split(' ')[0] || 'paciente';
+    const fullName = state.name || 'Paciente';
+    const avEl = document.getElementById('v2-perfil-avatar');
+    const nameEl = document.getElementById('v2-perfil-name');
+    const sinceEl = document.getElementById('v2-perfil-since');
+    if (avEl) {
+      if (state.photo) {
+        avEl.style.backgroundImage = `url(${state.photo})`;
+        avEl.textContent = '';
+      } else {
+        avEl.style.backgroundImage = '';
+        avEl.textContent = firstName[0].toUpperCase();
+      }
+    }
+    if (nameEl) nameEl.textContent = fullName;
+    if (sinceEl) {
+      const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : 1;
+      const weeks = Math.max(1, Math.ceil(days / 7));
+      sinceEl.textContent = weeks === 1
+        ? `Paciente hace ${days} día${days === 1 ? '' : 's'}`
+        : `Paciente hace ${weeks} semanas`;
+    }
+  } catch (e) { console.warn('[v2-perfil] hero failed:', e); }
+
+  // --- Módulos activos ---
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    const modules = [];
+    if (userId) {
+      // Nutrición: si hay targets o plan
+      const [targetsR, planR] = await Promise.all([
+        sb.from('nutrition_targets').select('id').eq('user_id', userId).eq('active', true).limit(1),
+        sb.from('meal_plans').select('id').eq('patient_user_id', userId).eq('active', true).limit(1),
+      ]);
+      const hasNut = (targetsR.data?.length || 0) > 0 || (planR.data?.length || 0) > 0;
+      modules.push({ icon: '✓', name: 'Nutrición', sub: hasNut ? 'Tracking + plan prescrito' : 'Sin configurar todavía', status: hasNut ? 'on' : 'off' });
+
+      // Composición corporal: si tiene InBody
+      const { data: bc } = await sb.from('body_compositions').select('id').eq('patient_user_id', userId).limit(1);
+      const hasBC = (bc?.length || 0) > 0;
+      modules.push({ icon: '✓', name: 'Composición corporal', sub: hasBC ? 'InBody registrado' : 'Subí tu primer InBody', status: hasBC ? 'on' : 'off' });
+
+      // Fitness: si tiene workout_logs últimos 30 días
+      const m30 = new Date(); m30.setDate(m30.getDate() - 30);
+      const { data: wk } = await sb.from('workout_logs').select('id').eq('user_id', userId).gte('ts', m30.toISOString()).limit(1);
+      const hasFitness = (wk?.length || 0) > 0;
+      modules.push({ icon: hasFitness ? '✓' : '○', name: 'Fitness', sub: hasFitness ? 'Tracking activo · Strava' : 'Conectá Strava para activar', status: hasFitness ? 'on' : 'off' });
+
+      // Women's Health: si tiene perfil activo
+      let hasWH = false;
+      if (typeof whLoadProfile === 'function') {
+        const wh = await whLoadProfile();
+        hasWH = !!(wh && wh.enabled);
+      }
+      if (hasWH) modules.push({ icon: '✓', name: 'Salud hormonal', sub: 'Ciclo + síntomas', status: 'on' });
+    }
+    // Módulos NO disponibles aún (visión)
+    modules.push({ icon: '○', name: 'GLP-1', sub: 'Activable por tu médico', status: 'off' });
+    modules.push({ icon: '○', name: 'Estética facial', sub: 'Activable por tu clínica', status: 'off' });
+    modules.push({ icon: '○', name: 'Longevidad', sub: 'Activable por tu clínica', status: 'off' });
+
+    const cont = document.getElementById('v2-perfil-modules');
+    if (cont) {
+      cont.innerHTML = modules.map(m => `
+        <div class="v2-perfil-row">
+          <div class="v2-perfil-row-icon ${m.status === 'on' ? 'connected' : 'disconnected'}">${m.icon}</div>
+          <div class="v2-perfil-row-body">
+            <div class="v2-perfil-row-title">${escapeHtml(m.name)}</div>
+            <div class="v2-perfil-row-sub">${escapeHtml(m.sub)}</div>
+          </div>
+          <div class="v2-perfil-row-status ${m.status}">${m.status === 'on' ? 'Activo' : 'Inactivo'}</div>
+        </div>
+      `).join('');
+    }
+  } catch (e) { console.warn('[v2-perfil] modules failed:', e); }
+
+  // --- Conexiones ---
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    const connections = [];
+    if (userId) {
+      // Strava: check wearable_connections
+      const { data: strava } = await sb.from('wearable_connections').select('id, status, last_sync_at').eq('user_id', userId).eq('provider', 'strava').limit(1);
+      const stravaOn = strava?.length > 0 && strava[0].status === 'active';
+      connections.push({
+        icon: '▲', name: 'Strava',
+        sub: stravaOn ? 'Entrenamientos sincronizados' : 'Conectá para registrar workouts',
+        status: stravaOn ? 'on' : 'off',
+        statusText: stravaOn ? 'Conectado' : 'Conectar',
+      });
+      // InBody: count
+      const { data: bc } = await sb.from('body_compositions').select('id').eq('patient_user_id', userId).limit(1);
+      const hasBC = (bc?.length || 0) > 0;
+      connections.push({
+        icon: '▣', name: 'InBody',
+        sub: hasBC ? 'Subida manual de PDF/foto' : 'Subí tu primer análisis',
+        status: hasBC ? 'manual' : 'off',
+        statusText: hasBC ? 'Manual' : 'Pendiente',
+      });
+    }
+    // No conectadas todavía
+    connections.push({ icon: '◉', name: 'Oura Ring', sub: 'Sueño · HRV · preparación', status: 'off', statusText: 'Próximamente' });
+    connections.push({ icon: '♥', name: 'Apple Health', sub: 'Pasos · FC · descanso', status: 'off', statusText: 'Próximamente' });
+
+    const cont = document.getElementById('v2-perfil-connections');
+    if (cont) {
+      cont.innerHTML = connections.map(c => `
+        <div class="v2-perfil-row">
+          <div class="v2-perfil-row-icon ${c.status === 'on' || c.status === 'manual' ? 'connected' : 'disconnected'}">${c.icon}</div>
+          <div class="v2-perfil-row-body">
+            <div class="v2-perfil-row-title">${escapeHtml(c.name)}</div>
+            <div class="v2-perfil-row-sub">${escapeHtml(c.sub)}</div>
+          </div>
+          <div class="v2-perfil-row-status ${c.status}">${escapeHtml(c.statusText)}</div>
+        </div>
+      `).join('');
+    }
+  } catch (e) { console.warn('[v2-perfil] connections failed:', e); }
 }
 
 /* V2 · abrir Nutrition module — llama openNutritionModule() que carga targets + meals + render.
