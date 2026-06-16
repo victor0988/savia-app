@@ -12199,7 +12199,7 @@ async function renderV2Progreso() {
             const dateStr = formatRelativeDate(c.measured_at || c.generated_at);
             const safeTitle = (c.title || `Capítulo ${c.analysis_number}`).replace(/</g, '&lt;');
             return `
-              <div class="v2-chap-card" onclick="if (typeof tcOpenChapter === 'function') tcOpenChapter('${c.id}');">
+              <div class="v2-chap-card" onclick="if (typeof tcOpenChapterById === 'function') tcOpenChapterById('${c.id}');">
                 <div class="v2-chap-image">${c.analysis_number || '·'}</div>
                 <div class="v2-chap-body">
                   <div class="v2-chap-num">CAPÍTULO ${c.analysis_number || '·'}</div>
