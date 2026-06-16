@@ -2736,8 +2736,8 @@
   .v2-module-product-num {
     width: 18px; height: 18px;
     border-radius: 5px;
-    background: rgba(184, 153, 104, 0.16);
-    color: #B89968;
+    background: rgba(184, 153, 104, 0.28);
+    color: #8C6E40;
     display: flex; align-items: center; justify-content: center;
     font-size: 10px; font-weight: 700;
     flex-shrink: 0;
@@ -2765,20 +2765,22 @@
 
   /* Botón inline (Reportar al médico) */
   .v2-module-inline-btn {
-    margin-top: 10px;
+    margin-top: 12px;
     width: 100%;
-    padding: 9px 14px;
-    background: transparent;
-    border: 1px solid #E8E0D2;
+    padding: 10px 14px;
+    background: rgba(176, 112, 80, 0.06);
+    border: 1px solid rgba(176, 112, 80, 0.25);
     border-radius: 100px;
     font-size: 11.5px; font-weight: 600;
-    color: #2A3A2A;
+    color: #B07050;
     cursor: pointer;
     font-family: inherit;
     -webkit-tap-highlight-color: transparent;
     transition: border-color 0.15s, background 0.15s;
   }
-  .v2-module-inline-btn:hover { border-color: rgba(176, 112, 80, 0.4); background: rgba(176, 112, 80, 0.04); }
+  .v2-module-inline-btn:hover { border-color: rgba(176, 112, 80, 0.5); background: rgba(176, 112, 80, 0.1); }
+  /* Sub-section label flex-wrap por seguridad si el texto crece */
+  .v2-module-subsection-label { flex-wrap: wrap; row-gap: 2px; }
   /* Capturar: tile Selfie deja de ser PRONTO en demo */
   html.demo-aesthetic .v2-cap-tile[onclick*="selfie"] { opacity: 1; }
   html.demo-aesthetic .v2-cap-tile[onclick*="selfie"] .v2-cap-tile-badge { display: none; }
@@ -13303,6 +13305,7 @@ async function renderV2Plan() {
   const cont = document.getElementById('v2-plan-modules');
   if (!cont) return;
   const cards = [];
+  let realCardsCount = 0;  // tracking explícito de cards reales (excluye ghost + demo aesthetic)
 
   // --- Hero: semana N basada en days since signup ---
   try {
@@ -13353,6 +13356,7 @@ async function renderV2Plan() {
         .eq('user_id', userId)
         .gte('ts', todayStart.toISOString());
       const mealsLogged = (todayMeals || []).length;
+      realCardsCount++;
       cards.push(`
         <div class="v2-module-card" onclick="v2OpenPlanView();">
           <div class="v2-module-head">
@@ -13417,6 +13421,7 @@ async function renderV2Plan() {
           const weekN = Math.max(1, Math.ceil((new Date() - startDate) / (1000*60*60*24*7)));
           weekStr = `SEM ${weekN}`;
         }
+        realCardsCount++;
         cards.push(`
           <div class="v2-module-card" onclick="v2OpenNutrition();">
             <div class="v2-module-head">
@@ -13465,6 +13470,7 @@ async function renderV2Plan() {
         const last = ms[ms.length - 1];
         const startStr = new Date(first.measured_at).toLocaleDateString('es', { day: 'numeric', month: 'short' });
         const weeksSince = Math.max(1, Math.ceil((new Date() - new Date(first.measured_at)) / (1000*60*60*24*7)));
+        realCardsCount++;
         cards.push(`
           <div class="v2-module-card" onclick="if (typeof pgOpenScreen === 'function') pgOpenScreen(); else goStep('progress');">
             <div class="v2-module-head">
@@ -13505,6 +13511,7 @@ async function renderV2Plan() {
       whProfile = await whLoadProfile();
     }
     if (whProfile && whProfile.enabled) {
+      realCardsCount++;
       cards.push(`
         <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('wh-dashboard');">
           <div class="v2-module-head">
@@ -13541,7 +13548,7 @@ async function renderV2Plan() {
   if (demoAest) {
     // ===== PRP facial =====
     cards.push(`
-      <div class="v2-module-card">
+      <div class="v2-module-card" onclick="v2CapToast('Demo: detalle completo del protocolo PRP estaría disponible acá');">
         <div class="v2-module-head">
           <div class="v2-module-meta-left">
             <div class="v2-module-tag aest">ESTÉTICA · PRP</div>
@@ -13577,7 +13584,7 @@ async function renderV2Plan() {
 
     // ===== Bioestimulador (Sculptra) =====
     cards.push(`
-      <div class="v2-module-card">
+      <div class="v2-module-card" onclick="v2CapToast('Demo: detalle completo del protocolo Sculptra estaría acá');">
         <div class="v2-module-head">
           <div class="v2-module-meta-left">
             <div class="v2-module-tag aest">ESTÉTICA · BIOESTIMULADOR</div>
@@ -13613,7 +13620,7 @@ async function renderV2Plan() {
 
     // ===== GLP-1 Tirzepatida =====
     cards.push(`
-      <div class="v2-module-card">
+      <div class="v2-module-card" onclick="v2CapToast('Demo: historial completo de dosis y efectos estaría acá');">
         <div class="v2-module-head">
           <div class="v2-module-meta-left">
             <div class="v2-module-tag glp">GLP-1</div>
@@ -13650,7 +13657,7 @@ async function renderV2Plan() {
 
     // ===== SKINCARE diario (nuevo) =====
     cards.push(`
-      <div class="v2-module-card">
+      <div class="v2-module-card" onclick="v2CapToast('Demo: historial de adherencia + foto de irritación estaría acá');">
         <div class="v2-module-head">
           <div class="v2-module-meta-left">
             <div class="v2-module-tag skin">SKINCARE</div>
@@ -13712,7 +13719,9 @@ async function renderV2Plan() {
   }
 
   // --- Empty fallback si no hay ninguna real ---
-  const hasReal = cards.length > 2; // las 2 ghost siempre están
+  // realCardsCount fue incrementado en cada push de cards reales (NUT/BODY/WH).
+  // Las ghost cards y las demo aesthetic NO cuentan como "reales".
+  const hasReal = realCardsCount > 0;
   if (!hasReal) {
     cont.innerHTML = `
       <div class="v2-plan-empty">
