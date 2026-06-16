@@ -7150,6 +7150,20 @@
           <div class="v2-progreso-context" id="v2-progreso-context">Día 1 de tu transformación</div>
         </div>
 
+        <!-- Women's Health · Mi Ciclo pill (solo si user femenina + módulo activado) -->
+        <div class="hoy-wh-pill" id="v2-wh-pill" style="display:none; margin-top:0; margin-bottom:12px;" onclick="if (typeof whOpenDashboard === 'function') whOpenDashboard();" role="button" tabindex="0">
+          <div class="hoy-wh-pill-left">
+            <span class="hoy-wh-pill-dot" id="v2-wh-pill-dot"></span>
+            <span class="hoy-wh-pill-label">MI CICLO</span>
+          </div>
+          <div class="hoy-wh-pill-mid">
+            <span id="v2-wh-pill-day">—</span>
+            <span class="hoy-wh-pill-sep">·</span>
+            <span id="v2-wh-pill-phase">—</span>
+          </div>
+          <div class="hoy-wh-pill-chev">›</div>
+        </div>
+
         <!-- TU DÍA · sección operativa (Balance + Pulse interactivo + Pillars + Next) -->
         <div class="v2-section-label">TU DÍA</div>
 
@@ -13566,6 +13580,7 @@ async function renderV2Day() {
   if (typeof renderHoyBalance === 'function') tasks.push(renderHoyBalance().catch(e => console.warn('[v2day balance]', e)));
   if (typeof renderHoyPillars === 'function') tasks.push(renderHoyPillars().catch(e => console.warn('[v2day pillars]', e)));
   if (typeof renderHoyPulse === 'function') tasks.push(renderHoyPulse().catch(e => console.warn('[v2day pulse]', e)));
+  if (typeof whRenderHoyPill === 'function') tasks.push(whRenderHoyPill().catch(e => console.warn('[v2day wh]', e)));
   await Promise.all(tasks);
   // renderHoyNextAction es sync
   try { if (typeof renderHoyNextAction === 'function') renderHoyNextAction(); } catch (e) { console.warn('[v2day next]', e); }
@@ -13601,6 +13616,24 @@ async function renderV2Day() {
   if (hydEl) {
     const v2hyd = document.getElementById('v2day-pillar-water-val');
     if (v2hyd) v2hyd.textContent = hydEl.textContent || '0';
+  }
+
+  // WH pill: mirror visibility + valores + accent color
+  const hoyWhPill = document.getElementById('hoy-wh-pill');
+  const v2WhPill = document.getElementById('v2-wh-pill');
+  if (hoyWhPill && v2WhPill) {
+    const visible = hoyWhPill.style.display !== 'none';
+    v2WhPill.style.display = visible ? '' : 'none';
+    if (visible) {
+      mirror('hoy-wh-pill-day', 'v2-wh-pill-day');
+      mirror('hoy-wh-pill-phase', 'v2-wh-pill-phase');
+      // Mirror accent color (CSS variable + dot bg)
+      const accent = hoyWhPill.style.getPropertyValue('--wh-pill-accent');
+      if (accent) v2WhPill.style.setProperty('--wh-pill-accent', accent);
+      const hoyDot = document.getElementById('hoy-wh-pill-dot');
+      const v2Dot = document.getElementById('v2-wh-pill-dot');
+      if (hoyDot && v2Dot) v2Dot.style.background = hoyDot.style.background;
+    }
   }
 
   // Next action: hoy-next-action contiene el texto sugerido
