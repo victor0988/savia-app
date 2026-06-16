@@ -14270,15 +14270,27 @@ const V2_MODULE_DETAIL_DATA = {
 function v2OpenModuleDetail(kind) {
   const data = V2_MODULE_DETAIL_DATA[kind];
   if (!data) { if (typeof v2CapToast === 'function') v2CapToast('Detalle no disponible'); return; }
+  // Recordar tab activa para que el back vuelva al mismo contexto (progreso/plan)
+  try {
+    const activeTab = document.querySelector('.tabbar-v2-btn.active');
+    window._v2DetailReturnTab = activeTab ? activeTab.dataset.v2tab : 'plan';
+  } catch (e) { window._v2DetailReturnTab = 'plan'; }
   const titleEl = document.getElementById('v2-mod-detail-title');
   const contentEl = document.getElementById('v2-mod-detail-content');
   if (titleEl) titleEl.textContent = data.title;
   if (contentEl) contentEl.innerHTML = v2RenderModuleDetailContent(data);
+  // Actualizar label del back según contexto
+  const backBtn = document.querySelector('.v2-mod-detail-back-btn');
+  if (backBtn) {
+    const label = window._v2DetailReturnTab === 'progreso' ? 'Mi Progreso' : 'Plan';
+    backBtn.textContent = '‹ ' + label;
+  }
   if (typeof goStep === 'function') goStep('v2-module-detail');
 }
 function v2CloseModuleDetail() {
   if (typeof goStep === 'function') goStep('app');
-  if (typeof switchV2Tab === 'function') switchV2Tab('plan');
+  const target = window._v2DetailReturnTab || 'plan';
+  if (typeof switchV2Tab === 'function') switchV2Tab(target);
 }
 function v2RenderModuleDetailContent(data) {
   let html = `
