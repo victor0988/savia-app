@@ -1822,6 +1822,300 @@
     pointer-events: none;
   }
 
+  /* ====================================================================
+     V2 · MI PROGRESO content (Fase 2)
+     Reutiliza data de body_compositions, transformation_chapters,
+     strava_activities, daily_pulses. NO toca schemas ni Edge Functions.
+     ==================================================================== */
+  .v2-progreso { padding: 20px 18px 20px; }
+  .v2-progreso-hero { padding: 36px 0 16px; }
+  .v2-progreso-greeting {
+    font-size: 13px; color: #5A6E5A; font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .v2-progreso-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -1.4px;
+    line-height: 1; margin-bottom: 10px;
+  }
+  .v2-progreso-context {
+    font-size: 13px; color: #5A6E5A; font-weight: 500;
+  }
+  .v2-section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
+    color: #5A6E5A;
+    margin: 26px 0 12px;
+  }
+  /* Evolution card */
+  .v2-evo-card {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 20px 18px 16px;
+    margin-bottom: 12px;
+  }
+  .v2-evo-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 14px;
+  }
+  .v2-evo-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+    color: #5A6E5A;
+  }
+  .v2-evo-chapter-pill {
+    font-size: 11px; font-weight: 700;
+    padding: 4px 10px;
+    background: rgba(176, 112, 80, 0.10);
+    color: #B07050;
+    border-radius: 100px;
+  }
+  .v2-silhouette-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .v2-silhouette-card {
+    background: #FFFFFF;
+    border-radius: 16px;
+    height: 180px;
+    display: flex; align-items: flex-end; justify-content: center;
+    position: relative; overflow: hidden;
+    border: 1px solid #E8E0D2;
+  }
+  .v2-silhouette-tag {
+    position: absolute; top: 10px; left: 10px; z-index: 2;
+    font-size: 9px; font-weight: 700; letter-spacing: 1px;
+    padding: 4px 8px;
+    background: rgba(245, 239, 227, 0.85);
+    color: #5A6E5A;
+    border-radius: 6px;
+  }
+  .v2-silhouette {
+    width: 60px; height: 130px;
+    background: #E8E0D2;
+    border-radius: 50% 50% 30% 30%;
+    margin-bottom: 12px;
+  }
+  .v2-silhouette.smaller { width: 52px; height: 122px; opacity: 0.85; }
+  .v2-evo-delta-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 8px;
+  }
+  .v2-evo-delta-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 44px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -2px; line-height: 1;
+  }
+  .v2-evo-delta-unit {
+    font-size: 16px; color: #5A6E5A; margin-left: 4px;
+  }
+  .v2-evo-delta-badge {
+    background: rgba(92, 124, 90, 0.12);
+    color: #5C7C5A;
+    padding: 5px 11px;
+    border-radius: 100px;
+    font-size: 12px; font-weight: 700;
+  }
+  .v2-evo-delta-badge.negative { background: rgba(194, 107, 92, 0.12); color: #B07050; }
+  .v2-evo-caption {
+    font-size: 12px; color: #5A6E5A;
+  }
+  .v2-evo-insight {
+    display: flex; gap: 10px;
+    padding: 14px 16px;
+    background: rgba(92, 124, 90, 0.06);
+    border-left: 3px solid #5C7C5A;
+    border-radius: 10px;
+    margin: 12px 0;
+  }
+  .v2-evo-insight-dot {
+    flex-shrink: 0;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #5C7C5A;
+    margin-top: 6px;
+  }
+  .v2-evo-insight-text {
+    font-size: 13.5px; color: #3A4D3A; line-height: 1.55;
+  }
+  /* Empty state for evolution */
+  .v2-evo-empty {
+    background: #FAF7EF;
+    border: 1px dashed #E8E0D2;
+    border-radius: 22px;
+    padding: 28px 22px;
+    text-align: center;
+  }
+  .v2-evo-empty-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 500;
+    color: #2A3A2A; margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .v2-evo-empty-desc {
+    font-size: 13px; color: #5A6E5A;
+    line-height: 1.6; margin-bottom: 14px;
+  }
+  .v2-evo-empty-cta {
+    display: inline-block;
+    background: #5C7C5A;
+    color: #F5EFE3;
+    padding: 10px 22px;
+    border-radius: 100px;
+    font-size: 12.5px; font-weight: 700;
+    cursor: pointer;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Tu Historia (chapters) */
+  .v2-chapters-row {
+    display: flex; gap: 10px;
+    overflow-x: auto;
+    padding: 4px 0 8px;
+    margin: 0 -18px;
+    padding-left: 18px;
+    padding-right: 18px;
+    scrollbar-width: none;
+  }
+  .v2-chapters-row::-webkit-scrollbar { display: none; }
+  .v2-chap-card {
+    flex-shrink: 0;
+    width: 200px;
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 16px;
+    overflow: hidden;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .v2-chap-image {
+    height: 120px;
+    background: #FFFFFF;
+    display: flex; align-items: center; justify-content: center;
+    border-bottom: 1px solid #E8E0D2;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px; color: #B07050; font-style: italic;
+  }
+  .v2-chap-body { padding: 12px; }
+  .v2-chap-num {
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    color: #B07050; margin-bottom: 4px;
+  }
+  .v2-chap-title {
+    font-size: 13px; font-weight: 600;
+    color: #2A3A2A; line-height: 1.35; margin-bottom: 6px;
+  }
+  .v2-chap-meta {
+    font-size: 11px; color: #5A6E5A;
+  }
+  .v2-chap-empty {
+    flex: 1; padding: 22px;
+    background: #FAF7EF;
+    border: 1px dashed #E8E0D2;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 13px; color: #5A6E5A;
+    line-height: 1.5;
+  }
+  /* Energía & Recuperación */
+  .v2-energy-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;
+  }
+  .v2-energy-tile {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 16px;
+    padding: 12px 10px;
+    text-align: center;
+  }
+  .v2-energy-source {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    color: #5A6E5A; margin-bottom: 6px;
+  }
+  .v2-energy-value {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -1px; line-height: 1;
+    margin-bottom: 4px;
+  }
+  .v2-energy-label {
+    font-size: 10px; color: #5A6E5A;
+  }
+  .v2-energy-trend {
+    margin-top: 6px;
+    font-size: 10px; font-weight: 600;
+    color: #5C7C5A;
+  }
+  .v2-energy-tile.empty .v2-energy-value { color: #E8E0D2; font-size: 22px; }
+  .v2-energy-tile.empty .v2-energy-label { color: #B07050; }
+  /* Insight SAVIA card */
+  .v2-savia-insight {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 20px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .v2-savia-insight-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .v2-savia-pulse {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #5C7C5A, #2A3A2A);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 900; font-size: 13px;
+    box-shadow: 0 0 20px rgba(92, 124, 90, 0.3);
+  }
+  .v2-savia-insight-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 1.2px;
+    color: #5A6E5A;
+  }
+  .v2-savia-insight-text {
+    font-size: 14px; color: #2A3A2A; line-height: 1.55;
+    margin-bottom: 12px;
+  }
+  .v2-savia-insight-cta {
+    font-size: 12px; font-weight: 700;
+    color: #5C7C5A; text-decoration: none;
+    cursor: pointer;
+  }
+  /* Próximos Hitos */
+  .v2-milestone-list {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    overflow: hidden;
+  }
+  .v2-milestone-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 18px;
+    border-bottom: 1px solid #E8E0D2;
+  }
+  .v2-milestone-item:last-child { border-bottom: none; }
+  .v2-milestone-icon {
+    width: 32px; height: 32px;
+    background: rgba(176, 112, 80, 0.10);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: #B07050; font-size: 14px;
+  }
+  .v2-milestone-body { flex: 1; min-width: 0; }
+  .v2-milestone-title {
+    font-size: 13.5px; font-weight: 600;
+    color: #2A3A2A; margin-bottom: 2px;
+  }
+  .v2-milestone-meta {
+    font-size: 11.5px; color: #5A6E5A;
+  }
+  .v2-milestone-when {
+    font-size: 11px; color: #5A6E5A;
+    text-align: right; flex-shrink: 0;
+  }
+
   /* Coming soon screens (Cuerpo, SAVIA) */
   .hoy-coming-soon {
     flex: 1;
@@ -6295,11 +6589,84 @@
     <div class="v2-flag-banner">DEMO · ?v=2 · TRANSFORMATION PLATFORM</div>
 
     <div class="v2-tab v2-tab-progreso active" data-v2tab="progreso">
-      <div class="v2-placeholder">
-        <div class="v2-placeholder-tag">TAB 1 · LANDING</div>
-        <div class="v2-placeholder-title">Mi Progreso</div>
-        <div class="v2-placeholder-desc">Acá va a vivir tu evolución, tu historia (capítulos), energía & recuperación e insight SAVIA.</div>
-        <div class="v2-placeholder-phase">Fase 2 — próxima</div>
+      <div class="v2-progreso">
+        <!-- Hero -->
+        <div class="v2-progreso-hero">
+          <div class="v2-progreso-greeting">Hola</div>
+          <div class="v2-progreso-name" id="v2-progreso-name">—</div>
+          <div class="v2-progreso-context" id="v2-progreso-context">Día 1 de tu transformación</div>
+        </div>
+
+        <!-- Tu Evolución -->
+        <div class="v2-section-label">TU EVOLUCIÓN</div>
+        <div id="v2-evo-container">
+          <!-- Llenado por renderV2Progreso(). Empty state inicial: -->
+          <div class="v2-evo-empty">
+            <div class="v2-evo-empty-title">Tu evolución empieza con tu primer InBody</div>
+            <div class="v2-evo-empty-desc">Cuando tu clínica suba tu medición, acá vas a ver tu cambio capítulo a capítulo.</div>
+            <button class="v2-evo-empty-cta" onclick="if (typeof openProfile === 'function') openProfile();">Conectar mi InBody</button>
+          </div>
+        </div>
+
+        <!-- Tu Historia (capítulos) -->
+        <div class="v2-section-label">TU HISTORIA</div>
+        <div id="v2-chapters-container">
+          <div class="v2-chap-empty">Tus capítulos van a aparecer acá mientras avanza tu transformación.</div>
+        </div>
+
+        <!-- Energía & Recuperación -->
+        <div class="v2-section-label">ENERGÍA & RECUPERACIÓN</div>
+        <div class="v2-energy-grid" id="v2-energy-grid">
+          <div class="v2-energy-tile empty">
+            <div class="v2-energy-source">STRAVA</div>
+            <div class="v2-energy-value">—</div>
+            <div class="v2-energy-label">Conectá Strava</div>
+          </div>
+          <div class="v2-energy-tile empty">
+            <div class="v2-energy-source">OURA</div>
+            <div class="v2-energy-value">—</div>
+            <div class="v2-energy-label">Próximamente</div>
+          </div>
+          <div class="v2-energy-tile empty">
+            <div class="v2-energy-source">APPLE</div>
+            <div class="v2-energy-value">—</div>
+            <div class="v2-energy-label">Próximamente</div>
+          </div>
+        </div>
+
+        <!-- Insight SAVIA -->
+        <div class="v2-section-label">INSIGHT SAVIA</div>
+        <div class="v2-savia-insight">
+          <div class="v2-savia-insight-head">
+            <div class="v2-savia-pulse">S</div>
+            <div class="v2-savia-insight-label" id="v2-savia-insight-label">HOY</div>
+          </div>
+          <div class="v2-savia-insight-text" id="v2-savia-insight-text">
+            Cuando registres tu primer día, SAVIA te va a dar tu primer insight.
+          </div>
+          <a class="v2-savia-insight-cta" onclick="switchV2Tab('savia', { thenOpenCoach: true });">Conversar con SAVIA →</a>
+        </div>
+
+        <!-- Próximos Hitos -->
+        <div class="v2-section-label">PRÓXIMOS HITOS</div>
+        <div class="v2-milestone-list" id="v2-milestones">
+          <div class="v2-milestone-item">
+            <div class="v2-milestone-icon">◆</div>
+            <div class="v2-milestone-body">
+              <div class="v2-milestone-title">Subí tu primer capítulo</div>
+              <div class="v2-milestone-meta">Tu evolución arranca con una foto</div>
+            </div>
+            <div class="v2-milestone-when">esta semana</div>
+          </div>
+          <div class="v2-milestone-item">
+            <div class="v2-milestone-icon">▣</div>
+            <div class="v2-milestone-body">
+              <div class="v2-milestone-title">Próximo InBody</div>
+              <div class="v2-milestone-meta">Control con tu clínica</div>
+            </div>
+            <div class="v2-milestone-when">por agendar</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -10337,6 +10704,11 @@ function enterAppSimulation(source) {
   try { switchHoyTab('hoy', { skipAnim: true }); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
   renderDailyPulse().catch(e => console.error('[SAVIA] renderDailyPulse failed:', e));
 
+  // V2 nav: si flag activo, llenar Mi Progreso con data real
+  if (document.documentElement.classList.contains('nav-v2') && typeof renderV2Progreso === 'function') {
+    renderV2Progreso().catch(e => console.warn('[v2] renderV2Progreso failed:', e));
+  }
+
   if (source !== 'login') {
     setTimeout(showWelcomeEmailDiagnostic, 1500);
   }
@@ -11710,9 +12082,205 @@ function switchV2Tab(tab, opts) {
   document.querySelectorAll('.tabbar-v2-btn').forEach(b => {
     b.classList.toggle('active', b.dataset.v2tab === tab);
   });
+  // Si caímos en progreso, refrescar contenido
+  if (tab === 'progreso') {
+    renderV2Progreso().catch(e => console.warn('[v2] renderV2Progreso failed:', e));
+  }
   // Scroll al top de la tab activa
   const active = document.querySelector('.v2-tab.active');
   if (active) active.scrollTop = 0;
+}
+
+/* ============================================================
+   V2 · MI PROGRESO — render con data real
+   ------------------------------------------------------------
+   Lee: body_compositions, transformation_chapters, strava_activities,
+        daily_pulses, profiles.
+   No toca: schemas, Edge Functions, ni la nav vieja.
+   Defensivo: cada sección en try/catch, falla suave a empty state.
+   ============================================================ */
+async function renderV2Progreso() {
+  if (!document.documentElement.classList.contains('nav-v2')) return;
+
+  // --- Hero: greeting + semana actual ---
+  try {
+    const firstName = (state.name || 'paciente').split(' ')[0] || 'paciente';
+    const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : 1;
+    const week = Math.max(1, Math.ceil(days / 7));
+    const nameEl = document.getElementById('v2-progreso-name');
+    const ctxEl = document.getElementById('v2-progreso-context');
+    if (nameEl) nameEl.textContent = firstName;
+    if (ctxEl) ctxEl.textContent = week === 1
+      ? `Día ${days} de tu transformación`
+      : `Semana ${week} de tu transformación`;
+  } catch (e) { console.warn('[v2-progreso] hero failed:', e); }
+
+  // --- Tu Evolución: primer InBody vs último ---
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    if (userId) {
+      const { data: ms } = await sb
+        .from('body_compositions')
+        .select('id, measured_at, weight_kg, body_fat_percent, muscle_mass_kg')
+        .eq('user_id', userId)
+        .order('measured_at', { ascending: true });
+      if (ms && ms.length >= 1) {
+        const first = ms[0];
+        const last = ms[ms.length - 1];
+        let deltaValue = '—';
+        let deltaUnit = '';
+        let badgeText = '—';
+        let badgeNeg = false;
+        let caption = `Semana ${Math.max(1, Math.ceil(((new Date(last.measured_at)) - (new Date(first.measured_at))) / (1000*60*60*24*7)))} desde tu primer InBody`;
+        if (ms.length >= 2 && first.weight_kg != null && last.weight_kg != null) {
+          const dw = (last.weight_kg - first.weight_kg);
+          deltaValue = (dw >= 0 ? '+' : '−') + Math.abs(dw).toFixed(1);
+          deltaUnit = 'kg';
+          if (first.weight_kg > 0) {
+            const pct = (dw / first.weight_kg) * 100;
+            badgeText = (pct >= 0 ? '+' : '−') + Math.abs(pct).toFixed(1) + '%';
+            badgeNeg = pct < 0;
+          }
+        } else if (ms.length === 1) {
+          deltaValue = (first.weight_kg != null) ? first.weight_kg.toFixed(1) : '—';
+          deltaUnit = 'kg';
+          badgeText = 'Inicio';
+          caption = 'Tu primer InBody. Próximo te dará tu primer delta.';
+        }
+        const cont = document.getElementById('v2-evo-container');
+        if (cont) {
+          cont.innerHTML = `
+            <div class="v2-evo-card">
+              <div class="v2-evo-head">
+                <div class="v2-evo-label">CAMBIO PRINCIPAL</div>
+                <div class="v2-evo-chapter-pill">${ms.length} InBody${ms.length > 1 ? 's' : ''}</div>
+              </div>
+              <div class="v2-silhouette-row">
+                <div class="v2-silhouette-card">
+                  <span class="v2-silhouette-tag">INICIO</span>
+                  <div class="v2-silhouette"></div>
+                </div>
+                <div class="v2-silhouette-card">
+                  <span class="v2-silhouette-tag">HOY</span>
+                  <div class="v2-silhouette smaller"></div>
+                </div>
+              </div>
+              <div class="v2-evo-delta-row">
+                <div>
+                  <span class="v2-evo-delta-value">${deltaValue}</span><span class="v2-evo-delta-unit"> ${deltaUnit}</span>
+                  <div class="v2-evo-caption" style="margin-top:4px;">${caption}</div>
+                </div>
+                <div class="v2-evo-delta-badge ${badgeNeg ? 'negative' : ''}">${badgeText}</div>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+  } catch (e) { console.warn('[v2-progreso] evolution failed:', e); }
+
+  // --- Tu Historia: últimos 6 capítulos ---
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    if (userId) {
+      const { data: chapters } = await sb
+        .from('transformation_chapters')
+        .select('id, analysis_number, title, generated_at, measured_at, source_type')
+        .eq('user_id', userId)
+        .order('measured_at', { ascending: false })
+        .limit(6);
+      if (chapters && chapters.length > 0) {
+        const cont = document.getElementById('v2-chapters-container');
+        if (cont) {
+          cont.className = 'v2-chapters-row';
+          cont.innerHTML = chapters.map(c => {
+            const dateStr = formatRelativeDate(c.measured_at || c.generated_at);
+            const safeTitle = (c.title || `Capítulo ${c.analysis_number}`).replace(/</g, '&lt;');
+            return `
+              <div class="v2-chap-card" onclick="if (typeof tcOpenChapter === 'function') tcOpenChapter('${c.id}');">
+                <div class="v2-chap-image">${c.analysis_number || '·'}</div>
+                <div class="v2-chap-body">
+                  <div class="v2-chap-num">CAPÍTULO ${c.analysis_number || '·'}</div>
+                  <div class="v2-chap-title">${safeTitle}</div>
+                  <div class="v2-chap-meta">${dateStr}</div>
+                </div>
+              </div>
+            `;
+          }).join('');
+        }
+      }
+    }
+  } catch (e) { console.warn('[v2-progreso] chapters failed:', e); }
+
+  // --- Energía & Recuperación: Strava últimos 7 días ---
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    if (userId) {
+      const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const { data: acts } = await sb
+        .from('strava_activities')
+        .select('id, start_date, type, distance_m')
+        .eq('user_id', userId)
+        .gte('start_date', sevenDaysAgo.toISOString())
+        .order('start_date', { ascending: false });
+      if (acts && acts.length > 0) {
+        const stravaTile = document.querySelector('#v2-energy-grid .v2-energy-tile:first-child');
+        if (stravaTile) {
+          stravaTile.classList.remove('empty');
+          stravaTile.innerHTML = `
+            <div class="v2-energy-source">STRAVA</div>
+            <div class="v2-energy-value">${acts.length}</div>
+            <div class="v2-energy-label">Entrenos · 7d</div>
+            <div class="v2-energy-trend">↑ activo</div>
+          `;
+        }
+      }
+    }
+  } catch (e) { console.warn('[v2-progreso] strava failed:', e); }
+
+  // --- Insight SAVIA: último Daily Pulse ---
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    if (userId) {
+      const { data: pulses } = await sb
+        .from('daily_pulses')
+        .select('id, generated_at, body_text, pulse_type')
+        .eq('user_id', userId)
+        .order('generated_at', { ascending: false })
+        .limit(1);
+      if (pulses && pulses.length > 0) {
+        const p = pulses[0];
+        const labelEl = document.getElementById('v2-savia-insight-label');
+        const textEl = document.getElementById('v2-savia-insight-text');
+        if (labelEl) {
+          const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : 1;
+          const week = Math.max(1, Math.ceil(days / 7));
+          labelEl.textContent = `HOY · SEMANA ${week}`;
+        }
+        if (textEl && p.body_text) {
+          textEl.textContent = p.body_text;
+        }
+      }
+    }
+  } catch (e) { console.warn('[v2-progreso] pulse failed:', e); }
+}
+
+/* Helper local — fecha relativa simple */
+function formatRelativeDate(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return '';
+  const diffMs = Date.now() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  if (diffDays === 0) return 'Hoy';
+  if (diffDays === 1) return 'Ayer';
+  if (diffDays < 7) return `Hace ${diffDays} días`;
+  if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} sem`;
+  return d.toLocaleDateString('es', { day: 'numeric', month: 'short' });
 }
 
 function openModule(name) {
