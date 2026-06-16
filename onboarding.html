@@ -13055,11 +13055,11 @@ async function renderV2Progreso() {
               <div class="v2-silhouette-row">
                 <div class="v2-silhouette-card">
                   <span class="v2-silhouette-tag" style="z-index:2;">INICIO</span>
-                  <img class="v2-silhouette-img" src="${V2_DEMO_PHOTOS.body_before}" alt="Inicio" onerror="this.style.display='none';">
+                  <img class="v2-silhouette-img" src="${V2_DEMO_PHOTOS.body_before}" alt="Inicio" onerror="this.onerror=null; this.src='${V2_DEMO_PHOTOS._fallback.body_before}';">
                 </div>
                 <div class="v2-silhouette-card">
                   <span class="v2-silhouette-tag" style="z-index:2;">HOY</span>
-                  <img class="v2-silhouette-img" src="${V2_DEMO_PHOTOS.body_after}" alt="Hoy" onerror="this.style.display='none';">
+                  <img class="v2-silhouette-img" src="${V2_DEMO_PHOTOS.body_after}" alt="Hoy" onerror="this.onerror=null; this.src='${V2_DEMO_PHOTOS._fallback.body_after}';">
                 </div>
               </div>
               <div class="v2-evo-delta-row">
@@ -13756,19 +13756,36 @@ async function renderV2Perfil() {
    y Tu Protocolo Estético (cara). Cuando se conecten clínicas reales,
    estas URLs serán reemplazadas por fotos del propio paciente.
    ============================================================ */
+/* V2_DEMO_PHOTOS · cascade:
+   1. Si existen archivos locales en mockup-assets/ con nombres victor-*, los usa
+   2. Si fallan (no existe el archivo), cae a las URLs Unsplash de hombres
+
+   Para que VOS uses TUS PROPIAS fotos: arrastrá 4 fotos a /mockup-assets/ con estos nombres:
+     - victor-body-before.jpg
+     - victor-body-after.jpg
+     - victor-face-before.jpg
+     - victor-face-after.jpg
+   Recargá y se cargan las tuyas. Si no, ves estas Unsplash. */
 const V2_DEMO_PHOTOS = {
-  body_before:  'https://images.unsplash.com/photo-1573879500404-46ea53ab7c4f?w=400&h=600&fit=crop',
-  body_after:   'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop',
-  face_before:  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&h=600&fit=crop',
-  face_after:   'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop',
-  // Chapter previews (rotativos para variedad visual)
+  body_before:  'mockup-assets/victor-body-before.jpg',
+  body_after:   'mockup-assets/victor-body-after.jpg',
+  face_before:  'mockup-assets/victor-face-before.jpg',
+  face_after:   'mockup-assets/victor-face-after.jpg',
+  // Fallback URLs Unsplash (hombres profesionales)
+  _fallback: {
+    body_before:  'https://images.unsplash.com/photo-1583468982228-19f19164aee2?w=400&h=600&fit=crop',
+    body_after:   'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=600&fit=crop',
+    face_before:  'https://images.unsplash.com/photo-1564564321837-a57b7070ac4f?w=400&h=600&fit=crop',
+    face_after:   'https://images.unsplash.com/photo-1599566150163-29194dcaad36?w=400&h=600&fit=crop',
+  },
+  // Chapter previews (lifestyle masculino)
   chapter_imgs: [
+    'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400&h=600&fit=crop',
     'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=300&fit=crop',
     'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1505576633757-0ac1084af824?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=300&fit=crop',
-    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
   ],
 };
 
@@ -13827,14 +13844,17 @@ async function renderV2Day() {
   }
 
   // Fotos faciales del Protocolo Estético (solo si demo aesthetic)
+  // Cascade: intenta local primero, cae a Unsplash si falla
   if (document.documentElement.classList.contains('demo-aesthetic')) {
     const faceBefore = document.getElementById('v2-aest-photo-before');
     const faceAfter = document.getElementById('v2-aest-photo-after');
     if (faceBefore && !faceBefore.src) {
+      faceBefore.onerror = () => { faceBefore.onerror = null; faceBefore.src = V2_DEMO_PHOTOS._fallback.face_before; };
       faceBefore.src = V2_DEMO_PHOTOS.face_before;
       faceBefore.style.display = '';
     }
     if (faceAfter && !faceAfter.src) {
+      faceAfter.onerror = () => { faceAfter.onerror = null; faceAfter.src = V2_DEMO_PHOTOS._fallback.face_after; };
       faceAfter.src = V2_DEMO_PHOTOS.face_after;
       faceAfter.style.display = '';
     }
