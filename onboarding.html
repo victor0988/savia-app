@@ -2617,6 +2617,131 @@
   .v2day-next-arrow { color: #B07050; font-size: 16px; }
 
   /* ====================================================================
+     V2 · TU DÍA — Skincare + Próximas Dosis (solo demo aesthetic)
+     ==================================================================== */
+  .v2day-section { display: none; margin-bottom: 12px; }
+  html.demo-aesthetic .v2day-section { display: block; }
+
+  /* Skincare detail card */
+  .v2day-skincare {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 16px 18px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+  .v2day-skincare:active { transform: scale(0.99); }
+  .v2day-skincare-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 12px;
+  }
+  .v2day-skincare-tag {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px;
+    color: #B85450;
+  }
+  .v2day-skincare-meta {
+    font-size: 11px; color: #5A6E5A; font-weight: 600;
+  }
+  .v2day-skincare-routine-label {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    color: #5A6E5A;
+    margin-bottom: 6px;
+  }
+  .v2day-skincare-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 5px 0;
+    font-size: 12.5px;
+  }
+  .v2day-skincare-check {
+    width: 16px; height: 16px;
+    border-radius: 5px;
+    background: rgba(184, 153, 104, 0.16);
+    color: #8C6E40;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+  }
+  .v2day-skincare-item.done .v2day-skincare-check {
+    background: #5C7C5A; color: white;
+  }
+  .v2day-skincare-item.done .v2day-skincare-check::before { content: '✓'; font-size: 11px; }
+  .v2day-skincare-item.done .v2day-skincare-num { display: none; }
+  .v2day-skincare-name { flex: 1; color: #2A3A2A; }
+  .v2day-skincare-item.done .v2day-skincare-name { color: #5A6E5A; text-decoration: line-through; }
+  .v2day-skincare-brand { font-size: 10.5px; color: #5A6E5A; }
+  .v2day-skincare-next {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #E8E0D2;
+    font-size: 11.5px;
+    color: #5A6E5A;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .v2day-skincare-next-arrow { color: #B85450; font-size: 14px; }
+
+  /* Próximas Dosis card */
+  .v2day-dosis {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 16px 18px;
+  }
+  .v2day-dosis-label {
+    font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px;
+    color: #5A6E5A;
+    margin-bottom: 12px;
+  }
+  .v2day-dosis-item {
+    display: flex; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #E8E0D2;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .v2day-dosis-item:last-child { border-bottom: none; padding-bottom: 0; }
+  .v2day-dosis-item:first-child { padding-top: 0; }
+  .v2day-dosis-marker {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px;
+    flex-shrink: 0;
+    color: white;
+    font-weight: 700;
+  }
+  .v2day-dosis-marker.glp { background: #B07050; }
+  .v2day-dosis-marker.prp { background: #5C7C5A; }
+  .v2day-dosis-marker.sculptra { background: #B89968; }
+  .v2day-dosis-body { flex: 1; min-width: 0; }
+  .v2day-dosis-title {
+    font-size: 13.5px; font-weight: 700;
+    color: #2A3A2A;
+    margin-bottom: 2px;
+  }
+  .v2day-dosis-when {
+    font-size: 11.5px; color: #5A6E5A;
+    margin-bottom: 6px;
+  }
+  .v2day-dosis-bar {
+    width: 100%; height: 4px;
+    background: #E8E0D2;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .v2day-dosis-bar-fill {
+    height: 100%; border-radius: 100px;
+  }
+  .v2day-dosis-bar-fill.glp { background: #B07050; }
+  .v2day-dosis-bar-fill.prp { background: #5C7C5A; }
+  .v2day-dosis-bar-fill.sculptra { background: #B89968; }
+  .v2day-dosis-progress {
+    font-size: 10.5px; color: #5A6E5A;
+    margin-top: 4px;
+  }
+
+  /* ====================================================================
      V2 · MODO DEMO ESTÉTICA — features de tratamientos clínicos
      Activado por localStorage 'savia_demo_aesthetic' + class on html.demo-aesthetic
      ==================================================================== */
@@ -7653,6 +7778,80 @@
             <div class="v2day-pillar-icon" style="color:#B85450;">✦</div>
             <div class="v2day-pillar-val" id="v2day-pillar-skincare-val">4/5</div>
             <div class="v2day-pillar-label">SKIN AM</div>
+          </div>
+        </div>
+
+        <!-- Skincare detail card (solo demo aesthetic) -->
+        <div class="v2day-section">
+          <div class="v2day-skincare" onclick="v2OpenModuleDetail('skincare');">
+            <div class="v2day-skincare-head">
+              <div class="v2day-skincare-tag">SKINCARE · HOY</div>
+              <div class="v2day-skincare-meta">4/5 AM · 0/4 PM</div>
+            </div>
+            <div class="v2day-skincare-routine-label">RUTINA MAÑANA · 06:30 AM</div>
+            <div class="v2day-skincare-item done">
+              <div class="v2day-skincare-check"></div>
+              <div class="v2day-skincare-name">Limpiador suave</div>
+              <div class="v2day-skincare-brand">CeraVe AM</div>
+            </div>
+            <div class="v2day-skincare-item done">
+              <div class="v2day-skincare-check"></div>
+              <div class="v2day-skincare-name">Vitamina C 15%</div>
+              <div class="v2day-skincare-brand">SkinCeuticals</div>
+            </div>
+            <div class="v2day-skincare-item done">
+              <div class="v2day-skincare-check"></div>
+              <div class="v2day-skincare-name">Crema hidratante</div>
+              <div class="v2day-skincare-brand">Avène</div>
+            </div>
+            <div class="v2day-skincare-item done">
+              <div class="v2day-skincare-check"></div>
+              <div class="v2day-skincare-name">SPF 50 ligero</div>
+              <div class="v2day-skincare-brand">ISDIN</div>
+            </div>
+            <div class="v2day-skincare-item">
+              <div class="v2day-skincare-check"><span class="v2day-skincare-num">5</span></div>
+              <div class="v2day-skincare-name">Bálsamo labial SPF</div>
+              <div class="v2day-skincare-brand">La Roche-P.</div>
+            </div>
+            <div class="v2day-skincare-next">
+              <span>Próxima: Rutina noche · 10:00 PM · 4 productos</span>
+              <span class="v2day-skincare-next-arrow">›</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Próximas dosis y sesiones card (solo demo aesthetic) -->
+        <div class="v2day-section">
+          <div class="v2day-dosis">
+            <div class="v2day-dosis-label">PRÓXIMAS DOSIS Y SESIONES</div>
+            <div class="v2day-dosis-item" onclick="v2OpenModuleDetail('glp');">
+              <div class="v2day-dosis-marker glp">●</div>
+              <div class="v2day-dosis-body">
+                <div class="v2day-dosis-title">Tirzepatida 1.0 mg</div>
+                <div class="v2day-dosis-when">en 4 días · domingo 23 jun · 10:00 AM</div>
+                <div class="v2day-dosis-bar"><div class="v2day-dosis-bar-fill glp" style="width:33%;"></div></div>
+                <div class="v2day-dosis-progress">Semana 8 de 24 · escalamiento estable</div>
+              </div>
+            </div>
+            <div class="v2day-dosis-item" onclick="v2OpenModuleDetail('prp');">
+              <div class="v2day-dosis-marker prp">◐</div>
+              <div class="v2day-dosis-body">
+                <div class="v2day-dosis-title">Sesión PRP 4/12</div>
+                <div class="v2day-dosis-when">en 9 días · martes 25 jun · 10:30 AM</div>
+                <div class="v2day-dosis-bar"><div class="v2day-dosis-bar-fill prp" style="width:25%;"></div></div>
+                <div class="v2day-dosis-progress">Sesión 3 de 12 completadas</div>
+              </div>
+            </div>
+            <div class="v2day-dosis-item" onclick="v2OpenModuleDetail('sculptra');">
+              <div class="v2day-dosis-marker sculptra">★</div>
+              <div class="v2day-dosis-body">
+                <div class="v2day-dosis-title">Sculptra · retoque</div>
+                <div class="v2day-dosis-when">en 8 semanas · 15 ago</div>
+                <div class="v2day-dosis-bar"><div class="v2day-dosis-bar-fill sculptra" style="width:50%;"></div></div>
+                <div class="v2day-dosis-progress">Semana 8 de 16 · firmeza +22%</div>
+              </div>
+            </div>
           </div>
         </div>
 
