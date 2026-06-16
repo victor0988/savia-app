@@ -321,6 +321,18 @@
     color: var(--muted);
     border-radius: 6px;
   }
+  /* Foto real dentro del silhouette card */
+  .photo-fill {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    border-radius: var(--radius-md);
+    background: var(--border);
+  }
+  /* Fallback silhouette (se muestra si la foto falla en cargar) */
   .silhouette {
     width: 60px;
     height: 130px;
@@ -337,6 +349,28 @@
     position: relative;
   }
   .silhouette-face.smaller { width: 64px; opacity: 0.9; }
+  .chapter-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 0;
+  }
+  /* Patient card avatar */
+  .patient-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .patient-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    object-position: center top;
+    flex-shrink: 0;
+    background: var(--border);
+  }
+  .patient-card-meta { flex: 1; min-width: 0; }
   .delta-row {
     display: flex;
     justify-content: space-between;
@@ -915,16 +949,25 @@
 
   <div class="patient-cards" id="patientCards">
     <div class="patient-card active" data-patient="maria">
-      <div class="patient-name">María</div>
-      <div class="patient-mod">Nutrición + GLP-1 + facial</div>
+      <img class="patient-avatar" data-photo="maria-portrait" alt="">
+      <div class="patient-card-meta">
+        <div class="patient-name">María</div>
+        <div class="patient-mod">Nutrición + GLP-1 + facial</div>
+      </div>
     </div>
     <div class="patient-card" data-patient="valeria">
-      <div class="patient-name">Valeria</div>
-      <div class="patient-mod">Armonización facial</div>
+      <img class="patient-avatar" data-photo="valeria-portrait" alt="">
+      <div class="patient-card-meta">
+        <div class="patient-name">Valeria</div>
+        <div class="patient-mod">Armonización facial</div>
+      </div>
     </div>
     <div class="patient-card" data-patient="carlos">
-      <div class="patient-name">Carlos</div>
-      <div class="patient-mod">Nutrición + fitness</div>
+      <img class="patient-avatar" data-photo="carlos-portrait" alt="">
+      <div class="patient-card-meta">
+        <div class="patient-name">Carlos</div>
+        <div class="patient-mod">Nutrición + fitness</div>
+      </div>
     </div>
   </div>
 
@@ -954,12 +997,12 @@
             </div>
             <div class="silhouette-row">
               <div class="silhouette-card">
-                <span class="silhouette-tag">INICIO</span>
-                <div class="silhouette"></div>
+                <span class="silhouette-tag" style="z-index:2;">INICIO</span>
+                <img class="photo-fill" data-photo="evo-before" alt="Inicio del protocolo">
               </div>
               <div class="silhouette-card">
-                <span class="silhouette-tag">HOY</span>
-                <div class="silhouette smaller"></div>
+                <span class="silhouette-tag" style="z-index:2;">HOY</span>
+                <img class="photo-fill" data-photo="evo-after" alt="Hoy">
               </div>
             </div>
             <div class="delta-row">
@@ -980,7 +1023,7 @@
           <div class="chapters-row">
             <div class="chapter-card" onclick="showChapter(12)">
               <div class="chapter-image">
-                <div class="silhouette smaller" style="width:38px; height:80px;"></div>
+                <img data-photo="chapter-12" alt="Capítulo 12">
               </div>
               <div class="chapter-body">
                 <div class="chapter-num">CAPÍTULO 12</div>
@@ -990,7 +1033,7 @@
             </div>
             <div class="chapter-card" onclick="showChapter(11)">
               <div class="chapter-image">
-                <div class="silhouette smaller" style="width:40px; height:85px;"></div>
+                <img data-photo="chapter-11" alt="Capítulo 11">
               </div>
               <div class="chapter-body">
                 <div class="chapter-num">CAPÍTULO 11</div>
@@ -1000,7 +1043,7 @@
             </div>
             <div class="chapter-card" onclick="showChapter(10)">
               <div class="chapter-image">
-                <div class="silhouette smaller" style="width:42px; height:88px;"></div>
+                <img data-photo="chapter-10" alt="Capítulo 10">
               </div>
               <div class="chapter-body">
                 <div class="chapter-num">CAPÍTULO 10</div>
@@ -1506,6 +1549,37 @@
     <h3>RECOMENDACIÓN</h3>
     <p>Si te gusta el feel de este mockup, próximo paso es validar con María y Mari (no implementar). Mostrales este HTML en su iPhone y observalas usarlo. Si las dos coinciden en que "esto es lo que querían", recién entonces pasamos a Fase B (schema). Si no, iteramos el mockup primero.</p>
     <p style="margin-top:12px;"><strong>No tocaste backend. No tocaste producción. El backup está intacto. Costo de revertir: cero.</strong></p>
+
+    <h2 style="margin-top:48px;">Sobre las fotos del mockup</h2>
+    <p>El mockup usa <strong>cascada de 3 niveles</strong> para cada foto:</p>
+    <ol style="margin-left:20px;">
+      <li>Primero intenta cargar desde <code>mockup-assets/{slot}.jpg</code> (local)</li>
+      <li>Si no existe, cae a una URL de Unsplash (real, gratuito)</li>
+      <li>Si la URL falla (sin wifi o URL caída), muestra fondo gris</li>
+    </ol>
+
+    <h3>OPCIÓN A · USAR URLS DE UNSPLASH (default actual)</h3>
+    <p>Las URLs ya están embebidas. Abrí el HTML con wifi y vas a ver fotos reales profesionales. Algunas no son AI-generated pero parecen tomadas en una clínica. <strong>Funciona para el primer pitch sin trabajo extra.</strong></p>
+
+    <h3>OPCIÓN B · REEMPLAZAR POR FOTOS AI PROPIAS (más impresionante)</h3>
+    <p>Para impresionar a la doctora con fotos AI específicas a SAVIA:</p>
+    <ol style="margin-left:20px;">
+      <li>Generá las fotos en <strong>Midjourney</strong>, <strong>DALL-E 3</strong>, <strong>Sora</strong> o el modelo que uses</li>
+      <li>Los prompts optimizados están en <code>MOCKUP_PHOTO_PROMPTS.md</code> en este folder</li>
+      <li>Renombrá cada foto generada con su clave exacta: <code>maria-portrait.jpg</code>, <code>maria-evo-before.jpg</code>, etc.</li>
+      <li>Pegá los archivos en <code>mockup-assets/</code></li>
+      <li>Servilo localmente para que la cascada funcione: <code>cd "App de Peptidos" && python3 -m http.server 8080</code>, después abrí <code>http://localhost:8080/savia-transformation-mockup.html</code></li>
+    </ol>
+    <p>Si abrís el archivo directo con doble-click (<code>file://</code>), la cascada salta directo a las URLs de Unsplash (porque file:// bloquea fetch local). Para usar tus fotos AI, necesitás servirlo con HTTP local.</p>
+
+    <h3>SLOTS A LLENAR (18 fotos total)</h3>
+    <p>Por cada paciente (María, Valeria, Carlos):</p>
+    <ul>
+      <li><code>{paciente}-portrait.jpg</code> — avatar 300×300, cabeza/hombros, mirada neutral</li>
+      <li><code>{paciente}-evo-before.jpg</code> — 400×600, "antes" del protocolo, ropa neutra</li>
+      <li><code>{paciente}-evo-after.jpg</code> — 400×600, "ahora" después del protocolo, misma pose</li>
+      <li><code>{paciente}-chapter-12.jpg</code>, <code>-chapter-11.jpg</code>, <code>-chapter-10.jpg</code> — 400×300, momentos lifestyle del journey</li>
+    </ul>
   </div>
 </div>
 
@@ -1522,6 +1596,85 @@ function goScreen(name) {
   screens.forEach(s => s.classList.toggle('active', s.dataset.screen === name));
   navBtns.forEach(b => b.classList.toggle('active', b.dataset.target === name));
   phoneScreen.scrollTop = 0;
+}
+
+/* ==========================================================
+   FOTOGRAFÍAS — sistema de cascada
+   ----------------------------------------------------------
+   Cada slot tiene una clave (ej. "maria-evo-after") y un URL.
+   Al renderizar, intento primero `mockup-assets/{key}.jpg`.
+   Si falla, uso el URL de Unsplash.
+   Si VOS querés reemplazar por fotos AI (Midjourney/DALL-E):
+     1. Descargá tus PNGs/JPGs
+     2. Renómbralos con la clave: maria-portrait.jpg, maria-evo-before.jpg, etc.
+     3. Pegalos en mockup-assets/
+     4. Recargá el HTML (servilo con: python -m http.server 8080)
+   Si abrís el HTML directo (file://), la cascada salta a URLs igual.
+   ========================================================== */
+
+const PHOTO_URLS = {
+  // María — Pérdida de grasa GLP-1
+  'maria-portrait':  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=300&h=300&fit=crop',
+  'maria-evo-before':'https://images.unsplash.com/photo-1573879500404-46ea53ab7c4f?w=400&h=600&fit=crop',
+  'maria-evo-after': 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop',
+  'maria-chapter-12':'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=300&fit=crop',
+  'maria-chapter-11':'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop',
+  'maria-chapter-10':'https://images.unsplash.com/photo-1505576633757-0ac1084af824?w=400&h=300&fit=crop',
+
+  // Valeria — Armonización facial
+  'valeria-portrait':  'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=300&h=300&fit=crop',
+  'valeria-evo-before':'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&h=600&fit=crop',
+  'valeria-evo-after': 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop',
+  'valeria-chapter-12':'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=300&fit=crop',
+  'valeria-chapter-11':'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=300&fit=crop',
+  'valeria-chapter-10':'https://images.unsplash.com/photo-1556228453-efd6c1ff04f6?w=400&h=300&fit=crop',
+
+  // Carlos — Longevidad/Músculo
+  'carlos-portrait':  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&h=300&fit=crop',
+  'carlos-evo-before':'https://images.unsplash.com/photo-1583468982228-19f19164aee2?w=400&h=600&fit=crop',
+  'carlos-evo-after': 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?w=400&h=600&fit=crop',
+  'carlos-chapter-12':'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
+  'carlos-chapter-11':'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=400&h=300&fit=crop',
+  'carlos-chapter-10':'https://images.unsplash.com/photo-1571902943202-507ec2618e8f?w=400&h=300&fit=crop',
+};
+
+function resolvePhotoSrc(key) {
+  // Cascada: intento local primero, si falla salto a URL
+  const localPath = `mockup-assets/${key}.jpg`;
+  const url = PHOTO_URLS[key];
+  return { local: localPath, url };
+}
+
+function wireImage(img, key) {
+  const { local, url } = resolvePhotoSrc(key);
+  img.src = local;
+  img.onerror = () => {
+    img.onerror = () => {
+      // Última caída: ocultar img, mostrar background gris
+      img.style.opacity = '0.25';
+      img.style.background = 'var(--border)';
+    };
+    img.src = url;
+  };
+}
+
+/* Carga fotos según paciente seleccionado */
+function loadPhotosForPatient(patientId) {
+  const slots = ['portrait', 'evo-before', 'evo-after', 'chapter-12', 'chapter-11', 'chapter-10'];
+  // Patient cards avatars (siempre los tres visibles)
+  document.querySelectorAll('.patient-card .patient-avatar').forEach(img => {
+    const card = img.closest('.patient-card');
+    const pid = card.dataset.patient;
+    wireImage(img, `${pid}-portrait`);
+  });
+  // Fotos del paciente activo
+  document.querySelectorAll('[data-photo]').forEach(img => {
+    if (img.classList.contains('patient-avatar')) return; // ya fue cargada arriba
+    const slot = img.dataset.photo; // ej. "evo-before", "chapter-12"
+    // resolver: si comienza con "evo-" o "chapter-", anteponer patient
+    const key = `${patientId}-${slot}`;
+    wireImage(img, key);
+  });
 }
 
 /* Patient switcher — mock data swap */
@@ -1567,6 +1720,7 @@ document.querySelectorAll('.patient-card').forEach(card => {
     document.getElementById('deltaCaption').textContent = p.caption;
     document.getElementById('evolutionInsight').textContent = p.insight;
     document.getElementById('saviaInsightText').textContent = p.saviaInsight;
+    loadPhotosForPatient(id);
     goScreen('progreso');
   });
 });
@@ -1574,6 +1728,9 @@ document.querySelectorAll('.patient-card').forEach(card => {
 function showChapter(n) {
   alert('Mock: capítulo ' + n + ' abriría acá. En producción navega a chapter-viewer con narrativa generada por AI.');
 }
+
+/* Initial photo load (María) */
+loadPhotosForPatient('maria');
 </script>
 
 </body>
