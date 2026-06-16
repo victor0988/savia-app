@@ -12493,18 +12493,23 @@ async function renderV2Plan() {
     if (titleEl) titleEl.textContent = `Semana ${week}`;
   } catch (e) { console.warn('[v2-plan] hero failed:', e); }
 
-  // --- Card 1: Nutrición (meal_plans activo) ---
+  // --- Card 1: Nutrición ---
+  // Lógica: primero busca meal_plan de nutricionista. Si no hay, usa
+  // nutrition_targets (macros calculados por SAVIA). Ambos casos muestran
+  // card de Nutrición con su data real + acciones del día (count meal_logs).
   try {
     let plan = null;
     if (typeof planLoadActive === 'function') {
       plan = await planLoadActive();
     }
-    if (plan) {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+
+    // Caso A: tiene meal_plan de nutricionista
+    if (plan && userId) {
       const title = plan.title || 'Plan nutricional';
       const practitioner = plan.nutritionist_name || 'Tu nutricionista';
       const kcal = plan.total_kcal ? `${plan.total_kcal} kcal · día` : '';
-      const protein = plan.total_protein_g ? `${Math.round(plan.total_protein_g)} g proteína` : '';
-      // Calcular semanas desde start
       let weekStr = '';
       let progressPct = 0;
       if (plan.starts_at) {
@@ -12518,9 +12523,17 @@ async function renderV2Plan() {
           progressPct = Math.min(100, (weekN / totalWeeks) * 100);
         } else {
           weekStr = `SEM ${weekN}`;
-          progressPct = 50; // sin end, mostrar mid bar
+          progressPct = 50;
         }
       }
+      // Count meal_logs de hoy para acciones del día
+      const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+      const { data: todayMeals } = await sb
+        .from('meal_logs')
+        .select('id, meal_category, total_kcal')
+        .eq('user_id', userId)
+        .gte('ts', todayStart.toISOString());
+      const mealsLogged = (todayMeals || []).length;
       cards.push(`
         <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('plan-view');">
           <div class="v2-module-head">
@@ -12535,21 +12548,84 @@ async function renderV2Plan() {
             </div>` : ''}
           </div>
           <div class="v2-module-actions">
-            <div class="v2-module-action">
+            <div class="v2-module-action ${mealsLogged >= 1 ? 'done' : ''}">
               <div class="v2-module-action-check"></div>
               <div class="v2-module-action-text">Logueá desayuno</div>
             </div>
-            <div class="v2-module-action">
+            <div class="v2-module-action ${mealsLogged >= 2 ? 'done' : ''}">
               <div class="v2-module-action-check"></div>
-              <div class="v2-module-action-text">${protein || 'Cumplí tus macros'}</div>
+              <div class="v2-module-action-text">Logueá almuerzo</div>
             </div>
-            <div class="v2-module-action">
+            <div class="v2-module-action ${mealsLogged >= 3 ? 'done' : ''}">
               <div class="v2-module-action-check"></div>
-              <div class="v2-module-action-text">Hidratación: 2.5 L de agua</div>
+              <div class="v2-module-action-text">Logueá cena · ${mealsLogged} comida${mealsLogged === 1 ? '' : 's'} hoy</div>
             </div>
           </div>
         </div>
       `);
+    }
+    // Caso B: no hay meal_plan pero tiene nutrition_targets (macros calculados por SAVIA)
+    else if (userId) {
+      const { data: targets } = await sb
+        .from('nutrition_targets')
+        .select('id, kcal, protein_g, carbs_g, fat_g, water_ml, computed_at')
+        .eq('user_id', userId)
+        .eq('active', true)
+        .order('computed_at', { ascending: false })
+        .limit(1);
+      if (targets && targets.length > 0) {
+        const t = targets[0];
+        const kcalStr = `${t.kcal} kcal · día`;
+        const macroStr = `${t.protein_g}g P · ${t.carbs_g}g C · ${t.fat_g}g G`;
+        // Count meal_logs de hoy
+        const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+        const { data: todayMeals } = await sb
+          .from('meal_logs')
+          .select('id, meal_category, total_kcal, total_protein_g, total_carbs_g, total_fat_g')
+          .eq('user_id', userId)
+          .gte('ts', todayStart.toISOString());
+        const mealsLogged = (todayMeals || []).length;
+        const kcalEaten = (todayMeals || []).reduce((s, m) => s + (m.total_kcal || 0), 0);
+        const proteinEaten = (todayMeals || []).reduce((s, m) => s + (parseFloat(m.total_protein_g) || 0), 0);
+        const kcalLeft = Math.max(0, t.kcal - kcalEaten);
+        // Days since computed
+        let weekStr = '';
+        let progressPct = 70;
+        if (t.computed_at) {
+          const startDate = new Date(t.computed_at);
+          const weekN = Math.max(1, Math.ceil((new Date() - startDate) / (1000*60*60*24*7)));
+          weekStr = `SEM ${weekN}`;
+        }
+        cards.push(`
+          <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('nutrition');">
+            <div class="v2-module-head">
+              <div class="v2-module-meta-left">
+                <div class="v2-module-tag nut">NUTRICIÓN</div>
+                <div class="v2-module-name">Tu plan SAVIA</div>
+                <div class="v2-module-practitioner">Calculado por SAVIA · ${escapeHtml(kcalStr)}</div>
+              </div>
+              ${weekStr ? `<div class="v2-module-progress">
+                <div class="v2-module-week">${weekStr}</div>
+                <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:${progressPct}%;"></div></div>
+              </div>` : ''}
+            </div>
+            <div class="v2-module-actions">
+              <div class="v2-module-action ${mealsLogged >= 1 ? 'done' : ''}">
+                <div class="v2-module-action-check"></div>
+                <div class="v2-module-action-text">${mealsLogged} comida${mealsLogged === 1 ? '' : 's'} logueadas hoy</div>
+              </div>
+              <div class="v2-module-action ${kcalEaten >= t.kcal * 0.5 ? 'done' : ''}">
+                <div class="v2-module-action-check"></div>
+                <div class="v2-module-action-text">${kcalEaten} de ${t.kcal} kcal · ${kcalLeft} restantes</div>
+              </div>
+              <div class="v2-module-action ${proteinEaten >= t.protein_g * 0.8 ? 'done' : ''}">
+                <div class="v2-module-action-check"></div>
+                <div class="v2-module-action-text">${Math.round(proteinEaten)}g de ${t.protein_g}g proteína</div>
+              </div>
+            </div>
+          </div>
+        `);
+      }
     }
   } catch (e) { console.warn('[v2-plan] nutrición card failed:', e); }
 
