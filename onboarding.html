@@ -12535,7 +12535,7 @@ async function renderV2Plan() {
         .gte('ts', todayStart.toISOString());
       const mealsLogged = (todayMeals || []).length;
       cards.push(`
-        <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('plan-view');">
+        <div class="v2-module-card" onclick="v2OpenPlanView();">
           <div class="v2-module-head">
             <div class="v2-module-meta-left">
               <div class="v2-module-tag nut">NUTRICIÓN</div>
@@ -12777,6 +12777,31 @@ async function renderV2Plan() {
       </div>
     `;
   }
+}
+
+/* V2 · abrir plan-view con back override (vuelve a Plan tab v2 en lugar de Perfil)
+   - Usa planViewOpen() que carga las 4 tablas relacionadas (plan_meals, plan_supplements, etc.)
+   - Reemplaza temporalmente planViewBack para volver al Plan tab de v2
+   - Al ejecutar el back, restaura el original (no contamina SAVIA v1) */
+function v2OpenPlanView() {
+  if (typeof planViewOpen !== 'function') {
+    console.warn('[v2] planViewOpen no disponible');
+    return;
+  }
+  // Override del back solo si estamos en nav-v2
+  if (document.documentElement.classList.contains('nav-v2')) {
+    const originalBack = window.planViewBack;
+    window.planViewBack = function() {
+      // Restaurar el original primero (idempotente)
+      window.planViewBack = originalBack;
+      // Volver al app + Plan tab v2
+      try {
+        if (typeof goStep === 'function') goStep('app');
+        if (typeof switchV2Tab === 'function') switchV2Tab('plan');
+      } catch (e) { console.warn('[v2] planViewBack override falló:', e); }
+    };
+  }
+  planViewOpen();
 }
 
 /* Escape HTML helper (defensivo contra XSS en datos de Supabase) */
