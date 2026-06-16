@@ -2116,6 +2116,148 @@
     text-align: right; flex-shrink: 0;
   }
 
+  /* ====================================================================
+     V2 · PLAN (Fase 3) — Módulos activos
+     Cards = protocolos prescritos por el equipo del paciente.
+     ==================================================================== */
+  .v2-plan-wrap { padding: 0 18px 20px; }
+  .v2-plan-hero { padding: 36px 0 16px; }
+  .v2-plan-hero-greeting {
+    font-size: 13px; color: #5A6E5A; font-weight: 500;
+    margin-bottom: 6px;
+  }
+  .v2-plan-hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -1.4px; line-height: 1;
+    margin-bottom: 10px;
+  }
+  .v2-plan-hero-context {
+    font-size: 13px; color: #5A6E5A; font-weight: 500;
+  }
+  .v2-module-card {
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 18px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .v2-module-card:active { transform: scale(0.99); }
+  .v2-module-card.ghost {
+    background: transparent;
+    border-style: dashed;
+    cursor: default;
+    opacity: 0.85;
+  }
+  .v2-module-head {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 12px; gap: 12px;
+  }
+  .v2-module-meta-left { flex: 1; min-width: 0; }
+  .v2-module-tag {
+    display: inline-block;
+    font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    padding: 4px 10px;
+    border-radius: 100px;
+    margin-bottom: 8px;
+  }
+  .v2-module-tag.nut { background: rgba(92, 124, 90, 0.12); color: #5C7C5A; }
+  .v2-module-tag.body { background: rgba(184, 153, 104, 0.14); color: #B89968; }
+  .v2-module-tag.wh { background: rgba(201, 135, 106, 0.14); color: #B07050; }
+  .v2-module-tag.glp { background: rgba(176, 112, 80, 0.10); color: #B07050; }
+  .v2-module-tag.aest { background: rgba(184, 153, 104, 0.12); color: #B89968; }
+  .v2-module-tag.future { background: rgba(122, 140, 122, 0.10); color: #5A6E5A; }
+  .v2-module-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -0.5px;
+    line-height: 1.1; margin-bottom: 4px;
+  }
+  .v2-module-practitioner {
+    font-size: 11.5px; color: #5A6E5A;
+  }
+  .v2-module-progress { text-align: right; flex-shrink: 0; }
+  .v2-module-week {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.8px;
+    color: #5A6E5A; margin-bottom: 4px;
+  }
+  .v2-module-progress-bar {
+    width: 80px; height: 4px;
+    background: #E8E0D2;
+    border-radius: 100px;
+    overflow: hidden;
+  }
+  .v2-module-progress-fill {
+    height: 100%; background: #5C7C5A;
+    border-radius: 100px;
+    transition: width 0.4s ease;
+  }
+  .v2-module-actions {
+    margin-top: 10px;
+    padding-top: 12px;
+    border-top: 1px solid #E8E0D2;
+  }
+  .v2-module-action {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0;
+    font-size: 13px; color: #2A3A2A;
+  }
+  .v2-module-action-check {
+    width: 16px; height: 16px;
+    border: 1.5px solid #E8E0D2;
+    border-radius: 5px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .v2-module-action.done .v2-module-action-check {
+    background: #5C7C5A;
+    border-color: #5C7C5A;
+  }
+  .v2-module-action.done .v2-module-action-check::after {
+    content: '✓';
+    position: absolute;
+    top: -3px;
+    left: 2px;
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+  }
+  .v2-module-action.done .v2-module-action-text {
+    color: #5A6E5A;
+    text-decoration: line-through;
+  }
+  .v2-plan-empty {
+    background: #FAF7EF;
+    border: 1px dashed #E8E0D2;
+    border-radius: 22px;
+    padding: 28px 22px;
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .v2-plan-empty-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 500;
+    color: #2A3A2A; margin-bottom: 6px;
+    letter-spacing: -0.5px;
+  }
+  .v2-plan-empty-desc {
+    font-size: 13px; color: #5A6E5A;
+    line-height: 1.6;
+  }
+  .v2-plan-footer {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: rgba(92, 124, 90, 0.06);
+    border-left: 3px solid #5C7C5A;
+    border-radius: 10px;
+    font-size: 13px;
+    color: #3A4D3A;
+    line-height: 1.5;
+  }
+
   /* Coming soon screens (Cuerpo, SAVIA) */
   .hoy-coming-soon {
     flex: 1;
@@ -6671,11 +6813,19 @@
     </div>
 
     <div class="v2-tab v2-tab-plan" data-v2tab="plan">
-      <div class="v2-placeholder">
-        <div class="v2-placeholder-tag">TAB 2 · MÓDULOS ACTIVOS</div>
-        <div class="v2-placeholder-title">Plan</div>
-        <div class="v2-placeholder-desc">Acá vas a ver tus protocolos activos como cards: Nutrición, GLP-1, Estética, según lo que tu clínica te prescribió.</div>
-        <div class="v2-placeholder-phase">Fase 3</div>
+      <div class="v2-plan-wrap">
+        <div class="v2-plan-hero">
+          <div class="v2-plan-hero-greeting">Tu plan activo</div>
+          <div class="v2-plan-hero-title" id="v2-plan-hero-title">Semana 1</div>
+          <div class="v2-plan-hero-context" id="v2-plan-hero-context">Tus protocolos prescritos por tu equipo</div>
+        </div>
+        <div id="v2-plan-modules">
+          <!-- Cards reales llenadas por renderV2Plan(). Empty inicial: -->
+          <div class="v2-plan-empty">
+            <div class="v2-plan-empty-title">Tu plan llega cuando tu clínica te prescribe</div>
+            <div class="v2-plan-empty-desc">SAVIA conecta los protocolos que tu médico y nutricionista te asignen.</div>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -10704,9 +10854,14 @@ function enterAppSimulation(source) {
   try { switchHoyTab('hoy', { skipAnim: true }); } catch (e) { console.error('[SAVIA] switchHoyTab failed:', e); }
   renderDailyPulse().catch(e => console.error('[SAVIA] renderDailyPulse failed:', e));
 
-  // V2 nav: si flag activo, llenar Mi Progreso con data real
-  if (document.documentElement.classList.contains('nav-v2') && typeof renderV2Progreso === 'function') {
-    renderV2Progreso().catch(e => console.warn('[v2] renderV2Progreso failed:', e));
+  // V2 nav: si flag activo, llenar Mi Progreso + Plan con data real
+  if (document.documentElement.classList.contains('nav-v2')) {
+    if (typeof renderV2Progreso === 'function') {
+      renderV2Progreso().catch(e => console.warn('[v2] renderV2Progreso failed:', e));
+    }
+    if (typeof renderV2Plan === 'function') {
+      renderV2Plan().catch(e => console.warn('[v2] renderV2Plan failed:', e));
+    }
   }
 
   if (source !== 'login') {
@@ -12086,6 +12241,9 @@ function switchV2Tab(tab, opts) {
   if (tab === 'progreso') {
     renderV2Progreso().catch(e => console.warn('[v2] renderV2Progreso failed:', e));
   }
+  if (tab === 'plan') {
+    renderV2Plan().catch(e => console.warn('[v2] renderV2Plan failed:', e));
+  }
   // Scroll al top de la tab activa
   const active = document.querySelector('.v2-tab.active');
   if (active) active.scrollTop = 0;
@@ -12311,6 +12469,244 @@ async function renderV2Progreso() {
       }
     }
   } catch (e) { console.warn('[v2-progreso] pulse failed:', e); }
+}
+
+/* ============================================================
+   V2 · PLAN — render con data real
+   ------------------------------------------------------------
+   Lee: meal_plans (via planLoadActive), body_compositions count,
+        women_health_profile.
+   Agrega placeholders demo: GLP-1 + Estética facial para mostrar
+   la visión multi-módulo a la doctora.
+   ============================================================ */
+async function renderV2Plan() {
+  if (!document.documentElement.classList.contains('nav-v2')) return;
+  const cont = document.getElementById('v2-plan-modules');
+  if (!cont) return;
+  const cards = [];
+
+  // --- Hero: semana N basada en days since signup ---
+  try {
+    const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : 1;
+    const week = Math.max(1, Math.ceil(days / 7));
+    const titleEl = document.getElementById('v2-plan-hero-title');
+    if (titleEl) titleEl.textContent = `Semana ${week}`;
+  } catch (e) { console.warn('[v2-plan] hero failed:', e); }
+
+  // --- Card 1: Nutrición (meal_plans activo) ---
+  try {
+    let plan = null;
+    if (typeof planLoadActive === 'function') {
+      plan = await planLoadActive();
+    }
+    if (plan) {
+      const title = plan.title || 'Plan nutricional';
+      const practitioner = plan.nutritionist_name || 'Tu nutricionista';
+      const kcal = plan.total_kcal ? `${plan.total_kcal} kcal · día` : '';
+      const protein = plan.total_protein_g ? `${Math.round(plan.total_protein_g)} g proteína` : '';
+      // Calcular semanas desde start
+      let weekStr = '';
+      let progressPct = 0;
+      if (plan.starts_at) {
+        const startDate = new Date(plan.starts_at);
+        const now = new Date();
+        const weekN = Math.max(1, Math.ceil((now - startDate) / (1000*60*60*24*7)));
+        if (plan.ends_at) {
+          const endDate = new Date(plan.ends_at);
+          const totalWeeks = Math.max(1, Math.ceil((endDate - startDate) / (1000*60*60*24*7)));
+          weekStr = `SEM ${weekN} / ${totalWeeks}`;
+          progressPct = Math.min(100, (weekN / totalWeeks) * 100);
+        } else {
+          weekStr = `SEM ${weekN}`;
+          progressPct = 50; // sin end, mostrar mid bar
+        }
+      }
+      cards.push(`
+        <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('plan-view');">
+          <div class="v2-module-head">
+            <div class="v2-module-meta-left">
+              <div class="v2-module-tag nut">NUTRICIÓN</div>
+              <div class="v2-module-name">${escapeHtml(title)}</div>
+              <div class="v2-module-practitioner">${escapeHtml(practitioner)}${kcal ? ' · ' + kcal : ''}</div>
+            </div>
+            ${weekStr ? `<div class="v2-module-progress">
+              <div class="v2-module-week">${weekStr}</div>
+              <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:${progressPct}%;"></div></div>
+            </div>` : ''}
+          </div>
+          <div class="v2-module-actions">
+            <div class="v2-module-action">
+              <div class="v2-module-action-check"></div>
+              <div class="v2-module-action-text">Logueá desayuno</div>
+            </div>
+            <div class="v2-module-action">
+              <div class="v2-module-action-check"></div>
+              <div class="v2-module-action-text">${protein || 'Cumplí tus macros'}</div>
+            </div>
+            <div class="v2-module-action">
+              <div class="v2-module-action-check"></div>
+              <div class="v2-module-action-text">Hidratación: 2.5 L de agua</div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+  } catch (e) { console.warn('[v2-plan] nutrición card failed:', e); }
+
+  // --- Card 2: Composición corporal (si tiene InBody) ---
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    if (userId) {
+      const { data: ms } = await sb
+        .from('body_compositions')
+        .select('id, measured_at, weight_kg')
+        .eq('patient_user_id', userId)
+        .order('measured_at', { ascending: true });
+      if (ms && ms.length > 0) {
+        const first = ms[0];
+        const last = ms[ms.length - 1];
+        const startStr = new Date(first.measured_at).toLocaleDateString('es', { day: 'numeric', month: 'short' });
+        const weeksSince = Math.max(1, Math.ceil((new Date() - new Date(first.measured_at)) / (1000*60*60*24*7)));
+        cards.push(`
+          <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('progress');">
+            <div class="v2-module-head">
+              <div class="v2-module-meta-left">
+                <div class="v2-module-tag body">COMPOSICIÓN</div>
+                <div class="v2-module-name">Body composition tracking</div>
+                <div class="v2-module-practitioner">Desde ${startStr} · ${ms.length} InBody${ms.length > 1 ? 's' : ''}</div>
+              </div>
+              <div class="v2-module-progress">
+                <div class="v2-module-week">SEM ${weeksSince}</div>
+                <div class="v2-module-progress-bar"><div class="v2-module-progress-fill" style="width:${Math.min(100, weeksSince * 8)}%;"></div></div>
+              </div>
+            </div>
+            <div class="v2-module-actions">
+              <div class="v2-module-action ${ms.length >= 1 ? 'done' : ''}">
+                <div class="v2-module-action-check"></div>
+                <div class="v2-module-action-text">Primer InBody registrado</div>
+              </div>
+              <div class="v2-module-action">
+                <div class="v2-module-action-check"></div>
+                <div class="v2-module-action-text">Próximo control · sugerido mensual</div>
+              </div>
+              <div class="v2-module-action">
+                <div class="v2-module-action-check"></div>
+                <div class="v2-module-action-text">Foto de progreso semanal</div>
+              </div>
+            </div>
+          </div>
+        `);
+      }
+    }
+  } catch (e) { console.warn('[v2-plan] body card failed:', e); }
+
+  // --- Card 3: Women's Health (si activado) ---
+  try {
+    let whProfile = null;
+    if (typeof whLoadProfile === 'function') {
+      whProfile = await whLoadProfile();
+    }
+    if (whProfile && whProfile.enabled) {
+      cards.push(`
+        <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('wh-dashboard');">
+          <div class="v2-module-head">
+            <div class="v2-module-meta-left">
+              <div class="v2-module-tag wh">CICLO HORMONAL</div>
+              <div class="v2-module-name">Women's Health</div>
+              <div class="v2-module-practitioner">Tracking ciclo + síntomas</div>
+            </div>
+          </div>
+          <div class="v2-module-actions">
+            <div class="v2-module-action">
+              <div class="v2-module-action-check"></div>
+              <div class="v2-module-action-text">Registrá tu día de ciclo</div>
+            </div>
+            <div class="v2-module-action">
+              <div class="v2-module-action-check"></div>
+              <div class="v2-module-action-text">Síntomas + mood del día</div>
+            </div>
+          </div>
+        </div>
+      `);
+    }
+  } catch (e) { console.warn('[v2-plan] WH card failed:', e); }
+
+  // --- Cards 4-5: Placeholders demo (GLP-1 + Estética facial) ---
+  // Estas son ghost cards intencionales — la doctora ve la visión multi-módulo.
+  cards.push(`
+    <div class="v2-module-card ghost">
+      <div class="v2-module-head">
+        <div class="v2-module-meta-left">
+          <div class="v2-module-tag glp">GLP-1</div>
+          <div class="v2-module-name">Tirzepatida · pérdida de grasa</div>
+          <div class="v2-module-practitioner">Activable si tu médico lo prescribe</div>
+        </div>
+      </div>
+      <div class="v2-module-actions">
+        <div class="v2-module-action">
+          <div class="v2-module-action-check"></div>
+          <div class="v2-module-action-text">Próxima dosis · seguimiento semanal</div>
+        </div>
+        <div class="v2-module-action">
+          <div class="v2-module-action-check"></div>
+          <div class="v2-module-action-text">Hidratación reforzada · efectos digestivos</div>
+        </div>
+        <div class="v2-module-action">
+          <div class="v2-module-action-check"></div>
+          <div class="v2-module-action-text">Sintomas reportados al médico</div>
+        </div>
+      </div>
+    </div>
+  `);
+  cards.push(`
+    <div class="v2-module-card ghost">
+      <div class="v2-module-head">
+        <div class="v2-module-meta-left">
+          <div class="v2-module-tag aest">ESTÉTICA FACIAL</div>
+          <div class="v2-module-name">Bioestimulador · firmeza</div>
+          <div class="v2-module-practitioner">Activable si tu clínica lo prescribe</div>
+        </div>
+      </div>
+      <div class="v2-module-actions">
+        <div class="v2-module-action">
+          <div class="v2-module-action-check"></div>
+          <div class="v2-module-action-text">Protector solar SPF 50 mañana</div>
+        </div>
+        <div class="v2-module-action">
+          <div class="v2-module-action-check"></div>
+          <div class="v2-module-action-text">Skincare nocturno con retinol</div>
+        </div>
+        <div class="v2-module-action">
+          <div class="v2-module-action-check"></div>
+          <div class="v2-module-action-text">Foto facial semanal · misma luz</div>
+        </div>
+      </div>
+    </div>
+  `);
+
+  // --- Empty fallback si no hay ninguna real ---
+  const hasReal = cards.length > 2; // las 2 ghost siempre están
+  if (!hasReal) {
+    cont.innerHTML = `
+      <div class="v2-plan-empty">
+        <div class="v2-plan-empty-title">Tu plan llega cuando tu clínica te prescribe</div>
+        <div class="v2-plan-empty-desc">SAVIA conecta los protocolos que tu médico y nutricionista te asignen. Las cards de abajo son ejemplos de los módulos disponibles.</div>
+      </div>
+    ` + cards.join('');
+  } else {
+    cont.innerHTML = cards.join('') + `
+      <div class="v2-plan-footer">
+        Las cards marcadas con borde punteado son ejemplos de módulos activables por tu clínica.
+      </div>
+    `;
+  }
+}
+
+/* Escape HTML helper (defensivo contra XSS en datos de Supabase) */
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 /* Helper local — fecha relativa simple */
