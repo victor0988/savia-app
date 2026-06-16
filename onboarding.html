@@ -1833,19 +1833,40 @@
      strava_activities, daily_pulses. NO toca schemas ni Edge Functions.
      ==================================================================== */
   .v2-progreso { padding: 20px 18px 20px; }
-  .v2-progreso-hero { padding: 36px 0 16px; }
-  .v2-progreso-greeting {
-    font-size: 13px; color: #5A6E5A; font-weight: 500;
-    margin-bottom: 6px;
+  /* Hero compacto: 1 línea (avatar + nombre + semana) — recupera ~120px vs versión vertical */
+  .v2-progreso-hero {
+    padding: 18px 0 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .v2-progreso-avatar-mini {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: #2A3A2A;
+    color: #F5EFE3;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px; font-weight: 500;
+    flex-shrink: 0;
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .v2-progreso-hero-text { flex: 1; min-width: 0; }
+  .v2-progreso-greeting-inline {
+    font-size: 11px; color: #5A6E5A; font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
   }
   .v2-progreso-name {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 40px; font-weight: 500;
-    color: #2A3A2A; letter-spacing: -1.4px;
-    line-height: 1; margin-bottom: 10px;
+    font-size: 24px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -0.6px;
+    line-height: 1.1;
   }
   .v2-progreso-context {
-    font-size: 13px; color: #5A6E5A; font-weight: 500;
+    font-size: 11.5px; color: #5A6E5A; font-weight: 500;
+    margin-top: 1px;
   }
   .v2-section-label {
     font-size: 11px; font-weight: 700; letter-spacing: 1.4px;
@@ -2519,39 +2540,50 @@
   .v2day-macro-pct {
     font-size: 10.5px; color: #5A6E5A; margin-top: 2px;
   }
-  /* Pillars row */
+  /* Pillars row · 5 columnas (workout/pasos/sueño/agua/skincare-cuando-demo) */
   .v2day-pillars {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 8px;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
     margin-bottom: 12px;
   }
   .v2day-pillar {
     background: #FAF7EF;
     border: 1px solid #E8E0D2;
-    border-radius: 16px;
-    padding: 12px 8px;
+    border-radius: 14px;
+    padding: 10px 4px;
     text-align: center;
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     transition: transform 0.15s ease, border-color 0.15s;
+    min-width: 0;
   }
   .v2day-pillar:active { transform: scale(0.97); }
   .v2day-pillar-icon {
-    width: 26px; height: 26px;
-    margin: 0 auto 4px;
+    width: 22px; height: 22px;
+    margin: 0 auto 3px;
     display: flex; align-items: center; justify-content: center;
     color: #5C7C5A;
-    font-size: 16px;
+    font-size: 14px;
   }
   .v2day-pillar-val {
-    font-size: 15px; font-weight: 700;
+    font-size: 14px; font-weight: 700;
     color: #2A3A2A;
     line-height: 1.1;
   }
   .v2day-pillar-label {
-    font-size: 9px; font-weight: 700; letter-spacing: 0.5px;
-    color: #5A6E5A; margin-top: 4px;
+    font-size: 8.5px; font-weight: 700; letter-spacing: 0.4px;
+    color: #5A6E5A; margin-top: 3px;
+  }
+  /* Tile Skincare: oculto por default, solo visible en demo aesthetic */
+  .v2day-pillar.skincare { display: none; }
+  html.demo-aesthetic .v2day-pillar.skincare { display: block; }
+  /* Cuando demo NO está activo, los otros 4 tiles ocupan todo el ancho */
+  .v2day-pillars:not(:has(.v2day-pillar.skincare:not([style*="display: none"]))) {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  html:not(.demo-aesthetic) .v2day-pillars {
+    grid-template-columns: repeat(4, 1fr);
   }
   /* Next action card */
   .v2day-next {
@@ -7535,11 +7567,14 @@
 
     <div class="v2-tab v2-tab-progreso active" data-v2tab="progreso">
       <div class="v2-progreso">
-        <!-- Hero -->
+        <!-- Hero compacto (1 línea: avatar + nombre + semana) -->
         <div class="v2-progreso-hero">
-          <div class="v2-progreso-greeting">Hola</div>
-          <div class="v2-progreso-name" id="v2-progreso-name">—</div>
-          <div class="v2-progreso-context" id="v2-progreso-context">Día 1 de tu transformación</div>
+          <div class="v2-progreso-avatar-mini" id="v2-progreso-avatar-mini" onclick="if (typeof openProfile === 'function') openProfile();">—</div>
+          <div class="v2-progreso-hero-text">
+            <div class="v2-progreso-greeting-inline">Hola</div>
+            <div class="v2-progreso-name" id="v2-progreso-name">—</div>
+            <div class="v2-progreso-context" id="v2-progreso-context">Día 1 de tu transformación</div>
+          </div>
         </div>
 
         <!-- Women's Health · Mi Ciclo pill (solo si user femenina + módulo activado) -->
@@ -7612,6 +7647,12 @@
             <div class="v2day-pillar-icon">○</div>
             <div class="v2day-pillar-val" id="v2day-pillar-water-val">0</div>
             <div class="v2day-pillar-label">AGUA</div>
+          </div>
+          <!-- Skincare pillar — solo visible si demo aesthetic ON -->
+          <div class="v2day-pillar skincare" id="v2day-pillar-skincare" onclick="v2OpenModuleDetail('skincare');">
+            <div class="v2day-pillar-icon" style="color:#B85450;">✦</div>
+            <div class="v2day-pillar-val" id="v2day-pillar-skincare-val">4/5</div>
+            <div class="v2day-pillar-label">SKIN AM</div>
           </div>
         </div>
 
@@ -13315,17 +13356,27 @@ async function renderV2Progreso() {
   // pero el JS sigue funcionando y rellena el DOM oculto. Después copiamos valores.
   renderV2Day().catch(e => console.warn('[v2-day] render failed:', e));
 
-  // --- Hero: greeting + semana actual ---
+  // --- Hero: greeting + semana actual + avatar mini ---
   try {
     const firstName = (state.name || 'paciente').split(' ')[0] || 'paciente';
     const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : 1;
     const week = Math.max(1, Math.ceil(days / 7));
     const nameEl = document.getElementById('v2-progreso-name');
     const ctxEl = document.getElementById('v2-progreso-context');
+    const avEl = document.getElementById('v2-progreso-avatar-mini');
     if (nameEl) nameEl.textContent = firstName;
     if (ctxEl) ctxEl.textContent = week === 1
       ? `Día ${days} de tu transformación`
       : `Semana ${week} de tu transformación`;
+    if (avEl) {
+      if (state.photo) {
+        avEl.style.backgroundImage = `url(${state.photo})`;
+        avEl.textContent = '';
+      } else {
+        avEl.style.backgroundImage = '';
+        avEl.textContent = firstName[0].toUpperCase();
+      }
+    }
   } catch (e) { console.warn('[v2-progreso] hero failed:', e); }
 
   // --- Tu Evolución: primer InBody vs último (usa patient_user_id, body_fat_pct) ---
