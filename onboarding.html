@@ -1886,6 +1886,16 @@
     position: relative; overflow: hidden;
     border: 1px solid #E8E0D2;
   }
+  /* Imagen real dentro del silhouette card (fallback al div .v2-silhouette si img falla) */
+  .v2-silhouette-img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+    z-index: 1;
+  }
   .v2-silhouette-tag {
     position: absolute; top: 10px; left: 10px; z-index: 2;
     font-size: 9px; font-weight: 700; letter-spacing: 1px;
@@ -7328,12 +7338,12 @@
             </div>
             <div class="v2-silhouette-row">
               <div class="v2-silhouette-card">
-                <span class="v2-silhouette-tag">INICIO</span>
-                <div class="v2-face-silhouette"></div>
+                <span class="v2-silhouette-tag" style="z-index:2;">INICIO</span>
+                <img class="v2-silhouette-img" id="v2-aest-photo-before" alt="Inicio facial" onerror="this.style.display='none';">
               </div>
               <div class="v2-silhouette-card">
-                <span class="v2-silhouette-tag">HOY</span>
-                <div class="v2-face-silhouette smaller"></div>
+                <span class="v2-silhouette-tag" style="z-index:2;">HOY</span>
+                <img class="v2-silhouette-img" id="v2-aest-photo-after" alt="Hoy facial" onerror="this.style.display='none';">
               </div>
             </div>
             <div class="v2-evo-delta-row">
@@ -13044,12 +13054,12 @@ async function renderV2Progreso() {
               </div>
               <div class="v2-silhouette-row">
                 <div class="v2-silhouette-card">
-                  <span class="v2-silhouette-tag">INICIO</span>
-                  <div class="v2-silhouette"></div>
+                  <span class="v2-silhouette-tag" style="z-index:2;">INICIO</span>
+                  <img class="v2-silhouette-img" src="${V2_DEMO_PHOTOS.body_before}" alt="Inicio" onerror="this.style.display='none';">
                 </div>
                 <div class="v2-silhouette-card">
-                  <span class="v2-silhouette-tag">HOY</span>
-                  <div class="v2-silhouette smaller"></div>
+                  <span class="v2-silhouette-tag" style="z-index:2;">HOY</span>
+                  <img class="v2-silhouette-img" src="${V2_DEMO_PHOTOS.body_after}" alt="Hoy" onerror="this.style.display='none';">
                 </div>
               </div>
               <div class="v2-evo-delta-row">
@@ -13087,7 +13097,7 @@ async function renderV2Progreso() {
       const cont = document.getElementById('v2-chapters-container');
       if (cont) {
         cont.className = 'v2-chapters-row';
-        cont.innerHTML = chapters.slice(0, 6).map(c => {
+        cont.innerHTML = chapters.slice(0, 6).map((c, idx) => {
           const nc = c.narrative_context || {};
           const num = nc.analysis_number || '·';
           // Title: extraer primera línea/oración de how_you_are_today (max 60 chars)
@@ -13098,9 +13108,11 @@ async function renderV2Progreso() {
           const safeNum = escapeHtml(String(num));
           const safeId = escapeHtml(String(c.id || ''));
           const dateStr = escapeHtml(formatRelativeDate(c.created_at));
+          // Foto rotativa por chapter (cuando schema real exista, vendrá de transformation_chapters.cover_image_url)
+          const photoUrl = V2_DEMO_PHOTOS.chapter_imgs[idx % V2_DEMO_PHOTOS.chapter_imgs.length];
           return `
             <div class="v2-chap-card" onclick="if (typeof tcOpenChapterById === 'function') tcOpenChapterById('${safeId}');">
-              <div class="v2-chap-image">${safeNum}</div>
+              <div class="v2-chap-image" style="background-image:url('${photoUrl}'); background-size:cover; background-position:center; color:transparent;">${safeNum}</div>
               <div class="v2-chap-body">
                 <div class="v2-chap-num">CAPÍTULO ${safeNum}</div>
                 <div class="v2-chap-title">${safeTitle}</div>
@@ -13738,6 +13750,29 @@ async function renderV2Perfil() {
 }
 
 /* ============================================================
+   V2 · Fotos de Mi Progreso (Unsplash · Demo)
+   ------------------------------------------------------------
+   URLs profesionales para los silhouettes de Tu Evolución (cuerpo)
+   y Tu Protocolo Estético (cara). Cuando se conecten clínicas reales,
+   estas URLs serán reemplazadas por fotos del propio paciente.
+   ============================================================ */
+const V2_DEMO_PHOTOS = {
+  body_before:  'https://images.unsplash.com/photo-1573879500404-46ea53ab7c4f?w=400&h=600&fit=crop',
+  body_after:   'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=600&fit=crop',
+  face_before:  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400&h=600&fit=crop',
+  face_after:   'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400&h=600&fit=crop',
+  // Chapter previews (rotativos para variedad visual)
+  chapter_imgs: [
+    'https://images.unsplash.com/photo-1518611012118-696072aa579a?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1505576633757-0ac1084af824?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=300&fit=crop',
+    'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&h=300&fit=crop',
+  ],
+};
+
+/* ============================================================
    V2 · TU DÍA — sección operativa del día en Mi Progreso
    ------------------------------------------------------------
    Reutiliza las funciones del Hoy actual (renderHoyBalance,
@@ -13789,6 +13824,20 @@ async function renderV2Day() {
   if (hydEl) {
     const v2hyd = document.getElementById('v2day-pillar-water-val');
     if (v2hyd) v2hyd.textContent = hydEl.textContent || '0';
+  }
+
+  // Fotos faciales del Protocolo Estético (solo si demo aesthetic)
+  if (document.documentElement.classList.contains('demo-aesthetic')) {
+    const faceBefore = document.getElementById('v2-aest-photo-before');
+    const faceAfter = document.getElementById('v2-aest-photo-after');
+    if (faceBefore && !faceBefore.src) {
+      faceBefore.src = V2_DEMO_PHOTOS.face_before;
+      faceBefore.style.display = '';
+    }
+    if (faceAfter && !faceAfter.src) {
+      faceAfter.src = V2_DEMO_PHOTOS.face_after;
+      faceAfter.style.display = '';
+    }
   }
 
   // WH pill: mirror visibility + valores + accent color
