@@ -12599,7 +12599,7 @@ async function renderV2Plan() {
           weekStr = `SEM ${weekN}`;
         }
         cards.push(`
-          <div class="v2-module-card" onclick="if (typeof goStep === 'function') goStep('nutrition');">
+          <div class="v2-module-card" onclick="v2OpenNutrition();">
             <div class="v2-module-head">
               <div class="v2-module-meta-left">
                 <div class="v2-module-tag nut">TRACKING DIARIO</div>
@@ -12779,6 +12779,17 @@ async function renderV2Plan() {
       </div>
     `;
   }
+}
+
+/* V2 · abrir Nutrition module — llama openNutritionModule() que carga targets + meals + render.
+   Sin esto, goStep('nutrition') directo muestra ceros (sin data cargada). */
+function v2OpenNutrition() {
+  if (typeof openNutritionModule !== 'function') {
+    console.warn('[v2] openNutritionModule no disponible');
+    if (typeof goStep === 'function') goStep('nutrition');
+    return;
+  }
+  openNutritionModule().catch(e => console.warn('[v2] openNutrition failed:', e));
 }
 
 /* V2 · abrir plan-view con back override (vuelve a Plan tab v2 en lugar de Perfil)
