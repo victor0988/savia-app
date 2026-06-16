@@ -980,7 +980,7 @@ async function executeToolByName(
   tzOffsetMin?: number,
 ): Promise<any> {
   try {
-    if (name === "log_meal") return await executeLogMeal(input, userId, supabase);
+    if (name === "log_meal") return await executeLogMeal(input, userId, supabase, todayStartISO, todayISO);
     if (name === "log_water") return await executeLogWater(input, userId, supabase);
     if (name === "get_balance") return await executeGetBalance(userId, supabase, todayStartISO, todayISO);
     if (name === "log_workout") return await executeLogWorkout(input, userId, supabase);
@@ -1005,6 +1005,8 @@ async function executeLogMeal(
   input: any,
   userId: string,
   supabase: ReturnType<typeof createClient>,
+  todayStartISO?: string,
+  todayISO?: string,
 ): Promise<any> {
   if (!input?.name || !input?.meal_category || input?.kcal === undefined) {
     return { error: "Missing required: name, meal_category, kcal" };
@@ -1045,8 +1047,11 @@ async function executeLogMeal(
   }
 
   // Análisis post-write: balance actualizado del día + warnings si
-  // compromete los macros restantes
-  const balance = await executeGetBalance(userId, supabase);
+  // compromete los macros restantes.
+  // CRÍTICO: pasar todayStartISO/todayISO del cliente para que el balance se
+  // calcule contra "hoy local" (no UTC midnight). Sin esto, en CR (UTC-6) entre
+  // 18:00-23:59 hora local el balance solo trae comidas desde 06:00 CR de hoy.
+  const balance = await executeGetBalance(userId, supabase, todayStartISO, todayISO);
   const warnings: string[] = [];
   if (balance && !balance.error) {
     if (
@@ -1117,17 +1122,25 @@ async function executeGetBalance(
     todayISO = t.toISOString().split("T")[0];
     todayStartISO = `${todayISO}T00:00:00.000Z`;
   }
+  // Cerramos la ventana de "hoy" en endOfToday para que comidas/agua del día
+  // SIGUIENTE no se cuelen como "hoy" (bug: gte sin lt deja ventana abierta
+  // hacia adelante y contamina al cambiar de día).
+  const endOfTodayISO = new Date(
+    new Date(todayStartISO).getTime() + 86400000,
+  ).toISOString();
   const [mealsRes, hydRes, dailyRes] = await Promise.all([
     supabase
       .from("meal_logs")
       .select("total_kcal, total_protein_g, total_carbs_g, total_fat_g")
       .eq("user_id", userId)
-      .gte("ts", todayStartISO),
+      .gte("ts", todayStartISO)
+      .lt("ts", endOfTodayISO),
     supabase
       .from("hydration_logs")
       .select("ml")
       .eq("user_id", userId)
-      .gte("ts", todayStartISO),
+      .gte("ts", todayStartISO)
+      .lt("ts", endOfTodayISO),
     supabase
       .from("daily_logs")
       .select(
@@ -3209,7 +3222,12 @@ async function buildUserContext(
     hour = today.getHours();
   }
   const todayStartISO = todayStart.toISOString();
-  console.log("[ai-chat] context window: todayISO=", todayISO, "todayStartISO=", todayStartISO);
+  // Cerramos la ventana de "hoy" (gte sin lt deja ventana abierta hacia adelante
+  // y al pasar de día las comidas del día anterior pueden colarse en "hoy").
+  const endOfTodayISO = new Date(
+    todayStart.getTime() + 86400000,
+  ).toISOString();
+  console.log("[ai-chat] context window: todayISO=", todayISO, "todayStartISO=", todayStartISO, "endOfTodayISO=", endOfTodayISO);
 
   // Run in parallel
   const [
@@ -3256,12 +3274,14 @@ async function buildUserContext(
       )
       .eq("user_id", userId)
       .gte("ts", todayStartISO)
+      .lt("ts", endOfTodayISO)
       .order("ts", { ascending: true }),
     supabase
       .from("workout_logs")
       .select("type, duration_min, intensity, kcal_burned, source")
       .eq("user_id", userId)
       .gte("ts", todayStartISO)
+      .lt("ts", endOfTodayISO)
       .order("ts", { ascending: false }),
     supabase
       .from("meal_plans")
@@ -3293,7 +3313,8 @@ async function buildUserContext(
       .from("hydration_logs")
       .select("ml")
       .eq("user_id", userId)
-      .gte("ts", todayStartISO),
+      .gte("ts", todayStartISO)
+      .lt("ts", endOfTodayISO),
   ]);
 
   const todayHydrationMl = (todayHydRes.data || []).reduce(

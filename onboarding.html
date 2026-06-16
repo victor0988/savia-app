@@ -15501,6 +15501,13 @@ function nutRenderDashboard() {
 
   // Meals list
   renderMealsList();
+
+  // v=2 mirror: refrescar el card de Balance Energético en Mi Progreso (v2)
+  // después de cualquier mutación del dashboard de Nutrición. Sin esto, el card
+  // v2day-balance-* queda con los valores del último mirror y no refleja la
+  // comida recién registrada/editada/borrada. renderV2Day tiene early-return
+  // si !nav-v2, así que es no-op en legacy.
+  if (typeof renderV2Day === 'function') { renderV2Day().catch(() => {}); }
 }
 
 // ============================================================
