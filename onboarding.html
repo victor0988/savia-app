@@ -12115,16 +12115,17 @@ async function renderV2Progreso() {
       : `Semana ${week} de tu transformación`;
   } catch (e) { console.warn('[v2-progreso] hero failed:', e); }
 
-  // --- Tu Evolución: primer InBody vs último ---
+  // --- Tu Evolución: primer InBody vs último (usa patient_user_id, body_fat_pct) ---
   try {
     const sess = await sb.auth.getSession();
     const userId = sess?.data?.session?.user?.id;
     if (userId) {
-      const { data: ms } = await sb
+      const { data: ms, error: msErr } = await sb
         .from('body_compositions')
-        .select('id, measured_at, weight_kg, body_fat_percent, muscle_mass_kg')
-        .eq('user_id', userId)
+        .select('id, measured_at, weight_kg, body_fat_pct, muscle_mass_kg, lean_body_mass_kg')
+        .eq('patient_user_id', userId)
         .order('measured_at', { ascending: true });
+      if (msErr) console.warn('[v2-progreso] body_compositions query error:', msErr);
       if (ms && ms.length >= 1) {
         const first = ms[0];
         const last = ms[ms.length - 1];
@@ -12134,16 +12135,16 @@ async function renderV2Progreso() {
         let badgeNeg = false;
         let caption = `Semana ${Math.max(1, Math.ceil(((new Date(last.measured_at)) - (new Date(first.measured_at))) / (1000*60*60*24*7)))} desde tu primer InBody`;
         if (ms.length >= 2 && first.weight_kg != null && last.weight_kg != null) {
-          const dw = (last.weight_kg - first.weight_kg);
+          const dw = parseFloat(last.weight_kg) - parseFloat(first.weight_kg);
           deltaValue = (dw >= 0 ? '+' : '−') + Math.abs(dw).toFixed(1);
           deltaUnit = 'kg';
-          if (first.weight_kg > 0) {
-            const pct = (dw / first.weight_kg) * 100;
+          if (parseFloat(first.weight_kg) > 0) {
+            const pct = (dw / parseFloat(first.weight_kg)) * 100;
             badgeText = (pct >= 0 ? '+' : '−') + Math.abs(pct).toFixed(1) + '%';
             badgeNeg = pct < 0;
           }
         } else if (ms.length === 1) {
-          deltaValue = (first.weight_kg != null) ? first.weight_kg.toFixed(1) : '—';
+          deltaValue = (first.weight_kg != null) ? parseFloat(first.weight_kg).toFixed(1) : '—';
           deltaUnit = 'kg';
           badgeText = 'Inicio';
           caption = 'Tu primer InBody. Próximo te dará tu primer delta.';
@@ -12180,36 +12181,47 @@ async function renderV2Progreso() {
     }
   } catch (e) { console.warn('[v2-progreso] evolution failed:', e); }
 
-  // --- Tu Historia: últimos 6 capítulos ---
+  // --- Tu Historia: últimos 6 capítulos (reutiliza tcFetchChapters) ---
   try {
-    const sess = await sb.auth.getSession();
-    const userId = sess?.data?.session?.user?.id;
-    if (userId) {
-      const { data: chapters } = await sb
-        .from('transformation_chapters')
-        .select('id, analysis_number, title, generated_at, measured_at, source_type')
-        .eq('user_id', userId)
-        .order('measured_at', { ascending: false })
-        .limit(6);
-      if (chapters && chapters.length > 0) {
-        const cont = document.getElementById('v2-chapters-container');
-        if (cont) {
-          cont.className = 'v2-chapters-row';
-          cont.innerHTML = chapters.map(c => {
-            const dateStr = formatRelativeDate(c.measured_at || c.generated_at);
-            const safeTitle = (c.title || `Capítulo ${c.analysis_number}`).replace(/</g, '&lt;');
-            return `
-              <div class="v2-chap-card" onclick="if (typeof tcOpenChapterById === 'function') tcOpenChapterById('${c.id}');">
-                <div class="v2-chap-image">${c.analysis_number || '·'}</div>
-                <div class="v2-chap-body">
-                  <div class="v2-chap-num">CAPÍTULO ${c.analysis_number || '·'}</div>
-                  <div class="v2-chap-title">${safeTitle}</div>
-                  <div class="v2-chap-meta">${dateStr}</div>
-                </div>
+    let chapters = [];
+    if (typeof tcFetchChapters === 'function') {
+      chapters = await tcFetchChapters();
+    } else {
+      const sess = await sb.auth.getSession();
+      const userId = sess?.data?.session?.user?.id;
+      if (userId) {
+        const { data } = await sb
+          .from('transformation_chapters')
+          .select('id, source_type, source_id, created_at, how_you_are_today, narrative_context')
+          .eq('user_id', userId)
+          .order('created_at', { ascending: false });
+        chapters = data || [];
+      }
+    }
+    if (chapters && chapters.length > 0) {
+      const cont = document.getElementById('v2-chapters-container');
+      if (cont) {
+        cont.className = 'v2-chapters-row';
+        cont.innerHTML = chapters.slice(0, 6).map(c => {
+          const nc = c.narrative_context || {};
+          const num = nc.analysis_number || '·';
+          // Title: extraer primera línea/oración de how_you_are_today (max 60 chars)
+          const body = (c.how_you_are_today || '').trim();
+          let title = body.split(/[\.\n]/)[0].trim() || `Capítulo ${num}`;
+          if (title.length > 60) title = title.slice(0, 57) + '…';
+          const safeTitle = title.replace(/</g, '&lt;');
+          const dateStr = formatRelativeDate(c.created_at);
+          return `
+            <div class="v2-chap-card" onclick="if (typeof tcOpenChapterById === 'function') tcOpenChapterById('${c.id}');">
+              <div class="v2-chap-image">${num}</div>
+              <div class="v2-chap-body">
+                <div class="v2-chap-num">CAPÍTULO ${num}</div>
+                <div class="v2-chap-title">${safeTitle}</div>
+                <div class="v2-chap-meta">${dateStr}</div>
               </div>
-            `;
-          }).join('');
-        }
+            </div>
+          `;
+        }).join('');
       }
     }
   } catch (e) { console.warn('[v2-progreso] chapters failed:', e); }
