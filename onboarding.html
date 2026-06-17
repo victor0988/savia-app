@@ -2152,65 +2152,31 @@
     text-align: right; flex-shrink: 0;
   }
 
-  /* ─── Tu próximo umbral (reemplaza Próximos Hitos) ─────────────── */
-  .v2-threshold-card {
-    background: linear-gradient(140deg, #FAF7EF 0%, #F1EADE 100%);
+  /* ─── Tus Números (reemplaza Próximos Hitos — foco progreso) ───── */
+  .v2-numbers-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .v2-number-card {
+    background: #FAF7EF;
     border: 1px solid #E8E0D2;
-    border-radius: 22px;
-    padding: 22px 20px 18px;
-    position: relative;
-    overflow: hidden;
+    border-radius: 18px;
+    padding: 16px 14px 14px;
   }
-  .v2-threshold-card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 85% 15%, rgba(176,112,80,0.10), transparent 55%);
-    pointer-events: none;
-  }
-  .v2-threshold-eyebrow {
-    font-size: 11px; letter-spacing: 1.4px; font-weight: 700;
+  .v2-number-label {
+    font-size: 10.5px; letter-spacing: 1.1px; font-weight: 700;
     color: #B07050; text-transform: uppercase;
-    margin-bottom: 14px;
+    margin-bottom: 8px;
   }
-  .v2-threshold-number {
+  .v2-number-value {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 60px; font-weight: 500;
-    color: #2A3A2A; letter-spacing: -2px; line-height: 1;
+    font-size: 34px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -1px; line-height: 1;
   }
-  .v2-threshold-number::after {
-    content: ' kg';
-    font-size: 18px;
-    color: #5C7C5A;
-    font-family: inherit;
-    letter-spacing: -0.5px;
-    vertical-align: super;
-    margin-left: 4px;
-  }
-  .v2-threshold-label {
-    font-size: 14px; color: #2A3A2A; line-height: 1.45;
-    font-weight: 500; margin-top: 10px;
-  }
-  .v2-threshold-bar {
-    margin-top: 18px; height: 8px;
-    background: rgba(92,124,90,0.12);
-    border-radius: 999px; overflow: hidden;
-  }
-  .v2-threshold-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #5C7C5A 0%, #6B8E6F 100%);
-    border-radius: 999px;
-    transition: width 0.6s ease;
-  }
-  .v2-threshold-meta {
-    display: flex; justify-content: space-between;
-    margin-top: 10px;
-    font-size: 11.5px; color: #5A6E5A; font-weight: 600;
-  }
-  .v2-threshold-footnote {
-    margin-top: 14px;
-    font-size: 11px; color: #8A9A8A;
-    font-style: italic;
+  .v2-number-delta {
+    margin-top: 6px;
+    font-size: 11.5px; color: #5A6E5A; font-weight: 500;
   }
 
   /* ─── Transformation Reel (reemplaza Tu Historia) ─────────────── */
@@ -8064,20 +8030,30 @@
           <div class="v2-savia-insight-cta" style="pointer-events:none;">Tap para conversar con SAVIA →</div>
         </div>
 
-        <!-- Tu próximo umbral (reemplaza Próximos Hitos — foco transformación vs lista estática) -->
-        <div class="v2-section-label">TU PRÓXIMO UMBRAL</div>
-        <div class="v2-threshold-card" id="v2-threshold-card">
-          <div class="v2-threshold-eyebrow" id="v2-threshold-eyebrow">Falta poco</div>
-          <div class="v2-threshold-number" id="v2-threshold-number">—</div>
-          <div class="v2-threshold-label" id="v2-threshold-label">Vamos a empezar a proyectar tu trayectoria.</div>
-          <div class="v2-threshold-bar">
-            <div class="v2-threshold-bar-fill" id="v2-threshold-bar-fill" style="width:0%;"></div>
+        <!-- Tus Números (reemplaza Tu próximo umbral — foco progreso, no proyección) -->
+        <div class="v2-section-label">TUS NÚMEROS</div>
+        <div class="v2-numbers-grid" id="v2-numbers-grid">
+          <!-- Llenado por renderV2Numbers() -->
+          <div class="v2-number-card">
+            <div class="v2-number-label">Días activos</div>
+            <div class="v2-number-value" id="v2-num-days">—</div>
+            <div class="v2-number-delta" id="v2-num-days-delta">en SAVIA</div>
           </div>
-          <div class="v2-threshold-meta">
-            <span id="v2-threshold-from">hoy</span>
-            <span id="v2-threshold-to">—</span>
+          <div class="v2-number-card">
+            <div class="v2-number-label">Peso</div>
+            <div class="v2-number-value" id="v2-num-weight">—</div>
+            <div class="v2-number-delta" id="v2-num-weight-delta">sin datos</div>
           </div>
-          <div class="v2-threshold-footnote" id="v2-threshold-footnote">basado en tu ritmo reciente</div>
+          <div class="v2-number-card">
+            <div class="v2-number-label">Body fat</div>
+            <div class="v2-number-value" id="v2-num-bf">—</div>
+            <div class="v2-number-delta" id="v2-num-bf-delta">sin datos</div>
+          </div>
+          <div class="v2-number-card">
+            <div class="v2-number-label">Workouts</div>
+            <div class="v2-number-value" id="v2-num-wk">—</div>
+            <div class="v2-number-delta" id="v2-num-wk-delta">desde inicio</div>
+          </div>
         </div>
       </div>
     </div>
@@ -13879,143 +13855,82 @@ async function renderV2Progreso() {
     }
   } catch (e) { console.warn('[v2-progreso] pulse failed:', e); }
 
-  // --- Tu próximo umbral + Transformation Reel ---
-  renderV2Threshold().catch(e => console.warn('[v2-threshold]', e));
+  // --- Tus Números + Transformation Reel ---
+  renderV2Numbers().catch(e => console.warn('[v2-numbers]', e));
   renderV2Reel().catch(e => console.warn('[v2-reel]', e));
 }
 
-// ─── Tu próximo umbral ─────────────────────────────────────────────
-// Calcula el siguiente hito biológico del usuario y proyecta fecha estimada
-// usando regresión simple sobre body_compositions. Empty state robusto.
-async function renderV2Threshold() {
+// ─── Tus Números ───────────────────────────────────────────────────
+// Grid de 4 KPIs reales con delta desde el día 1: días activos, peso,
+// body fat, workouts. Foco progreso (lo que ya pasó), no proyección.
+async function renderV2Numbers() {
   if (!document.documentElement.classList.contains('nav-v2')) return;
-  const card = document.getElementById('v2-threshold-card');
-  if (!card) return;
   const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
-  const setWidth = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; };
 
   try {
     const sess = await sb.auth.getSession();
     const userId = sess?.data?.session?.user?.id;
     if (!userId) return;
 
-    // Cargar body_compositions ordenadas para calcular tendencia
+    // 1) Días activos
+    const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : null;
+    setText('v2-num-days', days != null ? String(days) : '—');
+    setText('v2-num-days-delta', days != null
+      ? (days === 1 ? 'tu primer día' : `${Math.ceil(days/7)} semana${Math.ceil(days/7) > 1 ? 's' : ''}`)
+      : 'en SAVIA');
+
+    // 2 + 3) Peso y body fat (body_compositions ordenado)
     const { data: bc } = await sb
       .from('body_compositions')
-      .select('weight_kg, body_fat_pct, muscle_mass_kg, measured_at')
+      .select('weight_kg, body_fat_pct, measured_at')
       .eq('patient_user_id', userId)
-      .order('measured_at', { ascending: true })
-      .limit(20);
+      .order('measured_at', { ascending: true });
+    const points = bc || [];
 
-    const points = (bc || []).filter(p => typeof p.weight_kg === 'number');
-
-    if (points.length < 2) {
-      // Empty state: invitar a registrar
-      setText('v2-threshold-eyebrow', 'Tu próximo umbral');
-      setText('v2-threshold-number', '—');
-      setText('v2-threshold-label', points.length === 1
-        ? 'Registrá tu próximo InBody para empezar a proyectar tu trayectoria.'
-        : 'Subí tu primer InBody o registrá tu peso para que SAVIA proyecte tu próximo hito.');
-      setText('v2-threshold-from', 'Hoy');
-      setText('v2-threshold-to', 'Necesitamos 2 mediciones');
-      setText('v2-threshold-footnote', '');
-      setWidth('v2-threshold-bar-fill', 0);
-      return;
-    }
-
-    // Regresión lineal kg/día
-    const first = points[0];
-    const last = points[points.length - 1];
-    const xs = points.map(p => (new Date(p.measured_at).getTime() - new Date(first.measured_at).getTime()) / 86400000);
-    const ys = points.map(p => p.weight_kg);
-    const n = xs.length;
-    const mx = xs.reduce((a, b) => a + b, 0) / n;
-    const my = ys.reduce((a, b) => a + b, 0) / n;
-    let num = 0, den = 0;
-    for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
-    const slopePerDay = den > 0 ? num / den : 0;
-
-    // Definir target: si el user tiene un goal weight, usarlo; si no, próximo entero (kg redondo)
-    let targetWeight = null;
-    try {
-      // Buscar goal weight en HT o en profile
-      const { data: ht } = await sb.from('user_health_twin').select('goals, identity').eq('user_id', userId).maybeSingle();
-      const goals = Array.isArray(ht?.goals) ? ht.goals : [];
-      const wg = goals.find(g => g && typeof g.target === 'string' && /kg/i.test(g.target));
-      if (wg) {
-        const m = String(wg.target).match(/(\d+(\.\d+)?)/);
-        if (m) targetWeight = parseFloat(m[1]);
-      }
-    } catch {}
-
-    const currentWeight = last.weight_kg;
-    let umbralLabel, umbralValue, umbralUnit;
-    if (targetWeight != null) {
-      const diff = currentWeight - targetWeight;
-      const absDiff = Math.abs(diff);
-      umbralValue = absDiff.toFixed(1);
-      umbralUnit = 'kg';
-      umbralLabel = diff > 0
-        ? `para llegar a tu peso objetivo de ${targetWeight}kg`
-        : diff < 0
-          ? `por encima de tu peso objetivo de ${targetWeight}kg`
-          : 'estás en tu peso objetivo';
+    if (points.length === 0) {
+      setText('v2-num-weight', '—');
+      setText('v2-num-weight-delta', 'subí tu primer InBody');
+      setText('v2-num-bf', '—');
+      setText('v2-num-bf-delta', 'subí tu primer InBody');
+    } else if (points.length === 1) {
+      const p = points[0];
+      setText('v2-num-weight', p.weight_kg != null ? p.weight_kg.toFixed(1) + 'kg' : '—');
+      setText('v2-num-weight-delta', 'inicio');
+      setText('v2-num-bf', p.body_fat_pct != null ? p.body_fat_pct.toFixed(1) + '%' : '—');
+      setText('v2-num-bf-delta', 'inicio');
     } else {
-      // Sin goal: próximo umbral redondo (siguiente entero hacia abajo si bajando, hacia arriba si subiendo)
-      const direction = slopePerDay < 0 ? 'down' : 'up';
-      const nextThreshold = direction === 'down' ? Math.floor(currentWeight) : Math.ceil(currentWeight);
-      const diff = currentWeight - nextThreshold;
-      umbralValue = Math.abs(diff).toFixed(1);
-      umbralUnit = 'kg';
-      umbralLabel = direction === 'down'
-        ? `para cruzar los ${nextThreshold}kg`
-        : `para alcanzar los ${nextThreshold}kg`;
-    }
-
-    // Fecha proyectada — QA fix: fórmula previa daba signos invertidos sin goal
-    let projDateStr = '—';
-    if (Math.abs(slopePerDay) > 0.001) {
-      let daysToTarget;
-      if (targetWeight != null) {
-        // (target - current) / slope: si target<current y slope<0 → positivo (días para llegar bajando)
-        daysToTarget = (targetWeight - currentWeight) / slopePerDay;
-      } else {
-        // Sin goal: próximo entero hacia abajo si bajando, hacia arriba si subiendo
-        const nextThreshold = slopePerDay < 0 ? Math.floor(currentWeight) : Math.ceil(currentWeight);
-        daysToTarget = (nextThreshold - currentWeight) / slopePerDay;
+      const first = points[0];
+      const last = points[points.length - 1];
+      if (last.weight_kg != null && first.weight_kg != null) {
+        const dw = last.weight_kg - first.weight_kg;
+        setText('v2-num-weight', last.weight_kg.toFixed(1) + 'kg');
+        setText('v2-num-weight-delta',
+          (dw === 0 ? '±0' : (dw > 0 ? '+' : '−') + Math.abs(dw).toFixed(1)) + 'kg desde inicio');
       }
-      if (Number.isFinite(daysToTarget) && daysToTarget > 0 && daysToTarget < 365) {
-        const proj = new Date(Date.now() + daysToTarget * 86400000);
-        projDateStr = proj.toLocaleDateString('es-CR', { day: 'numeric', month: 'short' });
-      } else if (daysToTarget <= 0) {
-        projDateStr = 'ya cruzado';
-      } else {
-        projDateStr = 'ritmo muy lento';
+      if (last.body_fat_pct != null && first.body_fat_pct != null) {
+        const df = last.body_fat_pct - first.body_fat_pct;
+        setText('v2-num-bf', last.body_fat_pct.toFixed(1) + '%');
+        setText('v2-num-bf-delta',
+          (df === 0 ? '±0' : (df > 0 ? '+' : '−') + Math.abs(df).toFixed(1)) + '% desde inicio');
       }
-    } else {
-      projDateStr = 'ritmo plano';
     }
 
-    setText('v2-threshold-eyebrow', 'Falta poco');
-    setText('v2-threshold-number', umbralValue);
-    setText('v2-threshold-label', umbralLabel);
-    setText('v2-threshold-from', 'Hoy');
-    setText('v2-threshold-to', 'Proyectado: ' + projDateStr);
-    const slopeText = Math.abs(slopePerDay * 7).toFixed(2);
-    setText('v2-threshold-footnote', `basado en tu ritmo (${slopeText}kg/semana · ${n} mediciones)`);
-
-    // Barra de progreso: % consumido del cambio total hasta el target (usando first como punto inicio)
-    if (targetWeight != null && Math.abs(first.weight_kg - targetWeight) > 0.01) {
-      const totalChange = Math.abs(first.weight_kg - targetWeight);
-      const done = Math.abs(first.weight_kg - currentWeight);
-      const pct = (done / totalChange) * 100;
-      setWidth('v2-threshold-bar-fill', pct);
-    } else {
-      // Sin goal: barra muestra cercanía al próximo entero (max 100%)
-      const distance = Math.abs(currentWeight - parseFloat(umbralValue));
-      setWidth('v2-threshold-bar-fill', Math.max(10, 100 - (parseFloat(umbralValue) * 100)));
-    }
-  } catch (e) { console.warn('[v2-threshold] failed:', e); }
+    // 4) Workouts: total + últimos 7 días
+    const since90d = new Date(Date.now() - 90 * 86400000).toISOString();
+    const { data: wk } = await sb
+      .from('workout_logs')
+      .select('ts')
+      .eq('user_id', userId)
+      .gte('ts', since90d);
+    const wkAll = wk || [];
+    const since7d = Date.now() - 7 * 86400000;
+    const wk7d = wkAll.filter(w => new Date(w.ts).getTime() >= since7d).length;
+    setText('v2-num-wk', String(wkAll.length));
+    setText('v2-num-wk-delta',
+      wkAll.length === 0
+        ? 'aún ninguno'
+        : `${wk7d} esta semana`);
+  } catch (e) { console.warn('[v2-numbers] failed:', e); }
 }
 
 // ─── Transformation Reel ───────────────────────────────────────────
@@ -15133,7 +15048,9 @@ async function renderV2Day() {
     const v2sleep = document.getElementById('v2day-pillar-sleep-val');
     if (v2sleep) v2sleep.textContent = sleepEl.textContent || '—';
   }
-  const hydEl = document.getElementById('hoy-pillar-hydration');
+  // Bug fix: el ID legacy correcto es hoy-pillar-hyd-ml (no hoy-pillar-hydration).
+  // Sin esto, el pillar v2 mostraba siempre 0 aunque internamente se guardara.
+  const hydEl = document.getElementById('hoy-pillar-hyd-ml');
   if (hydEl) {
     const v2hyd = document.getElementById('v2day-pillar-water-val');
     if (v2hyd) v2hyd.textContent = hydEl.textContent || '0';
@@ -15208,14 +15125,32 @@ function v2ToggleDemoAesthetic() {
   // Mi Progreso: la sección estética usa CSS, no requiere re-render
 }
 
-/* V2 · Quick add agua: reutiliza nutAddHydration con 250ml default */
+/* V2 · Agua: abre sheet con opciones (250/500/600/1000) en vez de sumar 250 directo.
+   El usuario escoge la cantidad antes de registrar. */
 function v2DayAddWater() {
-  if (typeof nutAddHydration === 'function') {
-    nutAddHydration(250).then(() => {
-      // Re-render para refrescar el valor mostrado
-      renderV2Day().catch(() => {});
-    }).catch(e => console.warn('[v2day water]', e));
+  if (typeof v2SheetShow !== 'function') {
+    // Fallback al comportamiento legacy si el sheet no está disponible
+    if (typeof nutAddHydration === 'function') {
+      nutAddHydration(250).then(() => renderV2Day().catch(() => {})).catch(e => console.warn('[v2day water]', e));
+    }
+    return;
   }
+  const target = (nutState && nutState.targets && nutState.targets.water_ml) || 2500;
+  const current = (nutState && nutState.todayHydrationMl) || 0;
+  v2SheetShow(`Agregar agua · ${current}/${target} ml`, [
+    { icon: '○', title: '250 ml',  meta: 'Vaso pequeño',      action: () => v2WaterPick(250)  },
+    { icon: '◔', title: '500 ml',  meta: 'Botella estándar',  action: () => v2WaterPick(500)  },
+    { icon: '◑', title: '600 ml',  meta: 'Botella grande',    action: () => v2WaterPick(600)  },
+    { icon: '●', title: '1000 ml', meta: '1 litro',           action: () => v2WaterPick(1000) },
+  ]);
+}
+
+/* V2 · Aplica la cantidad elegida del sheet de agua y refresca el card. */
+function v2WaterPick(ml) {
+  if (typeof nutAddHydration !== 'function') return;
+  nutAddHydration(ml).then(() => {
+    renderV2Day().catch(() => {});
+  }).catch(e => console.warn('[v2 water pick]', e));
 }
 
 /* V2 · Next action tap: delegar al handler del Hoy actual */

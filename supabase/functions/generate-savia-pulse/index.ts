@@ -471,7 +471,8 @@ async function buildPulseContext(
   for (const b of bodyCompHist) allTs.push(new Date(b.recorded_at).getTime());
   const earliestTs = allTs.length > 0 ? Math.min(...allTs) : Date.now();
   const daysActive = Math.floor((Date.now() - earliestTs) / 86400000);
-  const hasIdentityData = daysActive >= 60;
+  // Threshold bajado de 60d a 21d para activar Identity con users reales (beta).
+  const hasIdentityData = daysActive >= 21;
 
   let workoutsPerWeekFirst: number | null = null;
   let workoutsPerWeekRecent: number | null = null;
@@ -520,13 +521,14 @@ async function buildPulseContext(
   let bodyFatRecent: number | null = null;
   const bcWithWeight = bodyCompHist.filter((b: any) => typeof b.weight_kg === "number");
   let hasTrajectoryData = false;
-  if (bcWithWeight.length >= 3) {
+  // Threshold bajado: ≥2 mediciones y ≥10 días span (era 3 mediciones / 21 días)
+  if (bcWithWeight.length >= 2) {
     const firstBc = bcWithWeight[0];
     const lastBc = bcWithWeight[bcWithWeight.length - 1];
     const spanDays =
       (new Date(lastBc.recorded_at).getTime() - new Date(firstBc.recorded_at).getTime()) /
       86400000;
-    if (spanDays >= 21) {
+    if (spanDays >= 10) {
       hasTrajectoryData = true;
       weightFirst = firstBc.weight_kg;
       weightRecent = lastBc.weight_kg;
@@ -657,11 +659,20 @@ function selectCategory(
         reason: `Weekly review + data histórica (${ta.days_active}d activos)`,
       };
     }
-    // Daily pulse: solo el domingo (cierre de semana) y solo si no hubo otro insight de transformación en 7d.
+    // Daily pulse: domingos a partir de las 9am (cierre de semana)
     if (ctx.dayOfWeek === 0 && ctx.hourLocal >= 9) {
       return {
         category: "transformation_arc",
         reason: `Domingo + ${ta.days_active}d activos`,
+      };
+    }
+    // Threshold bajado: si user tiene data y NO recibió insight de transformación
+    // en los últimos 3 días, priorizar transformation_arc (antes era solo domingo).
+    // Esto hace que el insight de evolución se sienta vivo en beta users.
+    if (!hadCategoryWithinHours("transformation_arc", 72)) {
+      return {
+        category: "transformation_arc",
+        reason: `Beta priorizado: ${ta.days_active}d activos, sin transformation_arc en 3d`,
       };
     }
   }
