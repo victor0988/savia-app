@@ -12418,6 +12418,11 @@ async function stravaSyncNow(btn) {
     if (!r.ok || result.error) throw new Error(result.error || `http_${r.status}`);
     await wearableLoadConnections();
     renderProfileWearables();
+    // Refrescar workout card (Hoy legacy + mirror v=2). Si Strava trajo actividades
+    // de hoy, deben reflejarse en Mi Progreso sin esperar a reload.
+    if (typeof wkSyncHoyCard === 'function') {
+      wkSyncHoyCard().catch(e => console.warn('[STRAVA] hoy sync:', e));
+    }
     if (typeof _planToast === 'function') {
       _planToast(`✓ ${result.inserted} actividades nuevas`);
     }
@@ -16322,11 +16327,9 @@ async function wkSaveWorkout() {
   }
   await wkLoadData();
   wkRenderDashboard();
-  // Sync kcal del Hoy card
-  const hoyEl = document.getElementById('hoy-wk-today-kcal');
-  if (hoyEl) {
-    const today = wkState.todayLogs.reduce((s, r) => s + (r.kcal_burned || 0), 0);
-    hoyEl.textContent = today;
+  // Sync kcal del Hoy card + mirror v=2 (wkSyncHoyCard ya carga + dispara renderV2Day)
+  if (typeof wkSyncHoyCard === 'function') {
+    wkSyncHoyCard().catch(e => console.warn('[WK] hoy sync:', e));
   }
   if (btn) { btn.disabled = false; btn.textContent = 'Guardar workout'; }
   goStep('workout');
@@ -16340,6 +16343,8 @@ async function wkSyncHoyCard() {
     const today = wkState.todayLogs.reduce((s, r) => s + (r.kcal_burned || 0), 0);
     hoyEl.textContent = today;
   }
+  // v=2 mirror: refresh card de Mi Progreso (incluye pillar workout). No-op si !nav-v2.
+  if (typeof renderV2Day === 'function') { renderV2Day().catch(() => {}); }
 }
 
 // ============================================================
@@ -23317,6 +23322,12 @@ async function coachSend() {
     if (didActions) {
       try {
         if (typeof nutLoadTodayData === 'function') await nutLoadTodayData();
+        // Refrescar el dashboard de Nutrición (DOM legacy) para que cuando Victor
+        // entre al módulo después de un log via coach, vea valores actualizados.
+        // nutRenderDashboard internamente dispara renderV2Day si nav-v2.
+        if (typeof nutRenderDashboard === 'function') {
+          try { nutRenderDashboard(); } catch (e) { console.warn('[coach] dash refresh:', e); }
+        }
         if (typeof renderDailyPulse === 'function') {
           renderDailyPulse().catch(e => console.warn('[coach] pulse refresh:', e));
         }
@@ -23325,6 +23336,11 @@ async function coachSend() {
         }
         if (typeof whLoadProfile === 'function') {
           whLoadProfile().catch(e => console.warn('[coach] WH refresh:', e));
+        }
+        // v=2 mirror: refresh card de Mi Progreso (Balance + Pillars + Pulse + Next)
+        // tras tools del coach. No-op si !nav-v2 (renderV2Day tiene early-return).
+        if (typeof renderV2Day === 'function') {
+          renderV2Day().catch(e => console.warn('[coach] v2day refresh:', e));
         }
       } catch (e) {
         console.warn('[coach] post-action refresh failed:', e);
