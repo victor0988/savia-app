@@ -2152,6 +2152,134 @@
     text-align: right; flex-shrink: 0;
   }
 
+  /* ─── Tu próximo umbral (reemplaza Próximos Hitos) ─────────────── */
+  .v2-threshold-card {
+    background: linear-gradient(140deg, #FAF7EF 0%, #F1EADE 100%);
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 22px 20px 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .v2-threshold-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 85% 15%, rgba(176,112,80,0.10), transparent 55%);
+    pointer-events: none;
+  }
+  .v2-threshold-eyebrow {
+    font-size: 11px; letter-spacing: 1.4px; font-weight: 700;
+    color: #B07050; text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .v2-threshold-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 60px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -2px; line-height: 1;
+  }
+  .v2-threshold-number::after {
+    content: ' kg';
+    font-size: 18px;
+    color: #5C7C5A;
+    font-family: inherit;
+    letter-spacing: -0.5px;
+    vertical-align: super;
+    margin-left: 4px;
+  }
+  .v2-threshold-label {
+    font-size: 14px; color: #2A3A2A; line-height: 1.45;
+    font-weight: 500; margin-top: 10px;
+  }
+  .v2-threshold-bar {
+    margin-top: 18px; height: 8px;
+    background: rgba(92,124,90,0.12);
+    border-radius: 999px; overflow: hidden;
+  }
+  .v2-threshold-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #5C7C5A 0%, #6B8E6F 100%);
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+  .v2-threshold-meta {
+    display: flex; justify-content: space-between;
+    margin-top: 10px;
+    font-size: 11.5px; color: #5A6E5A; font-weight: 600;
+  }
+  .v2-threshold-footnote {
+    margin-top: 14px;
+    font-size: 11px; color: #8A9A8A;
+    font-style: italic;
+  }
+
+  /* ─── Transformation Reel (reemplaza Tu Historia) ─────────────── */
+  .v2-reel-wrap {
+    margin: 0 -18px; padding: 0 0 4px;
+  }
+  .v2-reel-scroll {
+    display: flex; gap: 12px;
+    padding: 4px 18px 6px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .v2-reel-scroll::-webkit-scrollbar { display: none; }
+  .v2-reel-card {
+    flex: 0 0 220px;
+    height: 290px;
+    background: #FAF7EF;
+    border: 1px solid #E8E0D2;
+    border-radius: 22px;
+    padding: 22px 18px;
+    display: flex; flex-direction: column;
+    scroll-snap-align: start;
+    position: relative;
+    overflow: hidden;
+  }
+  .v2-reel-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: #5C7C5A;
+  }
+  .v2-reel-card--sage::before { background: #5C7C5A; }
+  .v2-reel-card--clay::before { background: #B07050; }
+  .v2-reel-card--forest::before { background: #2A3A2A; }
+  .v2-reel-card-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 56px; font-weight: 500;
+    color: rgba(92,124,90,0.18);
+    line-height: 1; position: absolute;
+    top: 14px; right: 18px;
+  }
+  .v2-reel-card-kicker {
+    font-size: 10.5px; letter-spacing: 1.2px; font-weight: 700;
+    color: #B07050; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .v2-reel-card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 500;
+    color: #2A3A2A; letter-spacing: -0.6px;
+    line-height: 1.1; margin-bottom: 12px;
+  }
+  .v2-reel-card-body {
+    font-size: 13px; color: #2A3A2A; line-height: 1.5;
+    font-weight: 500;
+    margin-top: auto;
+  }
+  .v2-reel-card.v2-reel-empty {
+    background: transparent;
+    border-style: dashed;
+    opacity: 0.78;
+  }
+  .v2-reel-card.v2-reel-empty .v2-reel-card-body {
+    color: #5A6E5A;
+  }
+
   /* ====================================================================
      V2 · PLAN (Fase 3) — Módulos activos
      Cards = protocolos prescritos por el equipo del paciente.
@@ -7908,11 +8036,20 @@
           </div>
         </div>
 
-        <!-- Tu Historia (capítulos) -->
-        <div class="v2-section-label">TU HISTORIA</div>
-        <div id="v2-chapters-container">
-          <div class="v2-chap-empty">Tus capítulos van a aparecer acá mientras avanza tu transformación.</div>
+        <!-- Transformation Reel (reemplaza Tu Historia — carrusel de momentos clave) -->
+        <div class="v2-section-label">TU TRANSFORMATION REEL</div>
+        <div class="v2-reel-wrap">
+          <div class="v2-reel-scroll" id="v2-reel-scroll">
+            <!-- Cards autogeneradas por renderV2Reel() -->
+            <div class="v2-reel-card v2-reel-empty">
+              <div class="v2-reel-card-num">1</div>
+              <div class="v2-reel-card-title">Empezaste</div>
+              <div class="v2-reel-card-meta">Tu primera card llega cuando registres tu peso o subas tu primer InBody.</div>
+            </div>
+          </div>
         </div>
+        <!-- Legacy chapters: ocultos pero conservados (Sprint 3.B.ext.1 los renderiza si ya existen). -->
+        <div id="v2-chapters-container" style="display:none;"></div>
 
         <!-- Insight SAVIA (interactivo · tap → coach con context del pulse) -->
         <div class="v2-section-label">INSIGHT SAVIA</div>
@@ -7927,45 +8064,20 @@
           <div class="v2-savia-insight-cta" style="pointer-events:none;">Tap para conversar con SAVIA →</div>
         </div>
 
-        <!-- Próximos Hitos -->
-        <div class="v2-section-label">PRÓXIMOS HITOS</div>
-        <div class="v2-milestone-list" id="v2-milestones">
-          <!-- Mock — refleja visión multi-módulo. Fase B: schema real de tratamientos/dosis. -->
-          <div class="v2-milestone-item">
-            <div class="v2-milestone-icon">●</div>
-            <div class="v2-milestone-body">
-              <div class="v2-milestone-title">Próxima dosis Semaglutida</div>
-              <div class="v2-milestone-meta">Día 7 del ciclo · ajuste leve</div>
-            </div>
-            <div class="v2-milestone-when">en 2 días</div>
+        <!-- Tu próximo umbral (reemplaza Próximos Hitos — foco transformación vs lista estática) -->
+        <div class="v2-section-label">TU PRÓXIMO UMBRAL</div>
+        <div class="v2-threshold-card" id="v2-threshold-card">
+          <div class="v2-threshold-eyebrow" id="v2-threshold-eyebrow">Falta poco</div>
+          <div class="v2-threshold-number" id="v2-threshold-number">—</div>
+          <div class="v2-threshold-label" id="v2-threshold-label">Vamos a empezar a proyectar tu trayectoria.</div>
+          <div class="v2-threshold-bar">
+            <div class="v2-threshold-bar-fill" id="v2-threshold-bar-fill" style="width:0%;"></div>
           </div>
-          <div class="v2-milestone-item">
-            <div class="v2-milestone-icon">◐</div>
-            <div class="v2-milestone-body">
-              <div class="v2-milestone-title">Sesión PRP facial</div>
-              <div class="v2-milestone-meta">Tercera sesión del protocolo · Dra. Méndez</div>
-            </div>
-            <div class="v2-milestone-when">en 9 días</div>
+          <div class="v2-threshold-meta">
+            <span id="v2-threshold-from">hoy</span>
+            <span id="v2-threshold-to">—</span>
           </div>
-          <div class="v2-milestone-item">
-            <div class="v2-milestone-icon">▣</div>
-            <div class="v2-milestone-body">
-              <div class="v2-milestone-title">Próximo InBody</div>
-              <div class="v2-milestone-meta">Control mensual con tu clínica</div>
-            </div>
-            <div class="v2-milestone-when">en 14 días</div>
-          </div>
-          <div class="v2-milestone-item">
-            <div class="v2-milestone-icon">⚗</div>
-            <div class="v2-milestone-body">
-              <div class="v2-milestone-title">Laboratorio · panel hormonal</div>
-              <div class="v2-milestone-meta">Antes de ajuste de péptidos</div>
-            </div>
-            <div class="v2-milestone-when">en 3 sem</div>
-          </div>
-        </div>
-        <div style="margin-top:12px; padding:12px 16px; background:rgba(176,112,80,0.06); border-left:3px solid #B07050; border-radius:10px; font-size:12.5px; color:#5A6E5A; line-height:1.5;">
-          Estos hitos son ejemplo de la visión multi-módulo. En la versión final cada uno viene de tu clínica con fecha confirmada.
+          <div class="v2-threshold-footnote" id="v2-threshold-footnote">basado en tu ritmo reciente</div>
         </div>
       </div>
     </div>
@@ -8829,9 +8941,9 @@
 
   <div class="screen nut-screen" data-step="nutrition">
     <div class="nut-topbar">
-      <button class="nut-back-btn" onclick="goStep('app')">
+      <button class="nut-back-btn" onclick="nutBackToApp()">
         <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
-        Hoy
+        <span id="nut-back-label">Hoy</span>
       </button>
       <div class="nut-title">Nutrition</div>
       <button class="nut-action-btn" onclick="nutOpenSettings()">⚙</button>
@@ -12562,6 +12674,21 @@ function stravaCallbackDetect() {
 }
 
 function hoyBalanceTap() {
+  // Bug C fix: si venimos de v=2 Mi Progreso, recordar el tab origen para que
+  // el back del módulo nutrition vuelva ahí (no a "Hoy" legacy).
+  try {
+    if (document.documentElement.classList.contains('nav-v2')) {
+      const activeTab = document.querySelector('.tabbar-v2-btn.active');
+      window._v2NutReturnTab = activeTab ? activeTab.dataset.v2tab : 'progreso';
+      const lbl = document.getElementById('nut-back-label');
+      if (lbl) lbl.textContent = window._v2NutReturnTab === 'progreso' ? 'Mi Progreso' : 'Plan';
+    } else {
+      window._v2NutReturnTab = null;
+      const lbl = document.getElementById('nut-back-label');
+      if (lbl) lbl.textContent = 'Hoy';
+    }
+  } catch (e) { console.warn('[HOY] balance tap nav setup:', e); }
+
   try {
     if (planState && planState.active && planComputeStatus(planState.active) === 'active') {
       planTodayOpen();
@@ -12571,6 +12698,21 @@ function hoyBalanceTap() {
   // Fallback: ir directo al método de log
   if (typeof openModule === 'function') openModule('nutrition');
   else goStep('nut-meal-method');
+}
+
+// Bug C fix: back del módulo Nutrition respeta el origen.
+// En v=2 vuelve al tab que el usuario tenía (Mi Progreso / Plan); en legacy a Hoy.
+function nutBackToApp() {
+  try {
+    if (document.documentElement.classList.contains('nav-v2')) {
+      const target = window._v2NutReturnTab || 'progreso';
+      goStep('app');
+      if (typeof switchV2Tab === 'function') switchV2Tab(target);
+      window._v2NutReturnTab = null;
+      return;
+    }
+  } catch (e) { console.warn('[NUT] back routing failed:', e); }
+  goStep('app');
 }
 
 async function renderHoyBalance() {
@@ -13723,7 +13865,12 @@ async function renderV2Progreso() {
           const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : 1;
           const week = Math.max(1, Math.ceil(days / 7));
           const catLabel = (p.category || '').toUpperCase().replace(/_/g, ' ');
-          labelEl.textContent = catLabel ? `${catLabel} · SEMANA ${week}` : `HOY · SEMANA ${week}`;
+          // Si es transformation_arc, usar label específico que comunique el foco
+          if (p.category === 'transformation_arc') {
+            labelEl.textContent = `EVOLUCIÓN · SEMANA ${week}`;
+          } else {
+            labelEl.textContent = catLabel ? `${catLabel} · SEMANA ${week}` : `HOY · SEMANA ${week}`;
+          }
         }
         if (textEl && p.headline) {
           textEl.textContent = p.headline;
@@ -13731,6 +13878,304 @@ async function renderV2Progreso() {
       }
     }
   } catch (e) { console.warn('[v2-progreso] pulse failed:', e); }
+
+  // --- Tu próximo umbral + Transformation Reel ---
+  renderV2Threshold().catch(e => console.warn('[v2-threshold]', e));
+  renderV2Reel().catch(e => console.warn('[v2-reel]', e));
+}
+
+// ─── Tu próximo umbral ─────────────────────────────────────────────
+// Calcula el siguiente hito biológico del usuario y proyecta fecha estimada
+// usando regresión simple sobre body_compositions. Empty state robusto.
+async function renderV2Threshold() {
+  if (!document.documentElement.classList.contains('nav-v2')) return;
+  const card = document.getElementById('v2-threshold-card');
+  if (!card) return;
+  const setText = (id, txt) => { const el = document.getElementById(id); if (el) el.textContent = txt; };
+  const setWidth = (id, pct) => { const el = document.getElementById(id); if (el) el.style.width = Math.max(0, Math.min(100, pct)) + '%'; };
+
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    if (!userId) return;
+
+    // Cargar body_compositions ordenadas para calcular tendencia
+    const { data: bc } = await sb
+      .from('body_compositions')
+      .select('weight_kg, body_fat_pct, muscle_mass_kg, measured_at')
+      .eq('patient_user_id', userId)
+      .order('measured_at', { ascending: true })
+      .limit(20);
+
+    const points = (bc || []).filter(p => typeof p.weight_kg === 'number');
+
+    if (points.length < 2) {
+      // Empty state: invitar a registrar
+      setText('v2-threshold-eyebrow', 'Tu próximo umbral');
+      setText('v2-threshold-number', '—');
+      setText('v2-threshold-label', points.length === 1
+        ? 'Registrá tu próximo InBody para empezar a proyectar tu trayectoria.'
+        : 'Subí tu primer InBody o registrá tu peso para que SAVIA proyecte tu próximo hito.');
+      setText('v2-threshold-from', 'Hoy');
+      setText('v2-threshold-to', 'Necesitamos 2 mediciones');
+      setText('v2-threshold-footnote', '');
+      setWidth('v2-threshold-bar-fill', 0);
+      return;
+    }
+
+    // Regresión lineal kg/día
+    const first = points[0];
+    const last = points[points.length - 1];
+    const xs = points.map(p => (new Date(p.measured_at).getTime() - new Date(first.measured_at).getTime()) / 86400000);
+    const ys = points.map(p => p.weight_kg);
+    const n = xs.length;
+    const mx = xs.reduce((a, b) => a + b, 0) / n;
+    const my = ys.reduce((a, b) => a + b, 0) / n;
+    let num = 0, den = 0;
+    for (let i = 0; i < n; i++) { num += (xs[i] - mx) * (ys[i] - my); den += (xs[i] - mx) ** 2; }
+    const slopePerDay = den > 0 ? num / den : 0;
+
+    // Definir target: si el user tiene un goal weight, usarlo; si no, próximo entero (kg redondo)
+    let targetWeight = null;
+    try {
+      // Buscar goal weight en HT o en profile
+      const { data: ht } = await sb.from('user_health_twin').select('goals, identity').eq('user_id', userId).maybeSingle();
+      const goals = Array.isArray(ht?.goals) ? ht.goals : [];
+      const wg = goals.find(g => g && typeof g.target === 'string' && /kg/i.test(g.target));
+      if (wg) {
+        const m = String(wg.target).match(/(\d+(\.\d+)?)/);
+        if (m) targetWeight = parseFloat(m[1]);
+      }
+    } catch {}
+
+    const currentWeight = last.weight_kg;
+    let umbralLabel, umbralValue, umbralUnit;
+    if (targetWeight != null) {
+      const diff = currentWeight - targetWeight;
+      const absDiff = Math.abs(diff);
+      umbralValue = absDiff.toFixed(1);
+      umbralUnit = 'kg';
+      umbralLabel = diff > 0
+        ? `para llegar a tu peso objetivo de ${targetWeight}kg`
+        : diff < 0
+          ? `por encima de tu peso objetivo de ${targetWeight}kg`
+          : 'estás en tu peso objetivo';
+    } else {
+      // Sin goal: próximo umbral redondo (siguiente entero hacia abajo si bajando, hacia arriba si subiendo)
+      const direction = slopePerDay < 0 ? 'down' : 'up';
+      const nextThreshold = direction === 'down' ? Math.floor(currentWeight) : Math.ceil(currentWeight);
+      const diff = currentWeight - nextThreshold;
+      umbralValue = Math.abs(diff).toFixed(1);
+      umbralUnit = 'kg';
+      umbralLabel = direction === 'down'
+        ? `para cruzar los ${nextThreshold}kg`
+        : `para alcanzar los ${nextThreshold}kg`;
+    }
+
+    // Fecha proyectada — QA fix: fórmula previa daba signos invertidos sin goal
+    let projDateStr = '—';
+    if (Math.abs(slopePerDay) > 0.001) {
+      let daysToTarget;
+      if (targetWeight != null) {
+        // (target - current) / slope: si target<current y slope<0 → positivo (días para llegar bajando)
+        daysToTarget = (targetWeight - currentWeight) / slopePerDay;
+      } else {
+        // Sin goal: próximo entero hacia abajo si bajando, hacia arriba si subiendo
+        const nextThreshold = slopePerDay < 0 ? Math.floor(currentWeight) : Math.ceil(currentWeight);
+        daysToTarget = (nextThreshold - currentWeight) / slopePerDay;
+      }
+      if (Number.isFinite(daysToTarget) && daysToTarget > 0 && daysToTarget < 365) {
+        const proj = new Date(Date.now() + daysToTarget * 86400000);
+        projDateStr = proj.toLocaleDateString('es-CR', { day: 'numeric', month: 'short' });
+      } else if (daysToTarget <= 0) {
+        projDateStr = 'ya cruzado';
+      } else {
+        projDateStr = 'ritmo muy lento';
+      }
+    } else {
+      projDateStr = 'ritmo plano';
+    }
+
+    setText('v2-threshold-eyebrow', 'Falta poco');
+    setText('v2-threshold-number', umbralValue);
+    setText('v2-threshold-label', umbralLabel);
+    setText('v2-threshold-from', 'Hoy');
+    setText('v2-threshold-to', 'Proyectado: ' + projDateStr);
+    const slopeText = Math.abs(slopePerDay * 7).toFixed(2);
+    setText('v2-threshold-footnote', `basado en tu ritmo (${slopeText}kg/semana · ${n} mediciones)`);
+
+    // Barra de progreso: % consumido del cambio total hasta el target (usando first como punto inicio)
+    if (targetWeight != null && Math.abs(first.weight_kg - targetWeight) > 0.01) {
+      const totalChange = Math.abs(first.weight_kg - targetWeight);
+      const done = Math.abs(first.weight_kg - currentWeight);
+      const pct = (done / totalChange) * 100;
+      setWidth('v2-threshold-bar-fill', pct);
+    } else {
+      // Sin goal: barra muestra cercanía al próximo entero (max 100%)
+      const distance = Math.abs(currentWeight - parseFloat(umbralValue));
+      setWidth('v2-threshold-bar-fill', Math.max(10, 100 - (parseFloat(umbralValue) * 100)));
+    }
+  } catch (e) { console.warn('[v2-threshold] failed:', e); }
+}
+
+// ─── Transformation Reel ───────────────────────────────────────────
+// Genera carrusel horizontal de cards con momentos clave del journey.
+async function renderV2Reel() {
+  if (!document.documentElement.classList.contains('nav-v2')) return;
+  const scroll = document.getElementById('v2-reel-scroll');
+  if (!scroll) return;
+
+  try {
+    const sess = await sb.auth.getSession();
+    const userId = sess?.data?.session?.user?.id;
+    if (!userId) return;
+
+    // Pull data fuente: body_compositions (para "Empezaste" y "Hoy"), transformation_chapters
+    // (si existen) para "Punto de inflexión", workouts para "Primera semana".
+    const [bcRes, chaptersRes, workoutsRes] = await Promise.all([
+      sb.from('body_compositions')
+        .select('weight_kg, body_fat_pct, measured_at')
+        .eq('patient_user_id', userId)
+        .order('measured_at', { ascending: true })
+        .limit(30),
+      sb.from('transformation_chapters')
+        .select('id, created_at, how_you_are_today, narrative_context')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false })
+        .limit(3),
+      sb.from('workout_logs')
+        .select('ts, type, kcal_burned')
+        .eq('user_id', userId)
+        .order('ts', { ascending: true })
+        .limit(50),
+    ]);
+
+    const bc = bcRes.data || [];
+    const chapters = chaptersRes.data || [];
+    const workouts = workoutsRes.data || [];
+
+    const days = (typeof getDaysSinceSignup === 'function') ? getDaysSinceSignup() : null;
+    const cards = [];
+
+    // Card 1: Empezaste
+    if (bc.length > 0) {
+      const first = bc[0];
+      const date = new Date(first.measured_at).toLocaleDateString('es-CR', { day: 'numeric', month: 'short' });
+      cards.push({
+        num: '1',
+        title: 'Empezaste',
+        kicker: date,
+        body: first.weight_kg != null
+          ? `${first.weight_kg.toFixed(1)}kg${first.body_fat_pct != null ? ' · ' + first.body_fat_pct.toFixed(1) + '% grasa' : ''}`
+          : 'Tu primer registro',
+        accent: 'sage',
+      });
+    } else {
+      cards.push({
+        num: '1',
+        title: 'Empezaste',
+        kicker: days != null ? `Hace ${days}d` : '',
+        body: 'Registrá tu primer peso o InBody para anclar tu punto de partida.',
+        accent: 'sage',
+      });
+    }
+
+    // Card 2: Primera semana (basada en workouts de los primeros 7 días)
+    if (workouts.length > 0) {
+      const firstWeekEnd = new Date(workouts[0].ts).getTime() + 7 * 86400000;
+      const firstWeekWorkouts = workouts.filter(w => new Date(w.ts).getTime() <= firstWeekEnd);
+      if (firstWeekWorkouts.length > 0) {
+        cards.push({
+          num: '2',
+          title: 'Tu primera semana',
+          kicker: 'sem 1',
+          body: `${firstWeekWorkouts.length} workout${firstWeekWorkouts.length > 1 ? 's' : ''} registrado${firstWeekWorkouts.length > 1 ? 's' : ''}. Empezaste a moverte.`,
+          accent: 'clay',
+        });
+      }
+    } else if (cards.length === 1) {
+      cards.push({
+        num: '2',
+        title: 'Tu primera semana',
+        kicker: 'pendiente',
+        body: 'Esta card se llena cuando hagas tu primer workout.',
+        accent: 'clay',
+        empty: true,
+      });
+    }
+
+    // Card 3: Punto de inflexión (último chapter, si hay)
+    if (chapters.length > 0) {
+      const c = chapters[0];
+      const body = (c.how_you_are_today || '').trim().split(/[\.\n]/)[0].slice(0, 90);
+      const date = new Date(c.created_at).toLocaleDateString('es-CR', { day: 'numeric', month: 'short' });
+      cards.push({
+        num: '3',
+        title: 'Punto de inflexión',
+        kicker: date,
+        body: body || 'Tu último capítulo',
+        accent: 'forest',
+      });
+    } else if (cards.length === 2) {
+      cards.push({
+        num: '3',
+        title: 'Punto de inflexión',
+        kicker: 'próximamente',
+        body: 'Esta card llega cuando completes tu primera medición de cambio.',
+        accent: 'forest',
+        empty: true,
+      });
+    }
+
+    // Card 4: Hoy (último InBody comparado al primero)
+    if (bc.length >= 2) {
+      const first = bc[0];
+      const last = bc[bc.length - 1];
+      const dw = (last.weight_kg || 0) - (first.weight_kg || 0);
+      const sign = dw === 0 ? '' : (dw > 0 ? '+' : '−');
+      cards.push({
+        num: '4',
+        title: 'Hoy',
+        kicker: 'tu versión actual',
+        body: `${last.weight_kg.toFixed(1)}kg · ${sign}${Math.abs(dw).toFixed(1)}kg vs el día 1`,
+        accent: 'sage',
+      });
+    } else if (bc.length === 1) {
+      cards.push({
+        num: '4',
+        title: 'Hoy',
+        kicker: 'sin comparación aún',
+        body: 'Cuando subas tu segundo InBody, esta card va a mostrar tu delta real.',
+        accent: 'sage',
+        empty: true,
+      });
+    }
+
+    // Card 5: Lo que viene
+    cards.push({
+      num: '5',
+      title: 'Lo que viene',
+      kicker: 'próximo capítulo',
+      body: bc.length >= 2
+        ? 'Tu próxima medición decide la siguiente versión de tu reel.'
+        : 'Sigamos sumando data. Tu reel se vuelve más rico con cada registro.',
+      accent: 'clay',
+      empty: bc.length < 2,
+    });
+
+    // Escape para evitar XSS: c.body de chapters viene de user content
+    const esc = (s) => (typeof escapeHtml === 'function')
+      ? escapeHtml(String(s ?? ''))
+      : String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    scroll.innerHTML = cards.map(c => `
+      <div class="v2-reel-card v2-reel-card--${esc(c.accent)}${c.empty ? ' v2-reel-empty' : ''}">
+        <div class="v2-reel-card-num">${esc(c.num)}</div>
+        <div class="v2-reel-card-kicker">${esc(c.kicker || '')}</div>
+        <div class="v2-reel-card-title">${esc(c.title)}</div>
+        <div class="v2-reel-card-body">${esc(c.body)}</div>
+      </div>
+    `).join('');
+  } catch (e) { console.warn('[v2-reel] failed:', e); }
 }
 
 /* ============================================================
@@ -14918,6 +15363,20 @@ const PROTEIN_PER_KG = {
 };
 
 async function openNutritionModule() {
+  // Bug C fix: setup del back para volver al tab origen de v=2.
+  try {
+    if (document.documentElement.classList.contains('nav-v2')) {
+      const activeTab = document.querySelector('.tabbar-v2-btn.active');
+      window._v2NutReturnTab = activeTab ? activeTab.dataset.v2tab : 'progreso';
+      const lbl = document.getElementById('nut-back-label');
+      if (lbl) lbl.textContent = window._v2NutReturnTab === 'progreso' ? 'Mi Progreso' : 'Plan';
+    } else {
+      window._v2NutReturnTab = null;
+      const lbl = document.getElementById('nut-back-label');
+      if (lbl) lbl.textContent = 'Hoy';
+    }
+  } catch (e) { console.warn('[NUT] back label setup:', e); }
+
   // Cargar targets si existen. Si no, mandar a onboarding nutricional.
   const targets = await nutLoadTargets();
   if (!targets) {
@@ -16342,6 +16801,13 @@ async function wkSyncHoyCard() {
   if (hoyEl) {
     const today = wkState.todayLogs.reduce((s, r) => s + (r.kcal_burned || 0), 0);
     hoyEl.textContent = today;
+  }
+  // Bug A fix: si el módulo Workout está activo, re-pintar su dashboard.
+  // Sin esto, después de un sync Strava o de un log via coach, el módulo muestra
+  // "no workouts / 0 kcal" pero Mi Progreso v2 SÍ muestra el workout del día
+  // (porque wkState.todayLogs está actualizado pero el DOM del dashboard no).
+  if (typeof wkRenderDashboard === 'function') {
+    try { wkRenderDashboard(); } catch (e) { console.warn('[wk] dash refresh:', e); }
   }
   // v=2 mirror: refresh card de Mi Progreso (incluye pillar workout). No-op si !nav-v2.
   if (typeof renderV2Day === 'function') { renderV2Day().catch(() => {}); }
@@ -20231,6 +20697,9 @@ async function nutAddHydration(ml) {
     }
   } catch (e) { console.warn('[NUT] hydration save failed:', e); }
 
+  // Bug B fix: refresh v=2 mirror (pillar agua queda stale sin esto).
+  if (typeof renderV2Day === 'function') { renderV2Day().catch(() => {}); }
+
   // Toast con UNDO (4 segundos)
   nutShowHydrationToast(ml, insertedId);
 }
@@ -20288,6 +20757,9 @@ async function nutUndoHydration(ml, logId) {
       });
     } catch (e) { console.warn('[NUT] undo hydration failed:', e); }
   }
+  // Bug B fix: refresh v=2 mirror (pillar agua queda stale sin esto).
+  if (typeof renderV2Day === 'function') { renderV2Day().catch(() => {}); }
+
   // Toast confirmación
   const ok = document.createElement('div');
   ok.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translate(-50%,0);background:rgba(92,124,90,0.95);color:#F5EFE3;padding:10px 18px;border-radius:14px;font-size:13px;font-weight:600;z-index:99999;box-shadow:0 12px 40px rgba(42,58,42,0.12);';

@@ -61,6 +61,20 @@ const CATEGORY_CONFIG: Record<string, { expires_hours: number; prompt: string }>
     prompt:
       "Categoría: HORMONAL (Women's Health). Conectá la fase actual del ciclo con energía, fuerza, antojos, nutrición. Específico a la fase: ovulatoria → pico de fuerza, lútea tardía → bajón energético, etc.",
   },
+  // ─── Bug D fix: foco transformación/evolución (no observación diaria) ───
+  // El insight más potente del producto. Activado en pulse_type='weekly' o cuando
+  // el user tiene suficiente data (≥21 días). Dos sub-templates dentro del prompt:
+  //   - IDENTITY: comparar quién era hace 60-90d vs ahora ("Hace 60 días...")
+  //   - TRAJECTORY: proyectar a futuro usando regresión simple ("Si sostenés...")
+  // La data de transformation_arc viene precalculada en buildPulseContext.
+  transformation_arc: {
+    expires_hours: 168, // 7 días — uno por semana
+    prompt:
+      "Categoría: TRANSFORMACIÓN. SAVIA vende cambio, evolución, no observación diaria. Tu insight debe contar QUÉ se transformó en este usuario y/o A DÓNDE va. Elegí UNO de los dos ángulos según los datos disponibles:\n\n" +
+      "(A) IDENTITY — si hay ≥60 días de data: comparar la versión actual del usuario vs la versión de hace 60-90 días. Foco en cambio de identidad, no en métricas frías. Ejemplo: 'Hace 60 días entrenabas 2 veces por semana. Ahora llevás 5. Esa no es una racha — es una versión nueva tuya.' Usá data específica de transformation_arc (workouts_per_week_first vs workouts_per_week_recent, adherencia_first vs adherencia_recent).\n\n" +
+      "(B) TRAJECTORY — si hay ≥21 días de body_metrics con tendencia clara: proyectar cuándo llega al objetivo según ritmo actual. Ejemplo: 'Si sostenés el ritmo de las últimas 3 semanas, llegás a tu peso objetivo el 27 de julio. Faltan 5.2 kg.' Sé honesto con la fecha (no la inventes — usá weight_slope_per_week que viene precalculado).\n\n" +
+      "Tono: directo, sincero, premium. Cero halago vacío. Cero 'wellness influencer'. El usuario tiene que sentir que SAVIA lo VE evolucionando.",
+  },
 };
 
 Deno.serve(async (req: Request) => {
@@ -129,7 +143,7 @@ Deno.serve(async (req: Request) => {
       .limit(10);
 
     // ─── Selector personalizado por lifestyle ───
-    const selected = selectCategory(ctx, recentPulses || []);
+    const selected = selectCategory(ctx, recentPulses || [], pulseType);
     console.log(
       `[savia-pulse] user=${user.id} category=${selected.category} reason="${selected.reason}"`,
     );
@@ -279,6 +293,23 @@ interface PulseContext {
   whTodayLog: any;
   currentPhase: string | null;
   cycleDay: number | null;
+  // Bug D fix: data histórica precalculada para insight de transformación
+  transformationArc: {
+    days_active: number;
+    workouts_per_week_first: number | null;   // primeras 4 sem desde signup
+    workouts_per_week_recent: number | null;  // últimas 4 sem
+    kcal_avg_first: number | null;
+    kcal_avg_recent: number | null;
+    protein_avg_first: number | null;
+    protein_avg_recent: number | null;
+    weight_first: number | null;
+    weight_recent: number | null;
+    weight_slope_per_week: number | null;     // kg/semana (regresión lineal)
+    body_fat_first: number | null;
+    body_fat_recent: number | null;
+    has_identity_data: boolean;               // ≥60 días para ángulo IDENTITY
+    has_trajectory_data: boolean;             // ≥21 días + tendencia clara para TRAJECTORY
+  };
 }
 
 async function buildPulseContext(
@@ -403,6 +434,142 @@ async function buildPulseContext(
     protein_avg_7d: proteinAvg7d,
   };
 
+  // ─── Bug D fix: data histórica para insight de TRANSFORMACIÓN ────────
+  // Cargamos ventanas de 90 días y comparamos primera mitad vs segunda mitad
+  // (Identity) y calculamos slope semanal del peso (Trajectory).
+  const start90d = new Date(new Date(todayStartISO).getTime() - 90 * 86400000).toISOString();
+  const [mealsHistRes, workoutsHistRes, bodyCompHistRes] = await Promise.all([
+    supabase
+      .from("meal_logs")
+      .select("total_kcal, total_protein_g, ts")
+      .eq("user_id", userId)
+      .gte("ts", start90d)
+      .lt("ts", todayStartISO)
+      .order("ts", { ascending: true }),
+    supabase
+      .from("workout_logs")
+      .select("ts")
+      .eq("user_id", userId)
+      .gte("ts", start90d)
+      .lt("ts", todayStartISO),
+    supabase
+      .from("body_compositions")
+      .select("weight_kg, body_fat_pct, recorded_at")
+      .eq("patient_user_id", userId)
+      .gte("recorded_at", start90d)
+      .order("recorded_at", { ascending: true }),
+  ]);
+  const mealsHist = mealsHistRes.data || [];
+  const workoutsHist = workoutsHistRes.data || [];
+  const bodyCompHist = bodyCompHistRes.data || [];
+
+  // Determinar ventana "first" (primeras 4 sem) vs "recent" (últimas 4 sem).
+  // Solo si hay ≥60 días entre el primer registro y hoy podemos hacer Identity.
+  const allTs: number[] = [];
+  for (const m of mealsHist) allTs.push(new Date(m.ts).getTime());
+  for (const w of workoutsHist) allTs.push(new Date(w.ts).getTime());
+  for (const b of bodyCompHist) allTs.push(new Date(b.recorded_at).getTime());
+  const earliestTs = allTs.length > 0 ? Math.min(...allTs) : Date.now();
+  const daysActive = Math.floor((Date.now() - earliestTs) / 86400000);
+  const hasIdentityData = daysActive >= 60;
+
+  let workoutsPerWeekFirst: number | null = null;
+  let workoutsPerWeekRecent: number | null = null;
+  let kcalAvgFirst: number | null = null;
+  let kcalAvgRecent: number | null = null;
+  let proteinAvgFirst: number | null = null;
+  let proteinAvgRecent: number | null = null;
+  if (hasIdentityData) {
+    const firstWindowEnd = earliestTs + 28 * 86400000;
+    const recentWindowStart = Date.now() - 28 * 86400000;
+    const wkFirst = workoutsHist.filter((w: any) =>
+      new Date(w.ts).getTime() <= firstWindowEnd,
+    ).length;
+    const wkRecent = workoutsHist.filter((w: any) =>
+      new Date(w.ts).getTime() >= recentWindowStart,
+    ).length;
+    workoutsPerWeekFirst = Math.round((wkFirst / 4) * 10) / 10;
+    workoutsPerWeekRecent = Math.round((wkRecent / 4) * 10) / 10;
+
+    const mealsFirst = mealsHist.filter((m: any) =>
+      new Date(m.ts).getTime() <= firstWindowEnd,
+    );
+    const mealsRecentH = mealsHist.filter((m: any) =>
+      new Date(m.ts).getTime() >= recentWindowStart,
+    );
+    const sumK = (arr: any[]) => arr.reduce((s, m) => s + (m.total_kcal || 0), 0);
+    const sumP = (arr: any[]) => arr.reduce((s, m) => s + (m.total_protein_g || 0), 0);
+    const dayCountFirst = new Set(mealsFirst.map((m: any) => String(m.ts).slice(0, 10))).size;
+    const dayCountRecent = new Set(mealsRecentH.map((m: any) => String(m.ts).slice(0, 10))).size;
+    if (dayCountFirst > 0) {
+      kcalAvgFirst = Math.round(sumK(mealsFirst) / dayCountFirst);
+      proteinAvgFirst = Math.round(sumP(mealsFirst) / dayCountFirst);
+    }
+    if (dayCountRecent > 0) {
+      kcalAvgRecent = Math.round(sumK(mealsRecentH) / dayCountRecent);
+      proteinAvgRecent = Math.round(sumP(mealsRecentH) / dayCountRecent);
+    }
+  }
+
+  // Trajectory: slope del peso usando regresión lineal sobre body_compositions
+  // de los últimos 21+ días. Solo si hay ≥3 puntos y span ≥21 días.
+  let weightFirst: number | null = null;
+  let weightRecent: number | null = null;
+  let weightSlopePerWeek: number | null = null;
+  let bodyFatFirst: number | null = null;
+  let bodyFatRecent: number | null = null;
+  const bcWithWeight = bodyCompHist.filter((b: any) => typeof b.weight_kg === "number");
+  let hasTrajectoryData = false;
+  if (bcWithWeight.length >= 3) {
+    const firstBc = bcWithWeight[0];
+    const lastBc = bcWithWeight[bcWithWeight.length - 1];
+    const spanDays =
+      (new Date(lastBc.recorded_at).getTime() - new Date(firstBc.recorded_at).getTime()) /
+      86400000;
+    if (spanDays >= 21) {
+      hasTrajectoryData = true;
+      weightFirst = firstBc.weight_kg;
+      weightRecent = lastBc.weight_kg;
+      bodyFatFirst = typeof firstBc.body_fat_pct === "number" ? firstBc.body_fat_pct : null;
+      bodyFatRecent = typeof lastBc.body_fat_pct === "number" ? lastBc.body_fat_pct : null;
+      // Regresión lineal simple: pendiente kg/día → kg/semana
+      const xs = bcWithWeight.map(
+        (b: any) =>
+          (new Date(b.recorded_at).getTime() - new Date(firstBc.recorded_at).getTime()) /
+          86400000,
+      );
+      const ys = bcWithWeight.map((b: any) => b.weight_kg);
+      const n = xs.length;
+      const meanX = xs.reduce((s, v) => s + v, 0) / n;
+      const meanY = ys.reduce((s, v) => s + v, 0) / n;
+      let num = 0;
+      let den = 0;
+      for (let i = 0; i < n; i++) {
+        num += (xs[i] - meanX) * (ys[i] - meanY);
+        den += (xs[i] - meanX) ** 2;
+      }
+      const slopePerDay = den > 0 ? num / den : 0;
+      weightSlopePerWeek = Math.round(slopePerDay * 7 * 100) / 100; // 2 decimals
+    }
+  }
+
+  const transformationArc = {
+    days_active: daysActive,
+    workouts_per_week_first: workoutsPerWeekFirst,
+    workouts_per_week_recent: workoutsPerWeekRecent,
+    kcal_avg_first: kcalAvgFirst,
+    kcal_avg_recent: kcalAvgRecent,
+    protein_avg_first: proteinAvgFirst,
+    protein_avg_recent: proteinAvgRecent,
+    weight_first: weightFirst,
+    weight_recent: weightRecent,
+    weight_slope_per_week: weightSlopePerWeek,
+    body_fat_first: bodyFatFirst,
+    body_fat_recent: bodyFatRecent,
+    has_identity_data: hasIdentityData,
+    has_trajectory_data: hasTrajectoryData,
+  };
+
   // Cycle phase si aplica
   let currentPhase: string | null = null;
   let cycleDay: number | null = null;
@@ -447,6 +614,7 @@ async function buildPulseContext(
     whTodayLog: whLogRes.data,
     currentPhase,
     cycleDay,
+    transformationArc,
   };
 }
 
@@ -455,6 +623,7 @@ async function buildPulseContext(
 function selectCategory(
   ctx: PulseContext,
   recentPulses: Array<{ category: string; created_at: string }>,
+  pulseType: string = "daily",
 ): { category: string; reason: string } {
   const now = Date.now();
   const hadCategoryWithinHours = (cat: string, hours: number): boolean => {
@@ -471,6 +640,31 @@ function selectCategory(
         String(p.created_at).slice(0, 10) === ctx.todayISO,
     );
   };
+
+  // ─── 0. TRANSFORMATION_ARC: foco de SAVIA (cambio/evolución). ───────
+  // Prioridad alta en weekly review o cuando el user tiene data histórica suficiente
+  // y no recibió un transformation_arc en los últimos 7 días.
+  const ta = ctx.transformationArc;
+  const hasTransformationData = ta && (ta.has_identity_data || ta.has_trajectory_data);
+  if (
+    hasTransformationData &&
+    !hadCategoryWithinHours("transformation_arc", 7 * 24)
+  ) {
+    // Weekly pulse: SIEMPRE elige transformation_arc si hay data.
+    if (pulseType === "weekly") {
+      return {
+        category: "transformation_arc",
+        reason: `Weekly review + data histórica (${ta.days_active}d activos)`,
+      };
+    }
+    // Daily pulse: solo el domingo (cierre de semana) y solo si no hubo otro insight de transformación en 7d.
+    if (ctx.dayOfWeek === 0 && ctx.hourLocal >= 9) {
+      return {
+        category: "transformation_arc",
+        reason: `Domingo + ${ta.days_active}d activos`,
+      };
+    }
+  }
 
   // ─── 1. POST_WORKOUT: si hay workout en últimas 2h ───
   const recentWorkout = ctx.todayWorkouts.find((w: any) => {
@@ -648,6 +842,41 @@ Insight contextual al momento. Usá la hora local para calibrar (mañana = orien
     whLine = `\n- Ciclo: día ${ctx.cycleDay}, fase ${ctx.currentPhase}`;
   }
 
+  // Bug D fix: bloque de transformación (solo presente si la categoría es transformation_arc)
+  let transformationBlock = "";
+  if (category === "transformation_arc") {
+    const ta = ctx.transformationArc;
+    const lines: string[] = [`- Días activos en SAVIA: ${ta.days_active}`];
+    if (ta.has_identity_data) {
+      lines.push("- DATOS PARA ÁNGULO IDENTITY (primeras 4 sem vs últimas 4 sem):");
+      if (ta.workouts_per_week_first !== null && ta.workouts_per_week_recent !== null) {
+        lines.push(`  - Workouts/semana: ${ta.workouts_per_week_first} → ${ta.workouts_per_week_recent}`);
+      }
+      if (ta.kcal_avg_first !== null && ta.kcal_avg_recent !== null) {
+        lines.push(`  - kcal/día promedio: ${ta.kcal_avg_first} → ${ta.kcal_avg_recent}`);
+      }
+      if (ta.protein_avg_first !== null && ta.protein_avg_recent !== null) {
+        lines.push(`  - proteína/día promedio: ${ta.protein_avg_first}g → ${ta.protein_avg_recent}g`);
+      }
+    } else {
+      lines.push("- IDENTITY no disponible (< 60 días activos)");
+    }
+    if (ta.has_trajectory_data) {
+      lines.push("- DATOS PARA ÁNGULO TRAJECTORY (regresión peso):");
+      lines.push(`  - peso inicial: ${ta.weight_first}kg → actual: ${ta.weight_recent}kg`);
+      if (ta.weight_slope_per_week !== null) {
+        const direction = ta.weight_slope_per_week < 0 ? "bajando" : ta.weight_slope_per_week > 0 ? "subiendo" : "estable";
+        lines.push(`  - tendencia: ${Math.abs(ta.weight_slope_per_week)}kg/semana (${direction})`);
+      }
+      if (ta.body_fat_first !== null && ta.body_fat_recent !== null) {
+        lines.push(`  - body fat: ${ta.body_fat_first}% → ${ta.body_fat_recent}%`);
+      }
+    } else {
+      lines.push("- TRAJECTORY no disponible (necesita ≥3 mediciones de peso + ≥21 días de span)");
+    }
+    transformationBlock = `\n# DATA DE TRANSFORMACIÓN (USAR PARA EL INSIGHT)\n${lines.join("\n")}\n`;
+  }
+
   return `Sos SAVIA. Generá UN insight para mostrar como hero card en la pantalla Hoy de ${name}.
 
 ${framing}
@@ -680,7 +909,7 @@ ${config.prompt}
 
 # PATRONES RECIENTES
 - ${bpBits.join(" · ") || "sin patterns aún"}
-
+${transformationBlock}
 # RESPUESTA — FORMATO ESTRICTO JSON
 Devolvé SOLO un JSON válido, sin texto extra antes ni después:
 
