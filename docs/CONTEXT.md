@@ -11,7 +11,7 @@
 **One-line description:** Capa de inteligencia personal que documenta, explica y optimiza la transformación corporal del usuario combinando nutrición, composición corporal, actividad, sueño y un coach de IA.
 **Status:** QA/Beta (en producción con usuarios beta)
 **Owner:** Victor (Product) · Fede (Tech)
-**Jira project key:** MS002 (por crear)
+**Jira project key:** MS002 (creado · fedegonzs.atlassian.net/browse/MS002)
 **GitHub repo:** victor0988/savia-app
 **Producción:** https://usesavia.com
 **Target launch date:** Ya en beta live; GA por definir en Go/No-Go del equipo
@@ -97,10 +97,10 @@ savia-app/
 **Sprint dates:** —
 
 **In Progress:** —
+**Listo:** Jira MS002 creado (6 epics + 7 historias; tramo 1 estimado, 28 pts). PRD escrito (docs/PRD.md).
 **To Do (al entrar al ciclo):**
-- Crear proyecto Jira MS002 (board 6 columnas).
-- Escribir PRD (Victor) y Tech Design (Fede).
-- Decidir stack (mantener SPA+Supabase vs migrar al estándar del equipo).
+- Sprint Planning: comprometer el tramo 1 (MS002-7, MS002-9, MS002-10).
+- Tech Design (Fede), incl. decisión de stack (mantener SPA+Supabase vs migrar al estándar) y arquitectura de módulos reutilizables.
 
 ---
 

@@ -27,6 +27,8 @@ Las personas en procesos de transformación corporal no logran percibir por qué
 
 SAVIA es la capa de inteligencia personal de la transformación: documenta el cambio, explica por qué ocurre (motor de correlaciones n-of-1) y recomienda qué decidir. Los resultados son la fuente de verdad; nutrición, sueño, pasos y entrenamiento son variables que los explican. (Visión completa y replanteamiento en `SAVIA_BRD_v2_Transformacion.docx`.)
 
+**Distribución (nuevo):** además de la web (usesavia.com), SAVIA se distribuye como **app nativa en App Store y Google Play**. Se construye reutilizando el esqueleto web actual envuelto con **Capacitor** (una sola base de código → iOS + Android), reforzado con capacidades nativas (cámara, HealthKit / Health Connect, push, biometría) para cumplir la guía de review y dar valor nativo real. La migración progresiva a módulos/native (alineada con la estrategia de reúso) es el camino a futuro. Decisión técnica final con Fede.
+
 ---
 
 ## 4. Business Goals
@@ -37,6 +39,8 @@ SAVIA es la capa de inteligencia personal de la transformación: documenta el ca
 | Retención | Usuarios activos a 8 semanas | Definir | Continuo |
 | Outcome real | Cambio mediano de composición a 12 sem (activos) | Definir | 12 sem |
 | Canal profesional | Nutricionistas activos que traen pacientes | Primeros 3-5 | 90 días |
+| Presencia en stores | Apps publicadas iOS + Android + rating | Live en ambas · rating ≥ 4.5 | Tras salida a stores |
+| Adopción mobile | Instalaciones y % de activos en mobile | Definir | Continuo |
 
 ---
 
@@ -53,6 +57,8 @@ SAVIA es la capa de inteligencia personal de la transformación: documenta el ca
 - **Time:** Ya en beta; GA por definir.
 - **Team:** Victor (Product, ~12h/sem) · Fede (Tech, ~12h/sem).
 - **Technical:** Stack actual SPA single-file + Supabase + Claude. Decisión pendiente: mantener o migrar al estándar del equipo.
+- **Mobile / stores (nuevo):** distribución nativa iOS + Android vía Capacitor sobre el SPA actual. Requiere **cuentas de developer** (Apple Developer ~$99/año, Google Play ~$25 único) a nombre de **Victor o Guendy Salazar** (o entidad CR — por definir). Compliance de review: capacidades nativas reales, **borrado de cuenta in-app** (lo exige Apple), etiquetas de privacidad (App Privacy / Data Safety), disclosures de datos de salud.
+- **Monetización in-app:** las suscripciones in-app pasan por billing de Apple/Google (15–30% de fee). **El modelo de cobro queda diferido** — se define más adelante; el plan mobile no asume IAP todavía.
 - **Regla dura:** No puede estar "In Dev" del equipo mientras MS001 lo esté.
 
 ---
@@ -61,6 +67,7 @@ SAVIA es la capa de inteligencia personal de la transformación: documenta el ca
 
 - OS para clínicas estéticas / módulos aesthetic (microsolución separada).
 - HIPAA (roadmap, no actual).
+- **Modelo de cobro de suscripciones in-app (IAP/pricing) — diferido**, se define más adelante.
 
 ---
 
@@ -69,6 +76,9 @@ SAVIA es la capa de inteligencia personal de la transformación: documenta el ca
 - [ ] ¿Mantener stack actual o migrar al estándar del equipo (monorepo React/RN/Node)?
 - [ ] ¿Cuándo separar el track estético a su propio repo?
 - [ ] ¿SAVIA toma el slot "In Dev" del equipo (pausando MS001) o sigue como beta de Victor?
+- [ ] **Cuenta de developer:** ¿a nombre de Victor, de Guendy Salazar, o de una empresa CR?
+- [ ] **Monetización mobile (diferida):** ¿cobro in-app (con fee de stores) o por web donde se permita?
+- [ ] ¿Capacitor como puente y migración progresiva a módulos/RN, o rebuild nativo desde el inicio? (con Fede)
 
 ---
 
