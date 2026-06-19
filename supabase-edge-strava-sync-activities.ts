@@ -185,16 +185,64 @@ Deno.serve(async (req) => {
       const existing = existingResp.ok ? await existingResp.json() : [];
       const existingSet = new Set(existing.map((e: any) => e.external_id));
 
-      const rowsToInsert = activities
-        .filter(a => !existingSet.has(String(a.id)))
-        .map(a => ({
+      // Detail fetch: el endpoint /athlete/activities no siempre devuelve `calories`.
+      // Hacemos GET /activities/{id} por cada activity nueva donde calories venga null
+      // para traer las calorías reales calculadas por Strava.
+      const newActivities = activities.filter(a => !existingSet.has(String(a.id)));
+      const enrichedActivities: any[] = [];
+      let rateLimitHit = false;
+      for (const a of newActivities) {
+        // Si ya viene con calories desde el list, no necesita detail
+        if (a.calories) {
+          enrichedActivities.push(a);
+          continue;
+        }
+        // Si ya tocamos rate limit antes, conservamos sin enrich (sin más reqs)
+        if (rateLimitHit) {
+          enrichedActivities.push(a);
+          continue;
+        }
+        // Detail fetch
+        try {
+          const detResp = await fetch(`https://www.strava.com/api/v3/activities/${a.id}?include_all_efforts=false`, {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
+          syncLog.api_calls++;
+          if (detResp.status === 429) {
+            console.warn("[STRAVA] rate limit hit, skipping further detail fetches");
+            rateLimitHit = true;
+            enrichedActivities.push(a);
+          } else if (detResp.ok) {
+            const detail = await detResp.json();
+            // Merge: detail tiene calories, list tiene resto
+            enrichedActivities.push({ ...a, ...detail });
+          } else {
+            enrichedActivities.push(a);
+          }
+        } catch (e) {
+          console.warn(`[STRAVA] detail fetch failed for ${a.id}:`, e);
+          enrichedActivities.push(a);
+        }
+        // Pequeño delay para no rebasar 200/15min de Strava
+        if (!rateLimitHit) await new Promise(r => setTimeout(r, 100));
+      }
+
+      const rowsToInsert = enrichedActivities
+        .map(a => {
+          const type = TYPE_MAP[a.sport_type || a.type] || "other";
+          const durationMin = Math.round((a.moving_time || a.elapsed_time || 0) / 60);
+          // kcal: prioridad Strava calories → kilojoules (1 kJ ≈ 1 kcal convención) → null
+          let kcalBurned: number | null = null;
+          if (a.calories) kcalBurned = Math.round(a.calories);
+          else if (a.kilojoules) kcalBurned = Math.round(a.kilojoules);
+          return {
           user_id: userId,
           ts: a.start_date,
-          type: TYPE_MAP[a.sport_type || a.type] || "other",
+          type: type,
           name: a.name || null,
-          duration_min: Math.round((a.moving_time || a.elapsed_time || 0) / 60),
+          duration_min: durationMin,
           intensity: INTENSITY_MAP_BY_HR(a.average_heartrate),
-          kcal_burned: a.calories ? Math.round(a.calories) : (a.kilojoules ? Math.round(a.kilojoules * 0.9) : null),
+          kcal_burned: kcalBurned,
           distance_km: a.distance ? Math.round(a.distance / 10) / 100 : null,
           distance_m: a.distance || null,
           elevation_gain_m: a.total_elevation_gain || null,
@@ -208,7 +256,8 @@ Deno.serve(async (req) => {
           sport_type: a.sport_type || a.type,
           raw_data: a,
           notes: a.description || null,
-        }));
+          };
+        });
 
       syncLog.activities_skipped = activities.length - rowsToInsert.length;
 
